@@ -1,0 +1,10 @@
+node_modules
+dist
+coverage
+.angular
+pnpm-lock.yaml
+.env
+.env.local
+apps/server/dist
+packages/shared/dist
+apps/server/generated

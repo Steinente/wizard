@@ -1,0 +1,33 @@
+{
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "version": 1,
+  "newProjectRoot": "apps",
+  "projects": {
+    "client-ui": {
+      "projectType": "application",
+      "root": "apps/client-ui",
+      "sourceRoot": "apps/client-ui/src",
+      "prefix": "wiz",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "browser": "apps/client-ui/src/main.ts",
+            "index": "apps/client-ui/src/index.html",
+            "tsConfig": "apps/client-ui/tsconfig.app.json",
+            "polyfills": ["zone.js"],
+            "assets": [],
+            "styles": ["apps/client-ui/src/styles.css"]
+          }
+        },
+        "serve": {
+          "builder": "@angular/build:dev-server",
+          "options": {
+            "buildTarget": "client-ui:build",
+            "port": 4200
+          }
+        }
+      }
+    }
+  }
+}

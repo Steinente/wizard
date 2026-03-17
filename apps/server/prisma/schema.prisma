@@ -1,0 +1,87 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum LobbyStatus {
+  WAITING
+  RUNNING
+  FINISHED
+  CLOSED
+}
+
+enum PredictionVisibility {
+  OPEN
+  HIDDEN
+  SECRET
+}
+
+enum OpenPredictionRestriction {
+  NONE
+  MUST_EQUAL_TRICKS
+  MUST_NOT_EQUAL_TRICKS
+}
+
+enum PlayerRole {
+  HOST
+  PLAYER
+}
+
+model Lobby {
+  id                        String                    @id @default(cuid())
+  code                      String                    @unique
+  status                    LobbyStatus               @default(WAITING)
+  hostPlayerId              String?
+  predictionVisibility      PredictionVisibility      @default(OPEN)
+  openPredictionRestriction OpenPredictionRestriction @default(NONE)
+  audioEnabledByDefault     Boolean                   @default(false)
+  languageDefault           String                    @default("en")
+  allowIncludedSpecialCards Boolean                   @default(true)
+  hostDisconnectedAt        DateTime?
+  hostDisconnectDeadline    DateTime?
+  createdAt                 DateTime                  @default(now())
+  updatedAt                 DateTime                  @updatedAt
+
+  players   Player[]
+  gameState GameState?
+
+  @@index([code])
+}
+
+model Player {
+  id             String     @id @default(cuid())
+  lobbyId        String
+  sessionToken   String
+  name           String
+  role           PlayerRole
+  connected      Boolean    @default(true)
+  joinedAt       DateTime   @default(now())
+  disconnectedAt DateTime?
+  audioEnabled   Boolean    @default(false)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  lobby Lobby @relation(fields: [lobbyId], references: [id], onDelete: Cascade)
+
+  @@unique([lobbyId, name])
+  @@unique([lobbyId, sessionToken])
+  @@index([lobbyId])
+}
+
+model GameState {
+  id              String   @id @default(cuid())
+  lobbyId         String   @unique
+  roundNumber     Int      @default(0)
+  dealerIndex     Int      @default(0)
+  currentPlayerId String?
+  phase           String   @default("waiting")
+  stateJson       Json
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  lobby Lobby @relation(fields: [lobbyId], references: [id], onDelete: Cascade)
+}

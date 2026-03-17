@@ -1,0 +1,17 @@
+{
+  "name": "@wizard/client-ui",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm --dir ../.. dev:client-ui",
+    "build": "pnpm --dir ../.. build:client-ui",
+    "lint": "tsc -p tsconfig.app.json --noEmit",
+    "test": "node -e \"console.log('no client-ui tests yet')\"",
+    "format": "node -e \"console.log('format handled externally')\""
+  },
+  "dependencies": {
+    "@wizard/shared": "workspace:*",
+    "socket.io-client": "^4.8.1"
+  }
+}

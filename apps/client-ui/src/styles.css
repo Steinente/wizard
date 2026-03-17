@@ -1,0 +1,227 @@
+:root {
+  color-scheme: dark;
+  --bg: #0f172a;
+  --panel: #162033;
+  --panel-2: #1e293b;
+  --border: #314158;
+  --text: #e5eefc;
+  --muted: #9fb0c9;
+  --accent: #d4a72c;
+  --danger: #d9534f;
+  --success: #4caf50;
+  --card-red: #b91c1c;
+  --card-yellow: #fbbf24;
+  --card-green: #15803d;
+  --card-blue: #1d4ed8;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: radial-gradient(circle at top, #1e293b 0%, #0f172a 55%);
+  color: var(--text);
+}
+
+body {
+  min-height: 100vh;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.page-shell {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.panel {
+  background: linear-gradient(180deg, var(--panel), var(--panel-2));
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.25);
+}
+
+.grid {
+  display: grid;
+  gap: 16px;
+  align-items: start;
+}
+
+.btn {
+  border: 1px solid var(--border);
+  background: #22304a;
+  color: var(--text);
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #111827;
+  border-color: #e4bc48;
+  font-weight: 700;
+}
+
+.btn-outline {
+  background: transparent;
+  border: 2px solid var(--border);
+  color: var(--text);
+  font-weight: normal;
+}
+
+.btn-danger {
+  background: var(--danger);
+  border-color: #ef6f6b;
+}
+
+.input,
+.select {
+  width: 100%;
+  border: 1px solid var(--border);
+  background: #0f172a;
+  color: var(--text);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.spread {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.prediction-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
+  gap: 8px;
+}
+
+.prediction-btn {
+  padding: 8px 12px;
+  min-width: 40px;
+  font-size: 14px;
+}
+
+.card-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.status-online {
+  background-color: var(--success);
+  color: white;
+  border-color: var(--success);
+}
+
+.status-offline {
+  background-color: var(--danger);
+  color: white;
+  border-color: var(--danger);
+}
+
+.error-box {
+  border: 1px solid #7f1d1d;
+  background: rgb(127 29 29 / 0.2);
+  color: #fecaca;
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.panel-scroll {
+  max-height: 420px;
+  overflow: auto;
+}
+
+.panel-scroll-compact {
+  max-height: 240px;
+}
+
+.game-top {
+  display: grid;
+}
+
+.game-layout {
+  display: grid;
+  grid-template-columns: 320px 1fr 320px;
+  gap: 16px;
+  align-items: start;
+  margin-top: 16px;
+}
+
+.game-column {
+  display: grid;
+  gap: 16px;
+  align-content: start;
+  grid-auto-rows: max-content;
+  min-width: 0;
+}
+
+.info-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-left: 6px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 12px;
+  color: var(--muted);
+  cursor: help;
+}
+
+@media (max-width: 1100px) {
+  .game-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .page-shell {
+    padding: 10px;
+  }
+}
