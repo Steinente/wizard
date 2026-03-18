@@ -29,10 +29,7 @@ const SPECIAL_TRUMP_REASON_CARDS = new Set([
         <div>
           <h2 style="margin: 0;">{{ 'gameTable' | t }}</h2>
           <div class="muted">{{ 'lobby' | t }} {{ state.lobbyCode }}</div>
-          <div class="muted">
-            {{ 'rules' | t }}: {{ predictionVisibilityText }} |
-            {{ openRestrictionText }}
-          </div>
+          <div class="muted">{{ 'rules' | t }}: {{ rulesText }}</div>
         </div>
 
         <div class="row" style="flex-wrap: wrap; justify-content: flex-end;">
@@ -119,6 +116,14 @@ export class GameHeaderComponent {
           : 'predictionRestrictionNone'
 
     return this.i18n.t(key as TranslationKey)
+  }
+
+  get rulesText() {
+    if (this.state.config.predictionVisibility !== 'open') {
+      return this.predictionVisibilityText
+    }
+
+    return `${this.predictionVisibilityText} | ${this.openRestrictionText}`
   }
 
   private getTranslatedCardReason() {

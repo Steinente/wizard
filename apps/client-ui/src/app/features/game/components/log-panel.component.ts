@@ -96,6 +96,27 @@ export class LogPanelComponent implements OnChanges {
     })
   }
 
+  private formatLogParams(
+    messageKey: string,
+    params?: Record<string, string | number | boolean | null>,
+  ) {
+    const normalized = this.replacePlayerIds(params)
+
+    if (!normalized) {
+      return normalized
+    }
+
+    if (
+      messageKey === 'special.cloud.predictionAdjusted' &&
+      typeof normalized.delta === 'number' &&
+      normalized.delta > 0
+    ) {
+      normalized.delta = `+${normalized.delta}`
+    }
+
+    return normalized
+  }
+
   formatDate(value: string) {
     const date = new Date(value)
     const pad = (n: number) => String(n).padStart(2, '0')
@@ -113,6 +134,9 @@ export class LogPanelComponent implements OnChanges {
       return messageKey
     }
 
-    return this.i18n.format(translationKey, this.replacePlayerIds(params))
+    return this.i18n.format(
+      translationKey,
+      this.formatLogParams(messageKey, params),
+    )
   }
 }

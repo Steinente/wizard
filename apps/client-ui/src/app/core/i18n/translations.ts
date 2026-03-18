@@ -37,13 +37,14 @@ export const translations = {
     back: 'Back',
     home: 'Home',
     confirmLeaveGame:
-      'Do you really want to leave the game and go to the home page?',
+      'Do you really want to leave the game and go to the home page? You can reconnect.',
     confirmSwitchGameWarning:
       'You are still part of game {currentCode}. If you join another game, you will be removed from {currentCode}. Continue?',
     lobby: 'Lobby',
     game: 'Game',
     gameTable: 'Game table',
     yourHand: 'Your hand',
+    sortHand: 'Sort',
     currentTrick: 'Current trick',
     scoreboard: 'Scoreboard',
     logs: 'Logs',
@@ -57,6 +58,10 @@ export const translations = {
     audioEnabled: 'Audio enabled',
     audioDisabled: 'Audio disabled',
     toggleAudio: 'Toggle audio',
+    bingEnabled: 'Turn notification sound enabled',
+    bingDisabled: 'Turn notification sound disabled',
+    audioVolumeLabel: 'Volume',
+    audioSpeedLabel: 'Speed',
     kick: 'Kick',
     waitingForPlayers: 'Waiting for players',
     pendingDecision: 'Pending decision',
@@ -135,6 +140,8 @@ export const translations = {
     'error.predictionAlreadySubmitted': 'Prediction already submitted',
     'error.predictionViolatesRestriction':
       'This prediction violates the configured restriction',
+    'error.alreadyInLobbyCannotCreate':
+      'You are still in lobby {code}. Leave it before creating a new lobby.',
     'error.lobbyPasswordRequired': 'This lobby requires a password',
     'error.lobbyPasswordInvalid': 'The lobby password is invalid',
     'error.lobbyListFailed': 'Loading lobbies failed',
@@ -171,10 +178,12 @@ export const translations = {
       'Round {roundNumber} scored, round {nextRoundNumber} begins',
     'log.game.finished': 'Game finished',
     'log.game.trump.selected': 'Trump selected - {suit}',
+    'log.game.trump.selection.pending': '{playerId} chooses trump suit',
     'log.game.trump.roundStart': 'Trump is {suit}',
     'log.game.trump.noTrumpDueToCard':
       'There is no trump, as {cardLabel} was revealed',
-    'log.game.trump.selected.bySpecial': 'Trump selected by {special} - {suit}',
+    'log.game.trump.selected.bySpecial':
+      '{playerId} selected trump by {special} - {suit}',
     'log.game.prediction.made': '{playerId} bid {value}',
     'log.game.card.played': '{playerId} played {cardLabel}',
     'log.game.trick.won': '{playerId} won the trick',
@@ -192,6 +201,7 @@ export const translations = {
     'log.special.juggler.played': '{playerId} played Juggler as {suit}',
     'log.special.juggler.pass.started': 'Everyone must choose a card to pass',
     'log.special.juggler.pass.completed': 'Juggler shuffled the cards',
+    'log.special.juggler.pass.receivedCard': 'You received {cardLabel}',
     'log.special.bomb.played': '{playerId} played Bomb',
     'log.special.werewolf.pendingTrumpEffect':
       '{playerId} swapped Werewolf with {swappedCardLabel} and chose trump {suit}',
@@ -212,6 +222,20 @@ export const translations = {
     'card.special.juggler': 'Juggler',
     'card.special.dragon': 'Dragon',
     'card.special.fairy': 'Fairy',
+    'specialInfo.shapeShifter':
+      'Choose whether this card behaves like Wizard or Jester.',
+    'specialInfo.bomb':
+      'If played in a trick, the trick is canceled and nobody wins it.',
+    'specialInfo.werewolf':
+      'When drawn into a hand, it swaps with the current trump card; its owner then chooses the new trump suit (or no trump).',
+    'specialInfo.cloud':
+      'Choose a suit; if this card wins a trick, the winner must adjust their prediction by +1 or -1.',
+    'specialInfo.juggler':
+      'Choose a suit; after the trick, each player passes one card to the next player.',
+    'specialInfo.dragon':
+      'Strongest card, wins against every card except Fairy.',
+    'specialInfo.fairy':
+      'Weakest card, loses against every card except Dragon.',
   },
   de: {
     appTitle: 'Wizard Multiplayer',
@@ -251,13 +275,14 @@ export const translations = {
     back: 'Zurück',
     home: 'Startseite',
     confirmLeaveGame:
-      'Möchtest du das Spiel wirklich verlassen und zur Startseite gehen?',
+      'Möchtest du das Spiel wirklich verlassen und zur Startseite gehen? Du kannst dich wieder verbinden.',
     confirmSwitchGameWarning:
       'Du bist noch Teil des Spiels {currentCode}. Wenn du einem anderen Spiel beitrittst, wirst du aus {currentCode} entfernt. Fortfahren?',
     lobby: 'Lobby',
     game: 'Spiel',
     gameTable: 'Spieltisch',
     yourHand: 'Deine Hand',
+    sortHand: 'Sortieren',
     currentTrick: 'Aktueller Stich',
     scoreboard: 'Punktestand',
     logs: 'Protokoll',
@@ -271,6 +296,10 @@ export const translations = {
     audioEnabled: 'Audio aktiviert',
     audioDisabled: 'Audio deaktiviert',
     toggleAudio: 'Audio umschalten',
+    bingEnabled: 'Zugbenachrichtigung aktiv',
+    bingDisabled: 'Zugbenachrichtigung deaktiviert',
+    audioVolumeLabel: 'Lautstärke',
+    audioSpeedLabel: 'Geschwindigkeit',
     kick: 'Rauswerfen',
     waitingForPlayers: 'Warten auf Spieler',
     pendingDecision: 'Ausstehende Entscheidung',
@@ -351,6 +380,8 @@ export const translations = {
     'error.predictionAlreadySubmitted': 'Ansage wurde bereits abgegeben',
     'error.predictionViolatesRestriction':
       'Diese Ansage verstößt gegen die konfigurierte Einschränkung',
+    'error.alreadyInLobbyCannotCreate':
+      'Du bist noch in Lobby {code}. Verlasse sie, bevor du eine neue Lobby erstellst.',
     'error.lobbyPasswordRequired': 'Diese Lobby benötigt ein Passwort',
     'error.lobbyPasswordInvalid': 'Das Lobby-Passwort ist ungültig',
     'error.lobbyListFailed': 'Lobbys konnten nicht geladen werden',
@@ -390,11 +421,12 @@ export const translations = {
       'Runde {roundNumber} gewertet, Runde {nextRoundNumber} beginnt',
     'log.game.finished': 'Spiel beendet',
     'log.game.trump.selected': 'Trumpf gewählt - {suit}',
+    'log.game.trump.selection.pending': '{playerId} wählt Trumpffarbe',
     'log.game.trump.roundStart': 'Der Trumpf ist {suit}',
     'log.game.trump.noTrumpDueToCard':
       'Es gibt keinen Trumpf, da {cardLabel} aufgedeckt wurde',
     'log.game.trump.selected.bySpecial':
-      'Trumpf gewählt durch {special} - {suit}',
+      '{playerId} wählt Trumpf durch {special} - {suit}',
     'log.game.prediction.made': '{playerId} sagt {value} an',
     'log.game.card.played': '{playerId} spielt {cardLabel}',
     'log.game.trick.won': '{playerId} gewinnt den Stich',
@@ -415,6 +447,7 @@ export const translations = {
       'Jeder muss eine Karte zum Weitergeben auswählen',
     'log.special.juggler.pass.completed':
       'Jongleur hat die Karten durcheinander gemischt',
+    'log.special.juggler.pass.receivedCard': 'Du hast {cardLabel} erhalten',
     'log.special.bomb.played': '{playerId} hat Bombe gespielt',
     'log.special.werewolf.pendingTrumpEffect':
       '{playerId} tauscht den Werwolf mit {swappedCardLabel} und wählt {suit} als Trumpf',
@@ -435,6 +468,20 @@ export const translations = {
     'card.special.juggler': 'Jongleur',
     'card.special.dragon': 'Drache',
     'card.special.fairy': 'Fee',
+    'specialInfo.shapeShifter':
+      'Wähle, ob diese Karte als Zauberer oder Narr gilt.',
+    'specialInfo.bomb':
+      'Wird sie in einen Stich gespielt, wird der Stich annulliert und niemand gewinnt ihn.',
+    'specialInfo.werewolf':
+      'Wird er auf die Hand gezogen, tauscht er mit der aktiven Trumpfkarte; sein Besitzer bestimmt danach die neue Trumpffarbe (oder kein Trumpf).',
+    'specialInfo.cloud':
+      'Wähle eine Farbe; gewinnt diese Karte einen Stich, muss der Gewinner seine Ansage um +1 oder -1 anpassen.',
+    'specialInfo.juggler':
+      'Wähle eine Farbe; nach dem Stich gibt jeder Spieler eine Karte an den nächsten Spieler weiter.',
+    'specialInfo.dragon':
+      'Stärkste Karte, gewinnt gegen jede Karte außer gegen die Fee.',
+    'specialInfo.fairy':
+      'Schwächste Karte, verliert gegen jede Karte außer gegen den Drachen.',
   },
 } as const
 

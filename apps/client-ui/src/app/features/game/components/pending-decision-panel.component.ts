@@ -7,6 +7,15 @@ import {
   getSuitBackground,
 } from '../../../shared/utils/suit-colors.util'
 
+const NO_TRUMP_SPECIALS = new Set([
+  'wizard',
+  'shapeShifter',
+  'juggler',
+  'cloud',
+  'dragon',
+  'werewolf',
+])
+
 @Component({
   selector: 'wiz-pending-decision-panel',
   standalone: true,
@@ -29,6 +38,11 @@ import {
                 (click)="pickSuitForDecision(suit)"
               >
                 {{ suitKey(suit) | t }}
+              </button>
+            }
+            @if (canSelectNoTrump(decision)) {
+              <button class="btn btn-outline" (click)="pickTrump(null)">
+                {{ 'noTrump' | t }}
               </button>
             }
           </div>
@@ -96,7 +110,7 @@ export class PendingDecisionPanelComponent {
   readonly suits = ALL_SUITS
 
   @Input() decision: PendingDecision | null = null
-  @Input({ required: true }) onSelectTrump!: (suit: Suit) => void
+  @Input({ required: true }) onSelectTrump!: (suit: Suit | null) => void
   @Input({ required: true }) onResolveWerewolfTrumpSwap!: (
     suit: Suit | null,
   ) => void
@@ -107,7 +121,7 @@ export class PendingDecisionPanelComponent {
   @Input({ required: true }) onResolveCloudAdjustment!: (delta: 1 | -1) => void
   @Input({ required: true }) onResolveJugglerSuit!: (suit: Suit) => void
 
-  pickTrump(suit: Suit) {
+  pickTrump(suit: Suit | null) {
     this.onSelectTrump(suit)
   }
 
@@ -149,6 +163,14 @@ export class PendingDecisionPanelComponent {
     if (this.decision.type === 'jugglerSuitChoice') {
       this.pickJugglerSuit(suit)
     }
+  }
+
+  canSelectNoTrump(decision: PendingDecision) {
+    return (
+      decision.type === 'selectTrumpSuit' &&
+      !!decision.special &&
+      NO_TRUMP_SPECIALS.has(decision.special)
+    )
   }
 
   isStandardSuitDecision(

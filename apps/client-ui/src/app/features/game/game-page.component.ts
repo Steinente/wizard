@@ -1,10 +1,12 @@
-import { Component, computed } from '@angular/core'
+import { Component, computed, effect, signal } from '@angular/core'
 import {
   getAllowedPredictionValues,
   isLegalPlay,
+  SUITS,
   type Card,
   type Suit,
 } from '@wizard/shared'
+import { AudioAnnouncementService } from '../../core/services/audio-announcement.service'
 import { GameFacadeService } from '../../core/services/game-facade.service'
 import { SessionService } from '../../core/services/session.service'
 import { AppStore } from '../../core/state/app.store'
@@ -18,6 +20,26 @@ import { PlayerListPanelComponent } from './components/player-list-panel.compone
 import { PredictionPanelComponent } from './components/prediction-panel.component'
 import { ScoreboardPanelComponent } from './components/scoreboard-panel.component'
 import { TrickAreaComponent } from './components/trick-area.component'
+
+const SPECIAL_SORT_PRIORITY: Record<string, number> = {
+  dragon: 90,
+  shapeShifter: 80,
+  wizard: 70,
+  werewolf: 60,
+  cloud: 50,
+  juggler: 40,
+  bomb: 30,
+  jester: 20,
+  fairy: 10,
+}
+
+const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
+  (priority, suit, index) => {
+    priority[suit] = SUITS.length - index
+    return priority
+  },
+  {} as Record<Suit, number>,
+)
 
 @Component({
   standalone: true,
@@ -49,8 +71,14 @@ import { TrickAreaComponent } from './components/trick-area.component'
             <wiz-game-controls-panel
               [state]="store.gameState()!"
               [audioEnabled]="audioEnabledSignal()"
+              [audioVolume]="audioVolumeSignal()"
+              [audioSpeed]="audioSpeedSignal()"
+              [bingEnabled]="bingEnabledSignal()"
               [isHost]="isHost()"
               [onToggleAudio]="toggleAudioFn"
+              [onBingToggle]="toggleBingFn"
+              [onAudioVolumeChange]="setAudioVolumeFn"
+              [onAudioSpeedChange]="setAudioSpeedFn"
               [onEndLobby]="endLobbyFn"
             />
           </div>
@@ -90,9 +118,11 @@ import { TrickAreaComponent } from './components/trick-area.component'
 
               <wiz-hand-area
                 [class.active-turn]="isMyTurnToPlay()"
-                [cards]="myHand()"
+                [cards]="displayHand()"
                 [canPlay]="canPlayCardFn"
                 [play]="playCardFn"
+                [onSort]="sortHandFn"
+                [onReorder]="reorderHandFn"
               />
             } @else {
               <div class="panel">
@@ -115,6 +145,9 @@ import { TrickAreaComponent } from './components/trick-area.component'
 })
 export class GamePageComponent {
   protected readonly store = this.appStore
+  private readonly handSortEnabled = signal(false)
+  private readonly manualHandOrder = signal<string[] | null>(null)
+  private lastSeenRoundKey: string | null = null
 
   private readonly audioEnabledFromServer = computed(() => {
     const state = this.store.gameState()
@@ -126,15 +159,15 @@ export class GamePageComponent {
     )
   })
 
-  // Use server value if available, otherwise fall back to session
-  readonly audioEnabledSignal = computed(() => {
-    return this.audioEnabledFromServer()
-  })
+  readonly audioEnabledSignal = computed(() => this.audioEnabledFromServer())
+  readonly audioVolumeSignal = computed(() => this.session.audioVolume())
+  readonly audioSpeedSignal = computed(() => this.session.audioRate())
+  readonly bingEnabledSignal = computed(() => this.session.bingEnabled())
 
   readonly playCardFn = (card: Card) => this.playCard(card)
   readonly canPlayCardFn = (card: Card) => this.canPlayCard(card)
   readonly predictFn = (value: number) => this.predict(value)
-  readonly selectTrumpFn = (suit: Suit) => this.selectTrump(suit)
+  readonly selectTrumpFn = (suit: Suit | null) => this.selectTrump(suit)
   readonly resolveWerewolfTrumpSwapFn = (suit: Suit | null) =>
     this.resolveWerewolfTrumpSwap(suit)
   readonly resolveShapeShifterFn = (mode: 'wizard' | 'jester') =>
@@ -144,13 +177,58 @@ export class GamePageComponent {
     this.resolveCloudAdjustment(delta)
   readonly resolveJugglerSuitFn = (suit: Suit) => this.resolveJugglerSuit(suit)
   readonly toggleAudioFn = (enabled: boolean) => this.toggleAudio(enabled)
+  readonly toggleBingFn = (enabled: boolean) =>
+    this.session.setBingEnabled(enabled)
+  readonly sortHandFn = () => this.sortHand()
+  readonly reorderHandFn = (draggedCardId: string, targetCardId: string) =>
+    this.reorderHand(draggedCardId, targetCardId)
+  readonly setAudioVolumeFn = (volume: number) => this.setAudioVolume(volume)
+  readonly setAudioSpeedFn = (speed: number) => this.setAudioSpeed(speed)
   readonly endLobbyFn = () => this.endLobby()
 
   constructor(
     private readonly appStore: AppStore,
     private readonly facade: GameFacadeService,
     protected readonly session: SessionService,
-  ) {}
+    private readonly audio: AudioAnnouncementService,
+  ) {
+    this.audio.setSpeechVolume(this.session.audioVolume())
+    this.audio.setSpeechRate(this.session.audioRate())
+
+    effect(() => {
+      const state = this.store.gameState()
+      const roundNumber = state?.currentRound?.roundNumber ?? null
+      const lobbyCode = state?.lobbyCode ?? null
+
+      if (!lobbyCode || roundNumber === null) {
+        this.lastSeenRoundKey = null
+        return
+      }
+
+      const currentRoundKey = `${lobbyCode}:${roundNumber}`
+
+      if (this.lastSeenRoundKey === null) {
+        this.lastSeenRoundKey = currentRoundKey
+        return
+      }
+
+      if (this.lastSeenRoundKey !== currentRoundKey) {
+        this.handSortEnabled.set(false)
+        this.manualHandOrder.set(null)
+        this.lastSeenRoundKey = currentRoundKey
+      }
+    })
+  }
+
+  setAudioVolume(volume: number) {
+    this.session.setAudioVolume(volume)
+    this.audio.setSpeechVolume(this.session.audioVolume())
+  }
+
+  setAudioSpeed(speed: number) {
+    this.session.setAudioRate(speed)
+    this.audio.setSpeechRate(this.session.audioRate())
+  }
 
   isHost() {
     const state = this.store.gameState()
@@ -174,6 +252,34 @@ export class GamePageComponent {
     return (
       state?.currentRound?.players.find((player) => player.playerId === selfId)
         ?.hand ?? []
+    )
+  }
+
+  displayHand() {
+    const hand = this.myHand()
+    const manualOrder = this.manualHandOrder()
+
+    if (manualOrder?.length) {
+      const orderIndex = new Map(
+        manualOrder.map((cardId, index) => [cardId, index] as const),
+      )
+
+      return [...hand].sort((left, right) => {
+        const leftIndex = orderIndex.get(left.id) ?? Number.MAX_SAFE_INTEGER
+        const rightIndex = orderIndex.get(right.id) ?? Number.MAX_SAFE_INTEGER
+
+        return leftIndex - rightIndex
+      })
+    }
+
+    if (!this.handSortEnabled()) {
+      return hand
+    }
+
+    const trumpSuit = this.store.gameState()?.currentRound?.trumpSuit ?? null
+
+    return [...hand].sort((left, right) =>
+      this.compareCardsForHandSort(left, right, trumpSuit),
     )
   }
 
@@ -307,7 +413,7 @@ export class GamePageComponent {
     this.facade.playCard(state.lobbyCode, card.id)
   }
 
-  selectTrump(suit: Suit) {
+  selectTrump(suit: Suit | null) {
     const code = this.store.gameState()?.lobbyCode
 
     if (!code) {
@@ -412,5 +518,82 @@ export class GamePageComponent {
     }
 
     this.facade.endLobby(state.lobbyCode)
+  }
+
+  sortHand() {
+    this.manualHandOrder.set(null)
+    this.handSortEnabled.set(true)
+  }
+
+  reorderHand(draggedCardId: string, targetCardId: string) {
+    const hand = this.displayHand()
+    const draggedIndex = hand.findIndex((card) => card.id === draggedCardId)
+    const targetIndex = hand.findIndex((card) => card.id === targetCardId)
+
+    if (draggedIndex < 0 || targetIndex < 0 || draggedIndex === targetIndex) {
+      return
+    }
+
+    const reordered = [...hand]
+    const [draggedCard] = reordered.splice(draggedIndex, 1)
+
+    if (!draggedCard) {
+      return
+    }
+
+    reordered.splice(targetIndex, 0, draggedCard)
+
+    this.handSortEnabled.set(false)
+    this.manualHandOrder.set(reordered.map((card) => card.id))
+  }
+
+  private compareCardsForHandSort(
+    left: Card,
+    right: Card,
+    trumpSuit: Suit | null,
+  ) {
+    const leftIsNumber = left.type === 'number'
+    const rightIsNumber = right.type === 'number'
+
+    if (leftIsNumber !== rightIsNumber) {
+      return leftIsNumber ? 1 : -1
+    }
+
+    if (!leftIsNumber && !rightIsNumber) {
+      return this.specialSortPriority(right) - this.specialSortPriority(left)
+    }
+
+    if (left.type !== 'number' || right.type !== 'number') {
+      return 0
+    }
+
+    const leftSuitPriority = this.numberSuitPriority(left.suit, trumpSuit)
+    const rightSuitPriority = this.numberSuitPriority(right.suit, trumpSuit)
+
+    if (leftSuitPriority !== rightSuitPriority) {
+      return rightSuitPriority - leftSuitPriority
+    }
+
+    return right.value - left.value
+  }
+
+  private specialSortPriority(card: Exclude<Card, { type: 'number' }>) {
+    if (card.type === 'wizard') {
+      return SPECIAL_SORT_PRIORITY.wizard
+    }
+
+    if (card.type === 'jester') {
+      return SPECIAL_SORT_PRIORITY.jester
+    }
+
+    return SPECIAL_SORT_PRIORITY[card.special] ?? 0
+  }
+
+  private numberSuitPriority(suit: Suit, trumpSuit: Suit | null) {
+    if (suit === trumpSuit) {
+      return 100
+    }
+
+    return SUIT_SORT_PRIORITY[suit]
   }
 }

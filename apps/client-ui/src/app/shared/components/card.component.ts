@@ -1,6 +1,7 @@
 import { Component, Input, inject } from '@angular/core'
 import type { Card, ResolvedCardRuntimeEffect } from '@wizard/shared'
 import { I18nService } from '../../core/i18n/i18n.service'
+import type { TranslationKey } from '../../core/i18n/translations'
 import { TPipe } from '../../shared/pipes/t.pipe'
 import {
   getCardAccent,
@@ -27,6 +28,9 @@ import { SUIT_BACKGROUNDS } from '../utils/suit-colors.util'
       [style.box-shadow]="playable ? '0 0 0 2px rgba(212,167,44,0.4)' : 'none'"
       (click)="handlePlay()"
     >
+      @if (showSpecialInfo && specialInfoText) {
+        <span class="info-icon wiz-card-info" [title]="specialInfoText">?</span>
+      }
       <div class="wiz-card-value">{{ primaryText }}</div>
       @if (middleLabel) {
         <div class="wiz-card-middle-label">{{ middleLabel }}</div>
@@ -71,6 +75,16 @@ import { SUIT_BACKGROUNDS } from '../utils/suit-colors.util'
         font-size: 28px;
         font-weight: 700;
         line-height: 1;
+      }
+
+      .wiz-card-info {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        width: 16px;
+        height: 16px;
+        margin-left: 0;
+        font-size: 11px;
       }
 
       .wiz-card-title {
@@ -124,6 +138,7 @@ export class CardComponent {
   @Input() disabled = false
   @Input() play!: (card: Card) => void
   @Input() resolvedEffect?: ResolvedCardRuntimeEffect
+  @Input() showSpecialInfo = false
 
   get accent() {
     return getCardAccent(this.card)
@@ -162,6 +177,26 @@ export class CardComponent {
       this.card.type === 'special' &&
       this.card.special === 'shapeShifter'
     )
+  }
+
+  get specialInfoText(): string {
+    if (this.card.type !== 'special') {
+      return ''
+    }
+
+    const keyMap: Record<string, TranslationKey> = {
+      shapeShifter: 'specialInfo.shapeShifter',
+      bomb: 'specialInfo.bomb',
+      werewolf: 'specialInfo.werewolf',
+      cloud: 'specialInfo.cloud',
+      juggler: 'specialInfo.juggler',
+      dragon: 'specialInfo.dragon',
+      fairy: 'specialInfo.fairy',
+    }
+
+    const key = keyMap[this.card.special]
+
+    return key ? this.i18n.t(key) : ''
   }
 
   get background() {

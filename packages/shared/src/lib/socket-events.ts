@@ -62,7 +62,7 @@ export interface ClientToServerEvents {
   'game:selectTrumpSuit': (payload: {
     code: string
     sessionToken: string
-    suit: Suit
+    suit: Suit | null
   }) => void
 
   'game:resolveShapeShifter': (payload: {

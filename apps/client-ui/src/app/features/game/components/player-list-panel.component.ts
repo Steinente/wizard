@@ -26,6 +26,10 @@ import { TPipe } from '../../../shared/pipes/t.pipe'
             [prediction]="getPrediction(player.playerId)"
             [active]="isActive(player.playerId)"
             [showCloudIndicator]="hasPendingCloudAdjustment(player.playerId)"
+            [showPredictionStartIndicator]="
+              state.pendingDecision?.type === 'werewolfTrumpSwap' &&
+              state.currentRound?.roundLeaderPlayerId === player.playerId
+            "
           />
         }
       </div>

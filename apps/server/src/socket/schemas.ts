@@ -81,7 +81,7 @@ export const playCardSchema = z.object({
 export const selectTrumpSuitSchema = z.object({
   code: z.string().trim().min(4).max(12),
   sessionToken: z.string().trim().min(1).max(200),
-  suit: z.enum(['red', 'yellow', 'green', 'blue']),
+  suit: z.union([z.enum(['red', 'yellow', 'green', 'blue']), z.null()]),
 })
 
 export const resolveShapeShifterSchema = z.object({

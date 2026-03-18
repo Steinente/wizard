@@ -33,6 +33,7 @@ export interface GameLogEntry {
     | 'specialEffect'
   messageKey: GameLogMessageKey
   messageParams?: Record<string, string | number | boolean | null>
+  visibleToPlayerId?: string
 }
 
 export interface WizardGameState {

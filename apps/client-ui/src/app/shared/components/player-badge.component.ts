@@ -14,11 +14,22 @@ import { TPipe } from '../pipes/t.pipe'
       <div class="spread">
         <strong class="name-wrap">
           <span>{{ name }}</span>
+          @if (showPredictionStartIndicator) {
+            <span
+              class="prediction-start-indicator"
+              title="Starts prediction order"
+              >①</span
+            >
+          }
           @if (showCloudIndicator) {
-            <span class="cloud-indicator" title="Cloud adjustment pending">☁</span>
+            <span class="cloud-indicator" title="Cloud adjustment pending"
+              >☁</span
+            >
           }
         </strong>
-        <span class="status-pill" [class]="statusClass">{{ statusText | t }}</span>
+        <span class="status-pill" [class]="statusClass">{{
+          statusText | t
+        }}</span>
       </div>
 
       <div class="row" style="margin-top: 8px; flex-wrap: wrap;">
@@ -43,6 +54,13 @@ import { TPipe } from '../pipes/t.pipe'
         line-height: 1;
         color: #4a90d9;
       }
+
+      .prediction-start-indicator {
+        font-size: 13px;
+        line-height: 1;
+        color: #d4a72c;
+        font-weight: 700;
+      }
     `,
   ],
 })
@@ -54,6 +72,7 @@ export class PlayerBadgeComponent {
   @Input() prediction: number | null = null
   @Input() active = false
   @Input() showCloudIndicator = false
+  @Input() showPredictionStartIndicator = false
 
   get statusClass() {
     return this.presence === 'online'

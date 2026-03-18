@@ -13,6 +13,9 @@ import { SocketService } from './socket.service'
 @Injectable({ providedIn: 'root' })
 export class GameFacadeService {
   private lastAnnouncedLogId: string | null = null
+  private lastInteractionPromptKey: string | null = null
+  private suppressNextSelfInteractionBing = false
+  private wasConnected = false
 
   constructor(
     private readonly socketService: SocketService,
@@ -22,11 +25,20 @@ export class GameFacadeService {
     private readonly audio: AudioAnnouncementService,
     private readonly i18n: I18nService,
   ) {
+    this.audio.setSpeechVolume(this.session.audioVolume())
+    this.audio.setSpeechRate(this.session.audioRate())
+
     const socket = this.socketService.connect()
 
     socket.on('connect', () => {
       this.store.setError(null)
       this.listLobbies()
+
+      const storedCode = this.session.lastLobbyCode()
+      if (this.wasConnected && storedCode) {
+        this.reconnectLobby(storedCode)
+      }
+      this.wasConnected = true
     })
 
     socket.on('lobby:list', (payload) => {
@@ -67,7 +79,9 @@ export class GameFacadeService {
       this.session.setLobbyConfig(payload.lobby.config)
 
       const newOtherPlayers = payload.lobby.players.filter(
-        (p) => p.id !== currentPlayerId && !previousPlayers.some((prev) => prev.id === p.id),
+        (p) =>
+          p.id !== currentPlayerId &&
+          !previousPlayers.some((prev) => prev.id === p.id),
       )
       if (newOtherPlayers.length > 0) {
         this.audio.bing()
@@ -122,6 +136,8 @@ export class GameFacadeService {
         }
       }
 
+      this.notifySelfInteraction(payload.state)
+
       this.announceNewLogs(payload.state)
       this.router.navigateByUrl(`/game/${payload.state.lobbyCode}`)
     })
@@ -164,6 +180,70 @@ export class GameFacadeService {
       (key) => this.i18n.t(key),
       { modeBehavior: 'wizardJesterOnly' },
     )
+  }
+
+  private interactionPromptKey(state: WizardGameViewState): string | null {
+    const selfId = state.selfPlayerId
+    const isPlayer = state.players.some((player) => player.playerId === selfId)
+
+    if (!isPlayer) {
+      return null
+    }
+
+    const pendingDecision = state.pendingDecision
+
+    if (pendingDecision?.playerId === selfId) {
+      return `decision:${pendingDecision.id}`
+    }
+
+    const round = state.currentRound
+
+    if (!round) {
+      return null
+    }
+
+    if (state.phase === 'prediction' && round.activePlayerId === selfId) {
+      return `prediction:${round.roundNumber}:${selfId}`
+    }
+
+    if (
+      state.phase === 'playing' &&
+      !pendingDecision &&
+      round.activePlayerId === selfId
+    ) {
+      return `playing:${round.roundNumber}:${round.completedTricks.length}:${round.currentTrick?.plays.length ?? 0}:${selfId}`
+    }
+
+    return null
+  }
+
+  private notifySelfInteraction(state: WizardGameViewState) {
+    const nextKey = this.interactionPromptKey(state)
+
+    if (!nextKey) {
+      this.lastInteractionPromptKey = null
+      this.suppressNextSelfInteractionBing = false
+      return
+    }
+
+    if (this.lastInteractionPromptKey === nextKey) {
+      return
+    }
+
+    this.lastInteractionPromptKey = nextKey
+
+    if (this.suppressNextSelfInteractionBing) {
+      this.suppressNextSelfInteractionBing = false
+      return
+    }
+
+    if (this.session.bingEnabled()) {
+      this.audio.bing()
+    }
+  }
+
+  private markOwnInteractionSubmitted() {
+    this.suppressNextSelfInteractionBing = true
   }
 
   private announceNewLogs(state: WizardGameViewState) {
@@ -310,6 +390,7 @@ export class GameFacadeService {
   }
 
   makePrediction(code: string, value: number) {
+    this.markOwnInteractionSubmitted()
     this.socketService.getSocket().emit('game:makePrediction', {
       code,
       sessionToken: this.session.sessionToken(),
@@ -318,6 +399,7 @@ export class GameFacadeService {
   }
 
   playCard(code: string, cardId: string) {
+    this.markOwnInteractionSubmitted()
     this.socketService.getSocket().emit('game:playCard', {
       code,
       sessionToken: this.session.sessionToken(),
@@ -325,7 +407,8 @@ export class GameFacadeService {
     })
   }
 
-  selectTrumpSuit(code: string, suit: Suit) {
+  selectTrumpSuit(code: string, suit: Suit | null) {
+    this.markOwnInteractionSubmitted()
     this.socketService.getSocket().emit('game:selectTrumpSuit', {
       code,
       sessionToken: this.session.sessionToken(),
@@ -334,6 +417,7 @@ export class GameFacadeService {
   }
 
   resolveWerewolfTrumpSwap(code: string, suit: Suit | null) {
+    this.markOwnInteractionSubmitted()
     this.socketService.getSocket().emit('game:resolveWerewolfTrumpSwap', {
       code,
       sessionToken: this.session.sessionToken(),
@@ -342,6 +426,7 @@ export class GameFacadeService {
   }
 
   resolveShapeShifter(code: string, cardId: string, mode: 'wizard' | 'jester') {
+    this.markOwnInteractionSubmitted()
     this.socketService.getSocket().emit('game:resolveShapeShifter', {
       code,
       sessionToken: this.session.sessionToken(),
@@ -351,6 +436,7 @@ export class GameFacadeService {
   }
 
   resolveCloud(code: string, cardId: string, suit: Suit) {
+    this.markOwnInteractionSubmitted()
     this.socketService.getSocket().emit('game:resolveCloud', {
       code,
       sessionToken: this.session.sessionToken(),
@@ -360,6 +446,7 @@ export class GameFacadeService {
   }
 
   resolveCloudAdjustment(code: string, delta: 1 | -1) {
+    this.markOwnInteractionSubmitted()
     this.socketService.getSocket().emit('game:resolveCloudAdjustment', {
       code,
       sessionToken: this.session.sessionToken(),
@@ -368,6 +455,7 @@ export class GameFacadeService {
   }
 
   resolveJuggler(code: string, cardId: string, suit: Suit) {
+    this.markOwnInteractionSubmitted()
     this.socketService.getSocket().emit('game:resolveJuggler', {
       code,
       sessionToken: this.session.sessionToken(),
@@ -377,6 +465,7 @@ export class GameFacadeService {
   }
 
   selectJugglerPassCard(code: string, cardId: string) {
+    this.markOwnInteractionSubmitted()
     this.socketService.getSocket().emit('game:selectJugglerPassCard', {
       code,
       sessionToken: this.session.sessionToken(),

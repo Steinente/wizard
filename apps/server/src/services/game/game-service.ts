@@ -145,6 +145,15 @@ const getReadableCardLabel = (card: Card): string => {
   return card.special
 }
 
+const NO_TRUMP_SELECTABLE_SPECIALS = new Set([
+  'wizard',
+  'shapeShifter',
+  'juggler',
+  'cloud',
+  'dragon',
+  'werewolf',
+])
+
 const getResolvedEffectForCard = (state: WizardGameState, cardId: string) =>
   state.resolvedCardEffects.find((entry) => entry.cardId === cardId)
 
@@ -297,6 +306,16 @@ export class GameService {
         createdAt: nowIso(),
         allowedSuits: ['red', 'yellow', 'green', 'blue', null],
       }
+
+      state.logs.push({
+        id: crypto.randomUUID(),
+        createdAt: nowIso(),
+        type: 'system',
+        messageKey: 'game.trump.selection.pending',
+        messageParams: {
+          playerId: werewolfOwnerPlayerId,
+        },
+      })
       return
     }
 
@@ -312,6 +331,18 @@ export class GameService {
             special: 'wizard',
           }
         : null
+
+      if (round.activePlayerId) {
+        state.logs.push({
+          id: crypto.randomUUID(),
+          createdAt: nowIso(),
+          type: 'system',
+          messageKey: 'game.trump.selection.pending',
+          messageParams: {
+            playerId: round.activePlayerId,
+          },
+        })
+      }
       return
     }
 
@@ -330,6 +361,18 @@ export class GameService {
             special: round.trumpCard.special,
           }
         : null
+
+      if (round.activePlayerId) {
+        state.logs.push({
+          id: crypto.randomUUID(),
+          createdAt: nowIso(),
+          type: 'system',
+          messageKey: 'game.trump.selection.pending',
+          messageParams: {
+            playerId: round.activePlayerId,
+          },
+        })
+      }
       return
     }
 
@@ -992,7 +1035,7 @@ export class GameService {
   async selectTrumpSuit(input: {
     code: string
     sessionToken: string
-    suit: Suit
+    suit: Suit | null
   }) {
     const { lobby, state } = await this.loadStateOrThrow(input.code)
 
@@ -1017,10 +1060,19 @@ export class GameService {
       throw new Error('No trump selection pending')
     }
 
+    const triggeringSpecial = state.pendingDecision.special
+
+    if (
+      input.suit === null &&
+      (!triggeringSpecial ||
+        !NO_TRUMP_SELECTABLE_SPECIALS.has(triggeringSpecial))
+    ) {
+      throw new Error('error.trumpNotSelectable')
+    }
+
     state.currentRound.trumpSuit = input.suit
     state.phase = 'prediction'
     state.currentRound.activePlayerId = state.currentRound.roundLeaderPlayerId
-    const triggeringSpecial = state.pendingDecision.special
     state.pendingDecision = null
 
     state.logs.push({
@@ -1031,7 +1083,8 @@ export class GameService {
         ? 'game.trump.selected.bySpecial'
         : 'game.trump.selected',
       messageParams: {
-        suit: input.suit,
+        ...(triggeringSpecial && { playerId: player.id }),
+        suit: input.suit ?? 'none',
         ...(triggeringSpecial && { special: triggeringSpecial }),
       },
     })
@@ -1381,6 +1434,17 @@ export class GameService {
 
       if (receiver) {
         receiver.hand.push(entry.card)
+
+        state.logs.push({
+          id: crypto.randomUUID(),
+          createdAt: nowIso(),
+          type: 'specialEffect',
+          messageKey: 'special.juggler.pass.receivedCard',
+          messageParams: {
+            cardLabel: getReadableCardLabel(entry.card),
+          },
+          visibleToPlayerId: receiverPlayerId,
+        })
       }
     })
 

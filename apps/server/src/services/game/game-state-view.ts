@@ -86,7 +86,10 @@ export const createGameStateView = (
     ? toRoundView(state.currentRound, selfPlayerId)
     : null,
   scoreboard: state.scoreboard,
-  logs: state.logs,
+  logs: state.logs.filter(
+    (entry) =>
+      !entry.visibleToPlayerId || entry.visibleToPlayerId === selfPlayerId,
+  ),
   pendingDecision: state.pendingDecision,
   resolvedCardEffects: state.resolvedCardEffects,
   createdAt: state.createdAt,

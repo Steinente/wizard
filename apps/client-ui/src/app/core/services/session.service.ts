@@ -2,6 +2,9 @@ import { Injectable, computed, signal } from '@angular/core'
 import type { GameConfig } from '@wizard/shared'
 import {
   AUDIO_ENABLED_KEY,
+  AUDIO_RATE_KEY,
+  AUDIO_VOLUME_KEY,
+  BING_ENABLED_KEY,
   LAST_LOBBY_CODE_KEY,
   LOBBY_CONFIG_KEY,
   PLAYER_NAME_KEY,
@@ -10,6 +13,32 @@ import {
 import { LocalStorageService } from './local-storage.service'
 
 const createSessionToken = () => crypto.randomUUID()
+const MIN_AUDIO_VOLUME = 0
+const MAX_AUDIO_VOLUME = 1
+const MIN_AUDIO_RATE = 0.6
+const MAX_AUDIO_RATE = 3.0
+
+const clamp = (value: number, min: number, max: number) =>
+  Math.min(max, Math.max(min, value))
+
+const parseStoredNumber = (
+  value: string | null,
+  fallback: number,
+  min: number,
+  max: number,
+) => {
+  if (value === null) {
+    return fallback
+  }
+
+  const parsed = Number(value)
+
+  if (!Number.isFinite(parsed)) {
+    return fallback
+  }
+
+  return clamp(parsed, min, max)
+}
 
 @Injectable({ providedIn: 'root' })
 export class SessionService {
@@ -17,6 +46,9 @@ export class SessionService {
   private readonly playerNameSignal = signal('')
   private readonly lastLobbyCodeSignal = signal('')
   private readonly audioEnabledSignal = signal(false)
+  private readonly audioVolumeSignal = signal(1)
+  private readonly audioRateSignal = signal(1)
+  private readonly bingEnabledSignal = signal(true)
   private readonly hasAudioPreferenceSignal = signal(false)
   private readonly lobbyConfigSignal = signal<GameConfig | null>(null)
 
@@ -24,6 +56,9 @@ export class SessionService {
   readonly playerName = computed(() => this.playerNameSignal())
   readonly lastLobbyCode = computed(() => this.lastLobbyCodeSignal())
   readonly audioEnabled = computed(() => this.audioEnabledSignal())
+  readonly audioVolume = computed(() => this.audioVolumeSignal())
+  readonly audioRate = computed(() => this.audioRateSignal())
+  readonly bingEnabled = computed(() => this.bingEnabledSignal())
   readonly hasAudioPreference = computed(() => this.hasAudioPreferenceSignal())
   readonly lobbyConfig = computed(() => this.lobbyConfigSignal())
 
@@ -48,6 +83,24 @@ export class SessionService {
     const storedAudioEnabled = this.storage.get(AUDIO_ENABLED_KEY)
     this.hasAudioPreferenceSignal.set(storedAudioEnabled !== null)
     this.audioEnabledSignal.set(storedAudioEnabled === 'true')
+
+    const storedAudioVolume = this.storage.get(AUDIO_VOLUME_KEY)
+    this.audioVolumeSignal.set(
+      parseStoredNumber(
+        storedAudioVolume,
+        1,
+        MIN_AUDIO_VOLUME,
+        MAX_AUDIO_VOLUME,
+      ),
+    )
+
+    const storedAudioRate = this.storage.get(AUDIO_RATE_KEY)
+    this.audioRateSignal.set(
+      parseStoredNumber(storedAudioRate, 1, MIN_AUDIO_RATE, MAX_AUDIO_RATE),
+    )
+
+    const storedBingEnabled = this.storage.get(BING_ENABLED_KEY)
+    this.bingEnabledSignal.set(storedBingEnabled !== 'false')
   }
 
   setPlayerName(name: string) {
@@ -69,6 +122,23 @@ export class SessionService {
     this.audioEnabledSignal.set(enabled)
     this.hasAudioPreferenceSignal.set(true)
     this.storage.set(AUDIO_ENABLED_KEY, String(enabled))
+  }
+
+  setAudioVolume(volume: number) {
+    const normalized = clamp(volume, MIN_AUDIO_VOLUME, MAX_AUDIO_VOLUME)
+    this.audioVolumeSignal.set(normalized)
+    this.storage.set(AUDIO_VOLUME_KEY, String(normalized))
+  }
+
+  setAudioRate(rate: number) {
+    const normalized = clamp(rate, MIN_AUDIO_RATE, MAX_AUDIO_RATE)
+    this.audioRateSignal.set(normalized)
+    this.storage.set(AUDIO_RATE_KEY, String(normalized))
+  }
+
+  setBingEnabled(enabled: boolean) {
+    this.bingEnabledSignal.set(enabled)
+    this.storage.set(BING_ENABLED_KEY, String(enabled))
   }
 
   setLobbyConfig(config: GameConfig) {

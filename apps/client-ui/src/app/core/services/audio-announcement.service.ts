@@ -1,9 +1,22 @@
 import { Injectable } from '@angular/core'
 
+const clamp = (value: number, min: number, max: number) =>
+  Math.min(max, Math.max(min, value))
+
 @Injectable({ providedIn: 'root' })
 export class AudioAnnouncementService {
   private queue: string[] = []
   private speaking = false
+  private speechVolume = 1
+  private speechRate = 1
+
+  setSpeechVolume(volume: number) {
+    this.speechVolume = clamp(volume, 0, 1)
+  }
+
+  setSpeechRate(rate: number) {
+    this.speechRate = clamp(rate, 0.6, 3.0)
+  }
 
   speak(text: string) {
     if (
@@ -35,7 +48,8 @@ export class AudioAnnouncementService {
     oscillator.frequency.setValueAtTime(880, ctx.currentTime)
     oscillator.frequency.exponentialRampToValueAtTime(1320, ctx.currentTime + 0.08)
 
-    gain.gain.setValueAtTime(0.4, ctx.currentTime)
+    const startGain = Math.max(0.001, 0.4 * this.speechVolume)
+    gain.gain.setValueAtTime(startGain, ctx.currentTime)
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4)
 
     oscillator.start(ctx.currentTime)
@@ -77,7 +91,8 @@ export class AudioAnnouncementService {
     this.speaking = true
 
     const utterance = new SpeechSynthesisUtterance(next)
-    utterance.rate = 1
+    utterance.volume = this.speechVolume
+    utterance.rate = this.speechRate
     utterance.pitch = 1
 
     utterance.onend = () => {

@@ -1,6 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core'
 import { FormsModule } from '@angular/forms'
-import { Router } from '@angular/router'
 import type { LobbySummary } from '@wizard/shared'
 import { I18nService } from '../../core/i18n/i18n.service'
 import type { TranslationLanguage } from '../../core/i18n/translations'
@@ -197,7 +196,6 @@ export class HomePageComponent implements OnInit, OnDestroy {
     protected readonly session: SessionService,
     private readonly appStore: AppStore,
     protected readonly language: I18nService,
-    private readonly router: Router,
   ) {}
 
   setLanguage(language: TranslationLanguage) {
@@ -261,6 +259,21 @@ export class HomePageComponent implements OnInit, OnDestroy {
       )
   }
 
+  private currentJoinedLobby() {
+    const token = this.session.sessionToken()
+    const currentLobby = this.store.lobby()
+
+    if (currentLobby?.players.some((player) => player.sessionToken === token)) {
+      return currentLobby
+    }
+
+    return this.store
+      .lobbyList()
+      .find((lobby) =>
+        lobby.players.some((player) => player.sessionToken === token),
+      )
+  }
+
   private confirmSwitchFromCurrentGame(targetCode: string) {
     const previousLobby = this.currentActiveGameLobby(targetCode)
 
@@ -293,6 +306,17 @@ export class HomePageComponent implements OnInit, OnDestroy {
       return
     }
 
+    const joinedLobby = this.currentJoinedLobby()
+
+    if (joinedLobby) {
+      this.appStore.setError(
+        this.language.format('error.alreadyInLobbyCannotCreate', {
+          code: joinedLobby.code,
+        }),
+      )
+      return
+    }
+
     this.facade.createLobby(
       this.playerName.trim(),
       undefined,
@@ -319,7 +343,6 @@ export class HomePageComponent implements OnInit, OnDestroy {
       this.playerName.trim(),
       this.trimmedPassword(this.joinPassword),
     )
-    this.router.navigateByUrl(`/lobby/${code}`)
   }
 
   reconnectLast() {
@@ -376,7 +399,6 @@ export class HomePageComponent implements OnInit, OnDestroy {
     }
 
     this.facade.joinLobby(code, this.playerName.trim(), password || undefined)
-    this.router.navigateByUrl(`/lobby/${code}`)
   }
 
   refreshLobbies() {
