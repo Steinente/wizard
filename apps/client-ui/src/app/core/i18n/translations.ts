@@ -23,6 +23,8 @@ export const translations = {
     controls: 'Controls',
     back: 'Back',
     home: 'Home',
+    confirmLeaveGame:
+      'Do you really want to leave the game and go to the home page?',
     lobby: 'Lobby',
     game: 'Game',
     gameTable: 'Game table',
@@ -149,7 +151,8 @@ export const translations = {
     'log.game.finished': 'Game finished',
     'log.game.trump.selected': 'Trump selected - {suit}',
     'log.game.trump.roundStart': 'Trump is {suit}',
-    'log.game.trump.noTrumpDueToCard': 'There is no trump, as {cardLabel} was revealed',
+    'log.game.trump.noTrumpDueToCard':
+      'There is no trump, as {cardLabel} was revealed',
     'log.game.trump.selected.bySpecial': 'Trump selected by {special} - {suit}',
     'log.game.prediction.made': '{playerId} bid {value}',
     'log.game.card.played': '{playerId} played {cardLabel}',
@@ -213,6 +216,8 @@ export const translations = {
     controls: 'Steuerung',
     back: 'Zurück',
     home: 'Startseite',
+    confirmLeaveGame:
+      'Möchtest du das Spiel wirklich verlassen und zur Startseite gehen?',
     lobby: 'Lobby',
     game: 'Spiel',
     gameTable: 'Spieltisch',
@@ -344,7 +349,8 @@ export const translations = {
     'log.game.finished': 'Spiel beendet',
     'log.game.trump.selected': 'Trumpf gewählt - {suit}',
     'log.game.trump.roundStart': 'Der Trumpf ist {suit}',
-    'log.game.trump.noTrumpDueToCard': 'Es gibt keinen Trumpf, da {cardLabel} aufgedeckt wurde',
+    'log.game.trump.noTrumpDueToCard':
+      'Es gibt keinen Trumpf, da {cardLabel} aufgedeckt wurde',
     'log.game.trump.selected.bySpecial':
       'Trumpf gewählt durch {special} - {suit}',
     'log.game.prediction.made': '{playerId} sagt {value} an',

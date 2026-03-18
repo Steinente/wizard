@@ -42,6 +42,48 @@ const getLastKnownAudioEnabled = async (
   return previousPlayer?.audioEnabled ?? false
 }
 
+const getLastKnownHostedConfig = async (
+  sessionToken: string,
+): Promise<Partial<GameConfig>> => {
+  const previousLobby = await prisma.lobby.findFirst({
+    where: {
+      players: {
+        some: {
+          sessionToken,
+          role: PlayerRole.HOST,
+        },
+      },
+    },
+    orderBy: {
+      updatedAt: 'desc',
+    },
+  })
+
+  if (!previousLobby) {
+    return {}
+  }
+
+  return {
+    predictionVisibility:
+      previousLobby.predictionVisibility === PredictionVisibility.HIDDEN
+        ? 'hidden'
+        : previousLobby.predictionVisibility === PredictionVisibility.SECRET
+          ? 'secret'
+          : 'open',
+    openPredictionRestriction:
+      previousLobby.openPredictionRestriction ===
+      OpenPredictionRestriction.MUST_EQUAL_TRICKS
+        ? 'mustEqualTricks'
+        : previousLobby.openPredictionRestriction ===
+            OpenPredictionRestriction.MUST_NOT_EQUAL_TRICKS
+          ? 'mustNotEqualTricks'
+          : 'none',
+    audioEnabledByDefault: previousLobby.audioEnabledByDefault,
+    languageDefault: previousLobby.languageDefault === 'de' ? 'de' : 'en',
+    allowIncludedSpecialCards: previousLobby.allowIncludedSpecialCards,
+  }
+}
+
 const loadLobbyByCodeWithPlayers = (code: string) =>
   prisma.lobby.findUnique({
     where: { code: normalizeCode(code) },
@@ -102,8 +144,13 @@ export class LobbyService {
     sessionToken: string
     config?: Partial<GameConfig>
   }): Promise<{ lobby: LobbySummary; playerId: string }> {
+    const lastKnownHostedConfig = await getLastKnownHostedConfig(
+      input.sessionToken,
+    )
+
     const mergedConfig = {
       ...defaultGameConfig,
+      ...lastKnownHostedConfig,
       ...input.config,
     }
 
@@ -123,6 +170,7 @@ export class LobbyService {
         openPredictionRestriction: toOpenPredictionRestriction(
           mergedConfig.openPredictionRestriction,
         ),
+        audioEnabledByDefault: mergedConfig.audioEnabledByDefault,
         languageDefault: mergedConfig.languageDefault,
         allowIncludedSpecialCards: mergedConfig.allowIncludedSpecialCards,
         players: {
@@ -318,6 +366,7 @@ export class LobbyService {
         openPredictionRestriction: input.config.openPredictionRestriction
           ? toOpenPredictionRestriction(input.config.openPredictionRestriction)
           : undefined,
+        audioEnabledByDefault: input.config.audioEnabledByDefault,
         languageDefault: input.config.languageDefault,
         allowIncludedSpecialCards: input.config.allowIncludedSpecialCards,
       },

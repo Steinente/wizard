@@ -14,6 +14,7 @@ const toPredictionView = (
     changedByCloud: boolean
     cloudDelta?: 1 | -1 | 0 | null
   } | null,
+  isSelf: boolean,
 ): PredictionViewItem | null => {
   if (!prediction) {
     return null
@@ -21,7 +22,7 @@ const toPredictionView = (
 
   return {
     playerId: prediction.playerId,
-    value: prediction.value,
+    value: prediction.revealed || isSelf ? prediction.value : null,
     revealed: prediction.revealed,
     changedByCloud: prediction.changedByCloud,
     cloudDelta: prediction.cloudDelta ?? 0,
@@ -42,7 +43,7 @@ const toRoundPlayerView = (
   hand: player.playerId === selfPlayerId ? player.hand : [],
   handCount: player.hand.length,
   tricksWon: player.tricksWon,
-  prediction: toPredictionView(player.prediction),
+  prediction: toPredictionView(player.prediction, player.playerId === selfPlayerId),
   pendingCloudAdjustment: player.pendingCloudAdjustment ?? false,
 })
 

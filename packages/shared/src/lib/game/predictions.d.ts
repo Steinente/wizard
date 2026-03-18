@@ -4,9 +4,12 @@ export interface PlayerPrediction {
     value: number;
     revealed: boolean;
     changedByCloud: boolean;
+    cloudDelta?: 1 | -1 | 0 | null;
 }
 export interface PredictionViewItem {
     playerId: string;
     value: VisiblePredictionValue;
     revealed: boolean;
+    changedByCloud: boolean;
+    cloudDelta?: 1 | -1 | 0 | null;
 }

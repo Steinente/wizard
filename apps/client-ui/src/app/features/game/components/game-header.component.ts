@@ -1,5 +1,5 @@
 import { Component, Input, inject } from '@angular/core'
-import { RouterLink } from '@angular/router'
+import { Router } from '@angular/router'
 import type { WizardGameViewState } from '@wizard/shared'
 import { I18nService } from '../../../core/i18n/i18n.service'
 import type { TranslationKey } from '../../../core/i18n/translations'
@@ -21,7 +21,7 @@ const SPECIAL_TRUMP_REASON_CARDS = new Set([
 @Component({
   selector: 'wiz-game-header',
   standalone: true,
-  imports: [RouterLink, TPipe],
+  imports: [TPipe],
   template: `
     <div class="panel">
       <div class="spread">
@@ -45,7 +45,9 @@ const SPECIAL_TRUMP_REASON_CARDS = new Set([
           </span>
 
           <span class="status-pill">{{ 'round' | t }} {{ roundLabel }}</span>
-          <a routerLink="/" class="btn">{{ 'home' | t }}</a>
+          <button class="btn" type="button" (click)="confirmLeaveGame()">
+            {{ 'home' | t }}
+          </button>
         </div>
       </div>
     </div>
@@ -53,6 +55,7 @@ const SPECIAL_TRUMP_REASON_CARDS = new Set([
 })
 export class GameHeaderComponent {
   private readonly i18n = inject(I18nService)
+  private readonly router = inject(Router)
   private readonly t = (key: TranslationKey) => this.i18n.t(key)
 
   @Input({ required: true }) state!: WizardGameViewState
@@ -165,5 +168,13 @@ export class GameHeaderComponent {
 
   get trumpBorder() {
     return this.trumpBackground
+  }
+
+  confirmLeaveGame() {
+    const confirmed = window.confirm(this.i18n.t('confirmLeaveGame'))
+
+    if (confirmed) {
+      this.router.navigateByUrl('/')
+    }
   }
 }

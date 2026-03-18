@@ -1,5 +1,10 @@
 import { Component, computed } from '@angular/core'
-import { isLegalPlay, type Card, type Suit } from '@wizard/shared'
+import {
+  getAllowedPredictionValues,
+  isLegalPlay,
+  type Card,
+  type Suit,
+} from '@wizard/shared'
 import { GameFacadeService } from '../../core/services/game-facade.service'
 import { SessionService } from '../../core/services/session.service'
 import { AppStore } from '../../core/state/app.store'
@@ -204,8 +209,18 @@ export class GamePageComponent {
   }
 
   predictionOptions() {
-    const roundNumber = this.store.gameState()?.currentRound?.roundNumber ?? 0
-    return Array.from({ length: roundNumber + 1 }, (_, index) => index)
+    const state = this.store.gameState()
+    const round = state?.currentRound
+
+    if (!state || !round) {
+      return []
+    }
+
+    return getAllowedPredictionValues({
+      config: state.config,
+      predictions: round.players.map((player) => player.prediction),
+      trickCount: round.roundNumber,
+    })
   }
 
   predict(value: number) {

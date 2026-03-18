@@ -96,19 +96,20 @@ export class ScoreboardPanelComponent {
   }
 
   private livePrediction(playerId: string, round: number) {
-    if (this.state.config.predictionVisibility !== 'open') {
-      return null
-    }
-
     if (this.state.currentRound?.roundNumber !== round) {
       return null
     }
 
-    return (
+    const prediction =
       this.state.currentRound.players.find(
         (player) => player.playerId === playerId,
       )?.prediction ?? null
-    )
+
+    if (!prediction?.revealed) {
+      return null
+    }
+
+    return prediction
   }
 
   pointsValue(playerId: string, round: number) {

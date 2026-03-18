@@ -18,5 +18,6 @@ export const SOCKET_URL = resolveSocketUrl()
 export const SESSION_TOKEN_KEY = 'wizard.sessionToken'
 export const PLAYER_NAME_KEY = 'wizard.playerName'
 export const LAST_LOBBY_CODE_KEY = 'wizard.lastLobbyCode'
+export const LOBBY_CONFIG_KEY = 'wizard.lobbyConfig'
 export const AUDIO_ENABLED_KEY = 'wizard.audioEnabled'
 export const LANGUAGE_KEY = 'wizard.language'

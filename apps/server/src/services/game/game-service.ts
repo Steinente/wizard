@@ -8,6 +8,7 @@
 import {
   calculateRoundScore,
   createInitialGameState,
+  getAllowedPredictionValues,
   isLegalPlay,
   resolveTrickWinner,
   setupRound,
@@ -888,6 +889,16 @@ export class GameService {
 
     if (roundPlayer.prediction) {
       throw new Error('error.predictionAlreadySubmitted')
+    }
+
+    const allowedPredictionValues = getAllowedPredictionValues({
+      config: state.config,
+      predictions: state.currentRound.players.map((entry) => entry.prediction),
+      trickCount: state.currentRound.roundNumber,
+    })
+
+    if (!allowedPredictionValues.includes(input.value)) {
+      throw new Error('error.predictionViolatesRestriction')
     }
 
     const simulatedPredictions: Array<PlayerPrediction | null> =

@@ -8,7 +8,7 @@ export interface PlayerPrediction {
 
 export interface PredictionViewItem {
   playerId: string
-  value: number
+  value: number | null
   revealed: boolean
   changedByCloud: boolean
   cloudDelta?: 1 | -1 | 0 | null

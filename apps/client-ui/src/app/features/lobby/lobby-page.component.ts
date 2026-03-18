@@ -157,12 +157,21 @@ import { TPipe } from '../../shared/pipes/t.pipe'
               <option value="secret">{{ 'predictionSecret' | t }}</option>
             </select>
 
-            <label class="label" style="margin-top: 14px;">
+            <label
+              class="label"
+              style="margin-top: 14px;"
+              [style.opacity]="
+                store.lobby()!.config.predictionVisibility !== 'open' ? 0.55 : 1
+              "
+            >
               {{ 'openRestrictionLabel' | t }}
             </label>
 
             <select
               class="select"
+              [style.opacity]="
+                store.lobby()!.config.predictionVisibility !== 'open' ? 0.55 : 1
+              "
               [disabled]="
                 !isHost() ||
                 store.lobby()!.config.predictionVisibility !== 'open'

@@ -32,6 +32,7 @@ export class GameFacadeService {
       this.store.setLobby(payload.lobby)
       this.store.setPlayerId(payload.playerId)
       this.session.setLastLobbyCode(payload.lobby.code)
+      this.session.setLobbyConfig(payload.lobby.config)
       this.store.setError(null)
       this.store.setLoading(false)
       this.router.navigateByUrl(`/lobby/${payload.lobby.code}`)
@@ -41,6 +42,7 @@ export class GameFacadeService {
       this.store.setLobby(payload.lobby)
       this.store.setPlayerId(payload.playerId)
       this.session.setLastLobbyCode(payload.lobby.code)
+      this.session.setLobbyConfig(payload.lobby.config)
       this.store.setError(null)
       this.store.setLoading(false)
 
@@ -56,6 +58,7 @@ export class GameFacadeService {
       const currentPlayerId = this.store.playerId()
 
       this.store.setLobby(payload.lobby)
+      this.session.setLobbyConfig(payload.lobby.config)
 
       if (
         currentPlayerId &&
@@ -197,10 +200,12 @@ export class GameFacadeService {
     this.store.setError(null)
     this.session.setPlayerName(playerName)
 
+    const resolvedConfig = config ?? this.session.lobbyConfig() ?? undefined
+
     this.socketService.getSocket().emit('lobby:create', {
       playerName,
       sessionToken: this.session.sessionToken(),
-      config,
+      config: resolvedConfig,
     })
   }
 
@@ -235,6 +240,8 @@ export class GameFacadeService {
   }
 
   updateConfig(code: string, config: Partial<GameConfig>) {
+    this.session.mergeLobbyConfig(config)
+
     this.socketService.getSocket().emit('lobby:updateConfig', {
       code,
       sessionToken: this.session.sessionToken(),
