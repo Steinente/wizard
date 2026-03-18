@@ -1,11 +1,10 @@
 import { Injectable } from '@angular/core'
 import { Router } from '@angular/router'
 import type { GameConfig, Suit, WizardGameViewState } from '@wizard/shared'
-import {
-  normalizeLogParams,
-} from '../../features/game/utils/log-params.util'
 import { getLogTranslationKey } from '../../features/game/utils/log-label.util'
+import { normalizeLogParams } from '../../features/game/utils/log-params.util'
 import { I18nService } from '../i18n/i18n.service'
+import type { TranslationKey } from '../i18n/translations'
 import { AppStore } from '../state/app.store'
 import { AudioAnnouncementService } from './audio-announcement.service'
 import { SessionService } from './session.service'
@@ -64,7 +63,7 @@ export class GameFacadeService {
       ) {
         this.session.clearLastLobbyCode()
         this.store.reset()
-        this.store.setError('You were removed from the lobby')
+        this.store.setError(this.i18n.t('info.removedFromLobby'))
         this.router.navigateByUrl('/')
         return
       }
@@ -77,7 +76,7 @@ export class GameFacadeService {
     socket.on('lobby:closed', (payload) => {
       this.session.clearLastLobbyCode()
       this.store.reset()
-      this.store.setError(payload.reason)
+      this.store.setError(this.translateMessage(payload.reason))
       this.router.navigateByUrl('/')
     })
 
@@ -118,24 +117,26 @@ export class GameFacadeService {
     })
 
     socket.on('error:message', (payload) => {
-      const normalized = payload.message.trim().toLowerCase()
-
       const shouldClearLobby =
-        normalized === 'lobby not found' ||
-        normalized === 'reconnect failed' ||
-        normalized === 'you were removed from the lobby'
+        payload.message === 'error.lobbyNotFound' ||
+        payload.message === 'error.reconnectFailed' ||
+        payload.message === 'info.removedFromLobby'
 
       if (shouldClearLobby) {
         this.session.clearLastLobbyCode()
         this.store.reset()
-        this.store.setError(payload.message)
+        this.store.setError(this.translateMessage(payload.message))
         this.router.navigateByUrl('/')
         return
       }
 
-      this.store.setError(payload.message)
+      this.store.setError(this.translateMessage(payload.message))
       this.store.setLoading(false)
     })
+  }
+
+  private translateMessage(message: string): string {
+    return this.i18n.t(message as TranslationKey)
   }
 
   private replaceParamsForSpeech(

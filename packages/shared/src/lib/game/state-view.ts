@@ -4,6 +4,7 @@ import type { LobbyStatus } from '../lobby-state.js'
 import type { GamePhase } from './phases.js'
 import type { PredictionViewItem } from './predictions.js'
 import type { PlayerScoreEntry } from './score.js'
+import type { GameLogMessageKey } from './log-keys.js'
 import type {
   PendingDecision,
   ResolvedCardRuntimeEffect,
@@ -25,6 +26,7 @@ export interface RoundPlayerViewState {
   handCount: number
   tricksWon: number
   prediction: PredictionViewItem | null
+  pendingCloudAdjustment?: boolean
 }
 
 export interface RoundViewState {
@@ -53,7 +55,7 @@ export interface GameLogEntryView {
     | 'roundScored'
     | 'gameFinished'
     | 'specialEffect'
-  messageKey: string
+  messageKey: GameLogMessageKey
   messageParams?: Record<string, string | number | boolean | null>
 }
 

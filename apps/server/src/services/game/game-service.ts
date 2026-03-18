@@ -144,6 +144,43 @@ const getReadableCardLabel = (card: Card): string => {
   return card.special
 }
 
+const getResolvedEffectForCard = (state: WizardGameState, cardId: string) =>
+  state.resolvedCardEffects.find((entry) => entry.cardId === cardId)
+
+const disablesFollowSuitAsLeadCard = (
+  card: Card,
+  state: WizardGameState,
+): boolean => {
+  if (card.type === 'wizard') {
+    return true
+  }
+
+  if (card.type === 'special' && card.special === 'dragon') {
+    return true
+  }
+
+  if (card.type === 'special' && card.special === 'shapeShifter') {
+    return (
+      getResolvedEffectForCard(state, card.id)?.shapeShifterMode === 'wizard'
+    )
+  }
+
+  return false
+}
+
+const isFollowSuitDisabledInTrick = (
+  trick: NonNullable<WizardGameState['currentRound']>['currentTrick'] | null,
+  state: WizardGameState,
+): boolean => {
+  const firstPlay = trick?.plays[0]
+
+  if (!firstPlay) {
+    return false
+  }
+
+  return disablesFollowSuitAsLeadCard(firstPlay.card, state)
+}
+
 const getHypotheticalNextLeaderPlayerId = (
   trick: NonNullable<WizardGameState['currentRound']>['currentTrick'],
   trumpSuit: Suit | null,
@@ -298,6 +335,28 @@ export class GameService {
     state.phase = 'prediction'
     round.activePlayerId = round.roundLeaderPlayerId
     state.pendingDecision = null
+
+    if (round.trumpSuit === null && round.trumpCard !== null) {
+      state.logs.push({
+        id: crypto.randomUUID(),
+        createdAt: nowIso(),
+        type: 'system',
+        messageKey: 'game.trump.noTrumpDueToCard',
+        messageParams: {
+          cardLabel: getReadableCardLabel(round.trumpCard),
+        },
+      })
+    } else {
+      state.logs.push({
+        id: crypto.randomUUID(),
+        createdAt: nowIso(),
+        type: 'system',
+        messageKey: 'game.trump.roundStart',
+        messageParams: {
+          suit: round.trumpSuit ?? 'none',
+        },
+      })
+    }
   }
 
   private async continueOrResolveCurrentTrick(
@@ -322,7 +381,9 @@ export class GameService {
       return
     }
 
-    await this.resolveCompletedTrick(lobby, state)
+    // Mirror normal card play flow: persist the completed trick first so clients
+    // can see the final card, and let the socket handler trigger delayed resolution.
+    await this.persistState(lobby.id, state)
   }
 
   private buildInitialState(
@@ -352,13 +413,12 @@ export class GameService {
       lobbyCode: lobby.code,
       players,
       currentRoundNumber: 1,
-      dealerIndex: 0,
+      // Start with seatIndex 0 by placing the dealer one seat before the top seat.
+      dealerIndex: players.length - 1,
       includeSpecialCards: config.allowIncludedSpecialCards,
     })
 
     state.currentRound = round
-
-    this.applyRoundStartState(state)
 
     state.logs.push({
       id: crypto.randomUUID(),
@@ -367,6 +427,8 @@ export class GameService {
       messageKey: 'game.started',
     })
 
+    this.applyRoundStartState(state)
+
     return state
   }
 
@@ -374,7 +436,7 @@ export class GameService {
     const lobby = await loadLobbyByCode(code)
 
     if (!lobby) {
-      throw new Error('Lobby not found')
+      throw new Error('error.lobbyNotFound')
     }
 
     if (!lobby.gameState) {
@@ -445,13 +507,11 @@ export class GameService {
       playedAt: nowIso(),
     })
 
-    if (!trick.leadSuit) {
+    if (!trick.leadSuit && !isFollowSuitDisabledInTrick(trick, state)) {
       if (card.type === 'number') {
         trick.leadSuit = card.suit
       } else if (card.type === 'special') {
-        const effect = state.resolvedCardEffects.find(
-          (entry) => entry.cardId === card.id,
-        )
+        const effect = getResolvedEffectForCard(state, card.id)
         if (effect?.chosenSuit) {
           trick.leadSuit = effect.chosenSuit
         }
@@ -460,10 +520,12 @@ export class GameService {
 
     state.currentRound.currentTrick = trick
 
-    // Don't log shape shifter or juggler plays here - the detailed logs are created when resolving special effects
+    // Don't log shape shifter, juggler or cloud plays here - the detailed logs are created when resolving special effects
     if (
       card.type !== 'special' ||
-      (card.special !== 'shapeShifter' && card.special !== 'juggler')
+      (card.special !== 'shapeShifter' &&
+        card.special !== 'juggler' &&
+        card.special !== 'cloud')
     ) {
       state.logs.push({
         id: crypto.randomUUID(),
@@ -585,6 +647,13 @@ export class GameService {
       return
     }
 
+    state.logs.push({
+      id: crypto.randomUUID(),
+      createdAt: nowIso(),
+      type: 'specialEffect',
+      messageKey: 'special.juggler.pass.started',
+    })
+
     state.pendingDecision = {
       id: crypto.randomUUID(),
       type: 'jugglerPassCard',
@@ -619,6 +688,9 @@ export class GameService {
     const playedJuggler = resolvedTrick.plays.find(
       (play) => play.card.type === 'special' && play.card.special === 'juggler',
     )
+    const playedCloud = resolvedTrick.plays.find(
+      (play) => play.card.type === 'special' && play.card.special === 'cloud',
+    )
 
     const hypotheticalLeaderPlayerId = getHypotheticalNextLeaderPlayerId(
       trick,
@@ -651,6 +723,25 @@ export class GameService {
           playerId: resolvedTrick.winnerPlayerId ?? '',
         },
       })
+
+      if (playedCloud && resolvedTrick.winnerPlayerId) {
+        state.logs.push({
+          id: crypto.randomUUID(),
+          createdAt: nowIso(),
+          type: 'specialEffect',
+          messageKey: 'special.cloud.wonTrickNineThreeQuarters',
+          messageParams: {
+            playerId: resolvedTrick.winnerPlayerId,
+          },
+        })
+
+        const cloudWinner = state.currentRound.players.find(
+          (entry) => entry.playerId === resolvedTrick.winnerPlayerId,
+        )
+        if (cloudWinner) {
+          cloudWinner.pendingCloudAdjustment = true
+        }
+      }
     }
 
     state.resolvedCardEffects = []
@@ -719,17 +810,17 @@ export class GameService {
     const lobby = await loadLobbyByCode(input.code)
 
     if (!lobby) {
-      throw new Error('Lobby not found')
+      throw new Error('error.lobbyNotFound')
     }
 
     const player = getPlayerBySessionToken(lobby, input.sessionToken)
 
     if (player.id !== lobby.hostPlayerId) {
-      throw new Error('Only the host can start the game')
+      throw new Error('error.onlyHostCanStart')
     }
 
     if (lobby.players.length < 3 || lobby.players.length > 6) {
-      throw new Error('Wizard requires 3 to 6 players')
+      throw new Error('error.wizardMinPlayers')
     }
 
     const state = this.buildInitialState(lobby)
@@ -774,17 +865,17 @@ export class GameService {
     }
 
     if (state.phase !== 'prediction') {
-      throw new Error('Predictions are not open right now')
+      throw new Error('error.predictionsNotOpen')
     }
 
     if (input.value < 0 || input.value > state.currentRound.roundNumber) {
-      throw new Error('Prediction value is out of range')
+      throw new Error('error.predictionOutOfRange')
     }
 
     const player = getPlayerBySessionToken(lobby, input.sessionToken)
 
     if (state.currentRound.activePlayerId !== player.id) {
-      throw new Error('It is not your turn to predict')
+      throw new Error('error.notYourTurnToPredict')
     }
 
     const roundPlayer = state.currentRound.players.find(
@@ -796,7 +887,7 @@ export class GameService {
     }
 
     if (roundPlayer.prediction) {
-      throw new Error('Prediction already submitted')
+      throw new Error('error.predictionAlreadySubmitted')
     }
 
     const simulatedPredictions: Array<PlayerPrediction | null> =
@@ -824,7 +915,7 @@ export class GameService {
       })
 
       if (!valid) {
-        throw new Error('Prediction violates the configured round restriction')
+        throw new Error('error.predictionViolatesRestriction')
       }
     }
 
@@ -887,13 +978,13 @@ export class GameService {
     }
 
     if (state.phase !== 'trumpSelection') {
-      throw new Error('Trump suit cannot be selected right now')
+      throw new Error('error.trumpNotSelectable')
     }
 
     const player = getPlayerBySessionToken(lobby, input.sessionToken)
 
     if (state.currentRound.activePlayerId !== player.id) {
-      throw new Error('It is not your turn to select trump')
+      throw new Error('error.notYourTurnForTrump')
     }
 
     if (
@@ -1140,6 +1231,7 @@ export class GameService {
     roundPlayer.prediction.changedByCloud = true
     roundPlayer.prediction.cloudDelta = input.delta
     roundPlayer.prediction.revealed = true
+    roundPlayer.pendingCloudAdjustment = false
     state.pendingDecision = null
 
     state.logs.push({
@@ -1273,7 +1365,7 @@ export class GameService {
       id: crypto.randomUUID(),
       createdAt: nowIso(),
       type: 'specialEffect',
-      messageKey: 'log.special.juggler.pass.completed',
+      messageKey: 'special.juggler.pass.completed',
     })
 
     state.pendingDecision = null
@@ -1308,11 +1400,16 @@ export class GameService {
         throw new Error('Use the juggler pass action for this selection')
       }
 
-      throw new Error('A pending special decision must be resolved first')
+      throw new Error('error.pendingDecision')
     }
 
     if (state.currentRound.activePlayerId !== player.id) {
-      throw new Error('It is not your turn')
+      throw new Error('error.notYourTurn')
+    }
+
+    const currentTrickPlays = state.currentRound.currentTrick?.plays.length ?? 0
+    if (currentTrickPlays >= state.players.length) {
+      throw new Error('error.notYourTurn')
     }
 
     const roundPlayer = state.currentRound.players.find(
@@ -1329,10 +1426,13 @@ export class GameService {
       throw new Error('Card not found in hand')
     }
 
-    const leadSuit = state.currentRound.currentTrick?.leadSuit ?? null
+    const currentTrick = state.currentRound.currentTrick ?? null
+    const leadSuit = isFollowSuitDisabledInTrick(currentTrick, state)
+      ? null
+      : (currentTrick?.leadSuit ?? null)
 
     if (!isLegalPlay(roundPlayer.hand, card, leadSuit)) {
-      throw new Error('Illegal card play')
+      throw new Error('error.illegalCardPlay')
     }
 
     if (card.type === 'special') {
@@ -1409,7 +1509,7 @@ export class GameService {
     const lobby = await loadLobbyByCode(input.code)
 
     if (!lobby) {
-      throw new Error('Lobby not found')
+      throw new Error('error.lobbyNotFound')
     }
 
     const player = getPlayerBySessionToken(lobby, input.sessionToken)

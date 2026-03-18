@@ -1,5 +1,9 @@
 import { Component, Input } from '@angular/core'
-import type { ResolvedCardRuntimeEffect, TrickState } from '@wizard/shared'
+import type {
+  ResolvedCardRuntimeEffect,
+  TrickState,
+  WizardGameViewState,
+} from '@wizard/shared'
 import { CardComponent } from '../../../shared/components/card.component'
 import { TPipe } from '../../../shared/pipes/t.pipe'
 
@@ -16,8 +20,9 @@ import { TPipe } from '../../../shared/pipes/t.pipe'
       } @else {
         <div class="card-grid">
           @for (play of trick.plays; track play.playerId + play.card.id) {
-            <wiz-card 
-              [card]="play.card" 
+            <wiz-card
+              [card]="play.card"
+              [middleLabel]="getPlayerName(play.playerId)"
               [resolvedEffect]="getResolvedEffect(play.card.id)"
             />
           }
@@ -29,8 +34,14 @@ import { TPipe } from '../../../shared/pipes/t.pipe'
 export class TrickAreaComponent {
   @Input() trick: TrickState | null = null
   @Input() resolvedCardEffects: ResolvedCardRuntimeEffect[] = []
+  @Input() players: WizardGameViewState['players'] = []
 
   getResolvedEffect(cardId: string): ResolvedCardRuntimeEffect | undefined {
     return this.resolvedCardEffects.find((effect) => effect.cardId === cardId)
+  }
+
+  getPlayerName(playerId: string): string {
+    return this.players.find((player) => player.playerId === playerId)?.name ??
+      playerId
   }
 }

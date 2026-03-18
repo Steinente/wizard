@@ -53,6 +53,7 @@ import { TrickAreaComponent } from './components/trick-area.component'
           <div class="game-column">
             <wiz-trick-area
               [trick]="store.gameState()!.currentRound?.currentTrick ?? null"
+              [players]="store.gameState()!.players"
               [resolvedCardEffects]="store.gameState()!.resolvedCardEffects"
             />
 
@@ -236,6 +237,11 @@ export class GamePageComponent {
       !!state.pendingDecision ||
       state.currentRound?.activePlayerId !== state.selfPlayerId
     ) {
+      return false
+    }
+
+    const trick = state.currentRound?.currentTrick
+    if (trick && trick.plays.length >= state.players.length) {
       return false
     }
 

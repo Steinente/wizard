@@ -162,15 +162,15 @@ export class LobbyService {
     const lobby = await loadLobbyByCodeWithPlayers(input.code)
 
     if (!lobby || lobby.status === LobbyStatus.CLOSED) {
-      throw new Error('Lobby not found')
+      throw new Error('error.lobbyNotFound')
     }
 
     if (lobby.status !== LobbyStatus.WAITING) {
-      throw new Error('Lobby is no longer accepting players')
+      throw new Error('error.lobbyNotAccepting')
     }
 
     if (lobby.players.length >= 6) {
-      throw new Error('Lobby is full')
+      throw new Error('error.lobbyFull')
     }
 
     const existingByToken = findPlayerBySessionToken(
@@ -226,13 +226,13 @@ export class LobbyService {
     const lobby = await loadLobbyByCodeWithPlayers(input.code)
 
     if (!lobby || lobby.status === LobbyStatus.CLOSED) {
-      throw new Error('Lobby not found')
+      throw new Error('error.lobbyNotFound')
     }
 
     const player = findPlayerBySessionToken(lobby.players, input.sessionToken)
 
     if (!player) {
-      throw new Error('Lobby not found')
+      throw new Error('error.lobbyNotFound')
     }
 
     await prisma.player.update({
@@ -270,17 +270,17 @@ export class LobbyService {
     const lobby = await loadLobbyByCodeWithUnorderedPlayers(input.code)
 
     if (!lobby) {
-      throw new Error('Lobby not found')
+      throw new Error('error.lobbyNotFound')
     }
 
     const player = findPlayerBySessionToken(lobby.players, input.sessionToken)
 
     if (!player) {
-      throw new Error('Player not found in lobby')
+      throw new Error('error.playerNotFound')
     }
 
     if (player.id === lobby.hostPlayerId) {
-      throw new Error('Host cannot leave the lobby without ending it')
+      throw new Error('error.hostCannotLeave')
     }
 
     await prisma.player.delete({
@@ -300,13 +300,13 @@ export class LobbyService {
     const lobby = await loadLobbyByCodeWithUnorderedPlayers(input.code)
 
     if (!lobby) {
-      throw new Error('Lobby not found')
+      throw new Error('error.lobbyNotFound')
     }
 
     const player = findPlayerBySessionToken(lobby.players, input.sessionToken)
 
     if (!player || player.id !== lobby.hostPlayerId) {
-      throw new Error('Only the host can update the config')
+      throw new Error('error.onlyHostCanUpdateConfig')
     }
 
     const updated = await prisma.lobby.update({
@@ -335,17 +335,17 @@ export class LobbyService {
     const lobby = await loadLobbyByCodeWithUnorderedPlayers(input.code)
 
     if (!lobby) {
-      throw new Error('Lobby not found')
+      throw new Error('error.lobbyNotFound')
     }
 
     const player = findPlayerBySessionToken(lobby.players, input.sessionToken)
 
     if (!player || player.id !== lobby.hostPlayerId) {
-      throw new Error('Only the host can kick players')
+      throw new Error('error.onlyHostCanKick')
     }
 
     if (input.targetPlayerId === lobby.hostPlayerId) {
-      throw new Error('The host cannot kick themselves')
+      throw new Error('error.hostCannotKickSelf')
     }
 
     const targetPlayer = lobby.players.find(
@@ -353,7 +353,7 @@ export class LobbyService {
     )
 
     if (!targetPlayer) {
-      throw new Error('Target player not found')
+      throw new Error('error.targetPlayerNotFound')
     }
 
     await prisma.player.delete({
@@ -372,13 +372,13 @@ export class LobbyService {
     const lobby = await loadLobbyByCodeWithUnorderedPlayers(input.code)
 
     if (!lobby) {
-      throw new Error('Lobby not found')
+      throw new Error('error.lobbyNotFound')
     }
 
     const player = findPlayerBySessionToken(lobby.players, input.sessionToken)
 
     if (!player || player.id !== lobby.hostPlayerId) {
-      throw new Error('Only the host can end the lobby')
+      throw new Error('error.onlyHostCanCloseLobby')
     }
 
     await prisma.lobby.update({

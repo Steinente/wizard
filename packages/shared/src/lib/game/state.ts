@@ -1,5 +1,6 @@
 import type { GameConfig } from '../game-config.js'
 import type { LobbyStatus } from '../lobby-state.js'
+import type { GameLogMessageKey } from './log-keys.js'
 import type { GamePhase } from './phases.js'
 import type { RoundState } from './round.js'
 import type { PlayerScoreEntry } from './score.js'
@@ -30,7 +31,7 @@ export interface GameLogEntry {
     | 'roundScored'
     | 'gameFinished'
     | 'specialEffect'
-  messageKey: string
+  messageKey: GameLogMessageKey
   messageParams?: Record<string, string | number | boolean | null>
 }
 

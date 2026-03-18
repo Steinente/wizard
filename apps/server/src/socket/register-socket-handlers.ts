@@ -81,6 +81,38 @@ const emitStateForCode = async (
   await emitStateToLobby(io, roomCode, room, sessionStore, gameService)
 }
 
+const resolveCompletedTrickAfterDelay = async (
+  io: WizardIoServer,
+  code: string,
+  stateAfterAction: {
+    currentRound: { currentTrick: { plays: unknown[] } | null } | null
+    players: unknown[]
+  },
+  sessionStore: SocketSessionStore,
+  gameService: GameService,
+) => {
+  const roomCode = normalizeRoomCode(code)
+  const room = io.sockets.adapter.rooms.get(roomCode)
+
+  if (!room) {
+    return
+  }
+
+  await emitStateToLobby(io, roomCode, room, sessionStore, gameService)
+
+  const trick = stateAfterAction.currentRound?.currentTrick
+  const playerCount = stateAfterAction.players.length
+  const isTrickComplete = !!trick && trick.plays.length === playerCount
+
+  if (!isTrickComplete) {
+    return
+  }
+
+  await new Promise((resolve) => setTimeout(resolve, 3000))
+  await gameService.resolvePendingCompletedTrick(code)
+  await emitStateToLobby(io, roomCode, room, sessionStore, gameService)
+}
+
 const runSocketAction = async <TInput>(
   socket: WizardSocket,
   payload: unknown,
@@ -125,7 +157,7 @@ export const registerSocketHandlers = (
     } catch (error) {
       emitError(
         socket,
-        error instanceof Error ? error.message : 'Create failed',
+        error instanceof Error ? error.message : 'error.createFailed',
       )
     }
   })
@@ -147,7 +179,10 @@ export const registerSocketHandlers = (
       })
       io.to(result.lobby.code).emit('lobby:updated', { lobby: result.lobby })
     } catch (error) {
-      emitError(socket, error instanceof Error ? error.message : 'Join failed')
+      emitError(
+        socket,
+        error instanceof Error ? error.message : 'error.joinFailed',
+      )
     }
   })
 
@@ -171,7 +206,7 @@ export const registerSocketHandlers = (
     } catch (error) {
       emitError(
         socket,
-        error instanceof Error ? error.message : 'Reconnect failed',
+        error instanceof Error ? error.message : 'error.reconnectFailed',
       )
     }
   })
@@ -186,14 +221,17 @@ export const registerSocketHandlers = (
 
       socket.emit('lobby:closed', {
         code,
-        reason: 'You left the lobby',
+        reason: 'info.leftLobby',
       })
       await socket.leave(code)
       sessionStore.delete(socket.id)
 
       io.to(lobby.code).emit('lobby:updated', { lobby })
     } catch (error) {
-      emitError(socket, error instanceof Error ? error.message : 'Leave failed')
+      emitError(
+        socket,
+        error instanceof Error ? error.message : 'error.leaveFailed',
+      )
     }
   })
 
@@ -205,7 +243,7 @@ export const registerSocketHandlers = (
     } catch (error) {
       emitError(
         socket,
-        error instanceof Error ? error.message : 'Config update failed',
+        error instanceof Error ? error.message : 'error.configUpdateFailed',
       )
     }
   })
@@ -230,7 +268,7 @@ export const registerSocketHandlers = (
       if (targetSocket) {
         targetSocket.emit('lobby:closed', {
           code,
-          reason: 'You were removed from the lobby',
+          reason: 'info.removedFromLobby',
         })
         await targetSocket.leave(code)
         sessionStore.delete(targetSocket.id)
@@ -238,7 +276,7 @@ export const registerSocketHandlers = (
     } catch (error) {
       emitError(
         socket,
-        error instanceof Error ? error.message : 'Kick player failed',
+        error instanceof Error ? error.message : 'error.kickFailed',
       )
     }
   })
@@ -249,12 +287,12 @@ export const registerSocketHandlers = (
       const code = await lobbyService.endLobby(input)
       io.to(code).emit('lobby:closed', {
         code,
-        reason: 'Lobby ended by host',
+        reason: 'info.lobbyEndedByHost',
       })
     } catch (error) {
       emitError(
         socket,
-        error instanceof Error ? error.message : 'End lobby failed',
+        error instanceof Error ? error.message : 'error.closeLobbyFailed',
       )
     }
   })
@@ -265,12 +303,12 @@ export const registerSocketHandlers = (
       payload,
       gameStartSchema.parse,
       async (input) => {
-      const { lobby } = await gameService.startGame(input)
+        const { lobby } = await gameService.startGame(input)
 
-      io.to(lobby.code).emit('lobby:updated', { lobby })
-      await emitStateForCode(io, lobby.code, sessionStore, gameService)
+        io.to(lobby.code).emit('lobby:updated', { lobby })
+        await emitStateForCode(io, lobby.code, sessionStore, gameService)
       },
-      'Game start failed',
+      'error.gameStartFailed',
     )
   })
 
@@ -283,7 +321,7 @@ export const registerSocketHandlers = (
         await gameService.makePrediction(input)
         await emitStateForCode(io, input.code, sessionStore, gameService)
       },
-      'Prediction failed',
+      'error.predictionFailed',
     )
   })
 
@@ -296,34 +334,48 @@ export const registerSocketHandlers = (
         await gameService.selectTrumpSuit(input)
         await emitStateForCode(io, input.code, sessionStore, gameService)
       },
-      'Trump selection failed',
+      'error.trumpSelectionFailed',
     )
   })
 
   socket.on('game:resolveShapeShifter', async (payload) => {
-    await runSocketAction(
-      socket,
-      payload,
-      resolveShapeShifterSchema.parse,
-      async (input) => {
-        await gameService.resolveShapeShifter(input)
-        await emitStateForCode(io, input.code, sessionStore, gameService)
-      },
-      'Shape Shifter resolution failed',
-    )
+    try {
+      const input = resolveShapeShifterSchema.parse(payload)
+      const stateAfterResolution = await gameService.resolveShapeShifter(input)
+      await resolveCompletedTrickAfterDelay(
+        io,
+        input.code,
+        stateAfterResolution,
+        sessionStore,
+        gameService,
+      )
+    } catch (error) {
+      emitError(
+        socket,
+        error instanceof Error
+          ? error.message
+          : 'error.shapeShifterResolutionFailed',
+      )
+    }
   })
 
   socket.on('game:resolveCloud', async (payload) => {
-    await runSocketAction(
-      socket,
-      payload,
-      resolveCloudSchema.parse,
-      async (input) => {
-        await gameService.resolveCloud(input)
-        await emitStateForCode(io, input.code, sessionStore, gameService)
-      },
-      'Cloud resolution failed',
-    )
+    try {
+      const input = resolveCloudSchema.parse(payload)
+      const stateAfterResolution = await gameService.resolveCloud(input)
+      await resolveCompletedTrickAfterDelay(
+        io,
+        input.code,
+        stateAfterResolution,
+        sessionStore,
+        gameService,
+      )
+    } catch (error) {
+      emitError(
+        socket,
+        error instanceof Error ? error.message : 'error.cloudResolutionFailed',
+      )
+    }
   })
 
   socket.on('game:resolveCloudAdjustment', async (payload) => {
@@ -335,21 +387,29 @@ export const registerSocketHandlers = (
         await gameService.resolveCloudAdjustment(input)
         await emitStateForCode(io, input.code, sessionStore, gameService)
       },
-      'Cloud adjustment failed',
+      'error.cloudAdjustmentFailed',
     )
   })
 
   socket.on('game:resolveJuggler', async (payload) => {
-    await runSocketAction(
-      socket,
-      payload,
-      resolveJugglerSchema.parse,
-      async (input) => {
-        await gameService.resolveJuggler(input)
-        await emitStateForCode(io, input.code, sessionStore, gameService)
-      },
-      'Juggler resolution failed',
-    )
+    try {
+      const input = resolveJugglerSchema.parse(payload)
+      const stateAfterResolution = await gameService.resolveJuggler(input)
+      await resolveCompletedTrickAfterDelay(
+        io,
+        input.code,
+        stateAfterResolution,
+        sessionStore,
+        gameService,
+      )
+    } catch (error) {
+      emitError(
+        socket,
+        error instanceof Error
+          ? error.message
+          : 'error.jugglerResolutionFailed',
+      )
+    }
   })
 
   socket.on('game:selectJugglerPassCard', async (payload) => {
@@ -361,7 +421,7 @@ export const registerSocketHandlers = (
         await gameService.selectJugglerPassCard(input)
         await emitStateForCode(io, input.code, sessionStore, gameService)
       },
-      'Juggler pass selection failed',
+      'error.jugglerPassFailed',
     )
   })
 
@@ -374,7 +434,7 @@ export const registerSocketHandlers = (
         await gameService.resolveWerewolfTrumpSwap(input)
         await emitStateForCode(io, input.code, sessionStore, gameService)
       },
-      'Werewolf trump swap failed',
+      'error.werewolfTrumpSwapFailed',
     )
   })
 
@@ -409,7 +469,7 @@ export const registerSocketHandlers = (
     } catch (error) {
       emitError(
         socket,
-        error instanceof Error ? error.message : 'Play card failed',
+        error instanceof Error ? error.message : 'error.playCardFailed',
       )
     }
   })

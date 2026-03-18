@@ -27,7 +27,7 @@ import { TPipe } from '../../../shared/pipes/t.pipe'
       @if (isHost && !confirmingEnd) {
         <div style="margin-top: 12px;">
           <button class="btn btn-danger" (click)="confirmingEnd = true">
-            {{ 'endLobby' | t }}
+            {{ 'closeLobby' | t }}
           </button>
         </div>
       }
@@ -35,7 +35,7 @@ import { TPipe } from '../../../shared/pipes/t.pipe'
       @if (isHost && confirmingEnd) {
         <div style="margin-top: 12px;" class="row">
           <button class="btn btn-danger" (click)="endLobby()">
-            {{ 'confirmEndLobby' | t }}
+            {{ 'confirmCloseLobby' | t }}
           </button>
           <button class="btn" (click)="confirmingEnd = false">
             {{ 'cancel' | t }}

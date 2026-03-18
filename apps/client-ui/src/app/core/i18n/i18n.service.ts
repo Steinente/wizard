@@ -21,11 +21,20 @@ export class I18nService {
     if (stored === 'en' || stored === 'de') {
       this.languageSignal.set(stored)
     }
+
+    this.syncDocumentLanguage(this.languageSignal())
   }
 
   setLanguage(language: TranslationLanguage) {
     this.languageSignal.set(language)
     this.storage.set(LANGUAGE_KEY, language)
+    this.syncDocumentLanguage(language)
+  }
+
+  private syncDocumentLanguage(language: TranslationLanguage) {
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = language
+    }
   }
 
   t(key: TranslationKey): string {

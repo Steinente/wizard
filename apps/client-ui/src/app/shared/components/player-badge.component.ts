@@ -12,7 +12,12 @@ import { TPipe } from '../pipes/t.pipe'
       [style.outlineOffset]="active ? '0' : '0'"
     >
       <div class="spread">
-        <strong>{{ name }}</strong>
+        <strong class="name-wrap">
+          <span>{{ name }}</span>
+          @if (showCloudIndicator) {
+            <span class="cloud-indicator" title="Cloud adjustment pending">☁</span>
+          }
+        </strong>
         <span class="status-pill" [class]="connected ? 'status-online' : 'status-offline'">{{
           connected ? ('online' | t) : ('offline' | t)
         }}</span>
@@ -27,6 +32,21 @@ import { TPipe } from '../pipes/t.pipe'
       </div>
     </div>
   `,
+  styles: [
+    `
+      .name-wrap {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .cloud-indicator {
+        font-size: 14px;
+        line-height: 1;
+        color: #4a90d9;
+      }
+    `,
+  ],
 })
 export class PlayerBadgeComponent {
   @Input({ required: true }) name!: string
@@ -35,4 +55,5 @@ export class PlayerBadgeComponent {
   @Input() tricksWon = 0
   @Input() prediction: number | null = null
   @Input() active = false
+  @Input() showCloudIndicator = false
 }

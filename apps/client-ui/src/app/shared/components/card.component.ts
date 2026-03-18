@@ -28,13 +28,25 @@ import { SUIT_BACKGROUNDS } from '../utils/suit-colors.util'
       (click)="handlePlay()"
     >
       <div class="wiz-card-value">{{ primaryText }}</div>
-      <div class="wiz-card-title">{{ title }}</div>
+      @if (middleLabel) {
+        <div class="wiz-card-middle-label">{{ middleLabel }}</div>
+      }
+      <div class="wiz-card-title" [class.wiz-card-title-top]="pinTitleTop">
+        {{ title }}
+      </div>
       @if (subtitle) {
         <div class="wiz-card-subtitle">{{ subtitle }}</div>
       }
       @if (shapeShifterMode) {
-        <div class="wiz-card-subtitle" style="margin-top: 4px; font-size: 11px; font-weight: 600;">
-          ({{ shapeShifterMode === 'card.wizard' ? ('card.wizard' | t) : ('card.jester' | t) }})
+        <div
+          class="wiz-card-subtitle"
+          style="margin-top: 4px; font-size: 11px; font-weight: 600;"
+        >
+          ({{
+            shapeShifterMode === 'card.wizard'
+              ? ('card.wizard' | t)
+              : ('card.jester' | t)
+          }})
         </div>
       }
     </button>
@@ -44,6 +56,7 @@ import { SUIT_BACKGROUNDS } from '../utils/suit-colors.util'
       .wiz-card {
         width: 110px;
         min-height: 150px;
+        position: relative;
         border: 2px solid var(--border);
         border-radius: 14px;
         padding: 10px;
@@ -65,16 +78,39 @@ import { SUIT_BACKGROUNDS } from '../utils/suit-colors.util'
         font-weight: 700;
         line-height: 1.1;
         white-space: normal;
-        overflow-wrap: anywhere;
-        word-break: break-word;
+        hyphens: auto;
+        overflow-wrap: break-word;
+        word-break: normal;
+      }
+
+      .wiz-card-title-top {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        right: 10px;
       }
 
       .wiz-card-subtitle {
         font-size: 12px;
         line-height: 1.1;
         white-space: normal;
-        overflow-wrap: anywhere;
-        word-break: break-word;
+        hyphens: auto;
+        overflow-wrap: break-word;
+        word-break: normal;
+      }
+
+      .wiz-card-middle-label {
+        position: absolute;
+        left: 8px;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        text-align: center;
+        font-size: 11px;
+        font-weight: 700;
+        line-height: 1.1;
+        pointer-events: none;
+        text-shadow: 0 1px 2px rgb(0 0 0 / 0.25);
       }
     `,
   ],
@@ -83,6 +119,7 @@ export class CardComponent {
   private readonly i18n = inject(I18nService)
 
   @Input({ required: true }) card!: Card
+  @Input() middleLabel: string | null = null
   @Input() playable = false
   @Input() disabled = false
   @Input() play!: (card: Card) => void
@@ -119,6 +156,14 @@ export class CardComponent {
     return null
   }
 
+  get pinTitleTop(): boolean {
+    return (
+      !!this.middleLabel &&
+      this.card.type === 'special' &&
+      this.card.special === 'shapeShifter'
+    )
+  }
+
   get background() {
     // Check if this is a cloud or juggler card with a chosen suit
     if (
@@ -152,7 +197,7 @@ export class CardComponent {
     }
 
     if (this.card.type === 'number') {
-      return '#ffffff'
+      return this.card.suit === 'yellow' ? '#111827' : '#ffffff'
     }
 
     return '#0f172a'

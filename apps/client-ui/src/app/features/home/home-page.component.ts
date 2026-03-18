@@ -107,7 +107,7 @@ export class HomePageComponent {
 
   createLobby() {
     if (!this.playerName.trim()) {
-      this.appStore.setError('Player name is required')
+      this.appStore.setError(this.language.t('error.playerNameRequired'))
       return
     }
 
@@ -116,7 +116,9 @@ export class HomePageComponent {
 
   joinLobby() {
     if (!this.joinPlayerName.trim() || !this.joinCode.trim()) {
-      this.appStore.setError('Player name and lobby code are required')
+      this.appStore.setError(
+        this.language.t('error.playerNameAndLobbyCodeRequired'),
+      )
       return
     }
 

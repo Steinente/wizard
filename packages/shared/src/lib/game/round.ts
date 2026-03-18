@@ -7,6 +7,7 @@ export interface RoundPlayerState {
   hand: Card[]
   tricksWon: number
   prediction: PlayerPrediction | null
+  pendingCloudAdjustment?: boolean
 }
 
 export interface RoundState {

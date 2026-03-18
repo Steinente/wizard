@@ -1,11 +1,16 @@
-import { Component, Input, inject } from '@angular/core'
+import {
+  Component,
+  ElementRef,
+  Input,
+  OnChanges,
+  ViewChild,
+  inject,
+} from '@angular/core'
 import type { WizardGameViewState } from '@wizard/shared'
 import { I18nService } from '../../../core/i18n/i18n.service'
 import { TPipe } from '../../../shared/pipes/t.pipe'
-import {
-  normalizeLogParams,
-} from '../utils/log-params.util'
 import { getLogTranslationKey } from '../utils/log-label.util'
+import { normalizeLogParams } from '../utils/log-params.util'
 
 @Component({
   selector: 'wiz-log-panel',
@@ -15,7 +20,11 @@ import { getLogTranslationKey } from '../utils/log-label.util'
     <div class="panel">
       <h3 style="margin-top: 0;">{{ 'logs' | t }}</h3>
 
-      <div class="panel-scroll panel-scroll-compact">
+      <div
+        #scrollContainer
+        class="panel-scroll panel-scroll-compact"
+        (scroll)="onScroll()"
+      >
         <div class="grid" style="gap: 5px;">
           @for (entry of logs; track entry.id) {
             <div class="panel log-entry">
@@ -48,11 +57,34 @@ import { getLogTranslationKey } from '../utils/log-label.util'
     `,
   ],
 })
-export class LogPanelComponent {
+export class LogPanelComponent implements OnChanges {
   private readonly i18n = inject(I18nService)
+
+  @ViewChild('scrollContainer')
+  private scrollContainer?: ElementRef<HTMLElement>
 
   @Input({ required: true }) logs: WizardGameViewState['logs'] = []
   @Input({ required: true }) players: WizardGameViewState['players'] = []
+
+  private isAtBottom = true
+
+  onScroll() {
+    const el = this.scrollContainer?.nativeElement
+    if (!el) return
+    const threshold = 8
+    this.isAtBottom =
+      el.scrollHeight - el.scrollTop - el.clientHeight <= threshold
+  }
+
+  ngOnChanges() {
+    if (!this.isAtBottom) return
+    requestAnimationFrame(() => {
+      const el = this.scrollContainer?.nativeElement
+      if (el) {
+        el.scrollTop = el.scrollHeight
+      }
+    })
+  }
 
   private replacePlayerIds(
     params?: Record<string, string | number | boolean | null>,

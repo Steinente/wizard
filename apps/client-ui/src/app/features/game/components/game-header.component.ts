@@ -27,7 +27,7 @@ const SPECIAL_TRUMP_REASON_CARDS = new Set([
       <div class="spread">
         <div>
           <h2 style="margin: 0;">{{ 'gameTable' | t }}</h2>
-          <div class="muted">Lobby {{ state.lobbyCode }}</div>
+          <div class="muted">{{ 'lobby' | t }} {{ state.lobbyCode }}</div>
         </div>
 
         <div class="row" style="flex-wrap: wrap; justify-content: flex-end;">
@@ -158,7 +158,9 @@ export class GameHeaderComponent {
   }
 
   get trumpForeground() {
-    return '#ffffff'
+    return this.state.currentRound?.trumpSuit === 'yellow'
+      ? '#111827'
+      : '#ffffff'
   }
 
   get trumpBorder() {

@@ -15,7 +15,7 @@ import { TPipe } from '../../shared/pipes/t.pipe'
     <div class="page-shell">
       @if (!store.lobby()) {
         <div class="panel">
-          <h2 style="margin-top: 0;">Lobby {{ routeCode }}</h2>
+          <h2 style="margin-top: 0;">{{ 'lobby' | t }} {{ routeCode }}</h2>
 
           @if (store.error()) {
             <div class="error-box" style="margin-bottom: 16px;">
@@ -43,7 +43,9 @@ import { TPipe } from '../../shared/pipes/t.pipe'
           <div class="panel">
             <div class="spread">
               <div>
-                <h2 style="margin: 0;">Lobby {{ store.lobby()!.code }}</h2>
+                <h2 style="margin: 0;">
+                  {{ 'lobby' | t }} {{ store.lobby()!.code }}
+                </h2>
                 <div class="row" style="margin-top: 8px;">
                   <button class="btn" (click)="copyCode()">
                     {{ 'copyCode' | t }}
@@ -78,7 +80,12 @@ import { TPipe } from '../../shared/pipes/t.pipe'
                         }
                       </strong>
 
-                      <span class="status-pill" [class]="player.connected ? 'status-online' : 'status-offline'">
+                      <span
+                        class="status-pill"
+                        [class]="
+                          player.connected ? 'status-online' : 'status-offline'
+                        "
+                      >
                         {{
                           player.connected
                             ? ('connected' | t)
@@ -117,7 +124,7 @@ import { TPipe } from '../../shared/pipes/t.pipe'
                 </button>
 
                 <button class="btn btn-danger" (click)="endLobby()">
-                  {{ 'endLobby' | t }}
+                  {{ 'closeLobby' | t }}
                 </button>
               } @else {
                 <button class="btn btn-danger" (click)="leaveLobby()">
@@ -173,7 +180,6 @@ import { TPipe } from '../../shared/pipes/t.pipe'
                 {{ 'predictionRestrictionMustNotEqual' | t }}
               </option>
             </select>
-
           </div>
         </div>
       }
@@ -238,15 +244,13 @@ export class LobbyPageComponent {
       }, 2000)
     })
 
-    navigator.clipboard
-      .writeText(`${window.location.origin}/lobby/${code}`)
-      .catch(() => {
-        this.ngZone.run(() => {
-          this.copied = false
-          this.appStore.setError(this.i18n.t('copyFailed'))
-          this.cdr.markForCheck()
-        })
+    navigator.clipboard.writeText(code).catch(() => {
+      this.ngZone.run(() => {
+        this.copied = false
+        this.appStore.setError(this.i18n.t('copyFailed'))
+        this.cdr.markForCheck()
       })
+    })
   }
 
   joinCurrentLobby() {
@@ -327,5 +331,4 @@ export class LobbyPageComponent {
 
     this.facade.updateConfig(lobby.code, { openPredictionRestriction })
   }
-
 }

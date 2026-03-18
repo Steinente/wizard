@@ -25,6 +25,7 @@ import { TPipe } from '../../../shared/pipes/t.pipe'
             [tricksWon]="getTricksWon(player.playerId)"
             [prediction]="getPrediction(player.playerId)"
             [active]="isActive(player.playerId)"
+            [showCloudIndicator]="hasPendingCloudAdjustment(player.playerId)"
           />
         }
       </div>
@@ -56,5 +57,13 @@ export class PlayerListPanelComponent {
     }
 
     return this.state.currentRound?.activePlayerId === playerId
+  }
+
+  hasPendingCloudAdjustment(playerId: string) {
+    return (
+      this.state.currentRound?.players.find(
+        (player) => player.playerId === playerId,
+      )?.pendingCloudAdjustment === true
+    )
   }
 }
