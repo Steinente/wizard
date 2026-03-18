@@ -137,58 +137,71 @@ import { TPipe } from '../../shared/pipes/t.pipe'
           <div class="panel">
             <h3>{{ 'rules' | t }}</h3>
 
-            <label class="label">
-              {{ 'predictionVisibilityLabel' | t }}
-              <span
-                class="info-icon"
-                [title]="i18n.t('predictionVisibilityInfo')"
-                >?</span
+            <div [style.opacity]="isHost() ? 1 : 0.55">
+              <label class="label">
+                {{ 'predictionVisibilityLabel' | t }}
+                <span
+                  class="info-icon"
+                  [title]="i18n.t('predictionVisibilityInfo')"
+                  >?</span
+                >
+              </label>
+
+              <select
+                class="select"
+                [disabled]="!isHost()"
+                [ngModel]="store.lobby()!.config.predictionVisibility"
+                (ngModelChange)="setPredictionVisibility($event)"
               >
-            </label>
+                <option value="open">{{ 'predictionOpen' | t }}</option>
+                <option value="hidden">{{ 'predictionHidden' | t }}</option>
+                <option value="secret">{{ 'predictionSecret' | t }}</option>
+              </select>
 
-            <select
-              class="select"
-              [disabled]="!isHost()"
-              [ngModel]="store.lobby()!.config.predictionVisibility"
-              (ngModelChange)="setPredictionVisibility($event)"
-            >
-              <option value="open">{{ 'predictionOpen' | t }}</option>
-              <option value="hidden">{{ 'predictionHidden' | t }}</option>
-              <option value="secret">{{ 'predictionSecret' | t }}</option>
-            </select>
+              <label
+                class="label"
+                style="margin-top: 14px;"
+                [style.opacity]="
+                  !isHost()
+                    ? 1
+                    : store.lobby()!.config.predictionVisibility !== 'open'
+                      ? 0.55
+                      : 1
+                "
+              >
+                {{ 'openRestrictionLabel' | t }}
+                <span class="info-icon" [title]="i18n.t('openRestrictionInfo')"
+                  >?</span
+                >
+              </label>
 
-            <label
-              class="label"
-              style="margin-top: 14px;"
-              [style.opacity]="
-                store.lobby()!.config.predictionVisibility !== 'open' ? 0.55 : 1
-              "
-            >
-              {{ 'openRestrictionLabel' | t }}
-            </label>
-
-            <select
-              class="select"
-              [style.opacity]="
-                store.lobby()!.config.predictionVisibility !== 'open' ? 0.55 : 1
-              "
-              [disabled]="
-                !isHost() ||
-                store.lobby()!.config.predictionVisibility !== 'open'
-              "
-              [ngModel]="store.lobby()!.config.openPredictionRestriction"
-              (ngModelChange)="setPredictionRestriction($event)"
-            >
-              <option value="none">
-                {{ 'predictionRestrictionNone' | t }}
-              </option>
-              <option value="mustEqualTricks">
-                {{ 'predictionRestrictionMustEqual' | t }}
-              </option>
-              <option value="mustNotEqualTricks">
-                {{ 'predictionRestrictionMustNotEqual' | t }}
-              </option>
-            </select>
+              <select
+                class="select"
+                [style.opacity]="
+                  !isHost()
+                    ? 1
+                    : store.lobby()!.config.predictionVisibility !== 'open'
+                      ? 0.55
+                      : 1
+                "
+                [disabled]="
+                  !isHost() ||
+                  store.lobby()!.config.predictionVisibility !== 'open'
+                "
+                [ngModel]="store.lobby()!.config.openPredictionRestriction"
+                (ngModelChange)="setPredictionRestriction($event)"
+              >
+                <option value="none">
+                  {{ 'predictionRestrictionNone' | t }}
+                </option>
+                <option value="mustEqualTricks">
+                  {{ 'predictionRestrictionMustEqual' | t }}
+                </option>
+                <option value="mustNotEqualTricks">
+                  {{ 'predictionRestrictionMustNotEqual' | t }}
+                </option>
+              </select>
+            </div>
           </div>
         </div>
       }

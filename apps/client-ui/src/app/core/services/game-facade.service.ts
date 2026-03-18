@@ -26,6 +26,11 @@ export class GameFacadeService {
 
     socket.on('connect', () => {
       this.store.setError(null)
+      this.listLobbies()
+    })
+
+    socket.on('lobby:list', (payload) => {
+      this.store.setLobbyList(payload.lobbies)
     })
 
     socket.on('lobby:created', (payload) => {
@@ -55,11 +60,18 @@ export class GameFacadeService {
     })
 
     socket.on('lobby:updated', (payload) => {
+      const previousPlayers = this.store.lobby()?.players ?? []
       const currentPlayerId = this.store.playerId()
 
       this.store.setLobby(payload.lobby)
       this.session.setLobbyConfig(payload.lobby.config)
 
+      const newOtherPlayers = payload.lobby.players.filter(
+        (p) => p.id !== currentPlayerId && !previousPlayers.some((prev) => prev.id === p.id),
+      )
+      if (newOtherPlayers.length > 0) {
+        this.audio.bing()
+      }
       if (
         currentPlayerId &&
         !payload.lobby.players.some((player) => player.id === currentPlayerId)
@@ -195,7 +207,11 @@ export class GameFacadeService {
     }
   }
 
-  createLobby(playerName: string, config?: Partial<GameConfig>) {
+  createLobby(
+    playerName: string,
+    config?: Partial<GameConfig>,
+    password?: string,
+  ) {
     this.store.setLoading(true)
     this.store.setError(null)
     this.session.setPlayerName(playerName)
@@ -205,11 +221,12 @@ export class GameFacadeService {
     this.socketService.getSocket().emit('lobby:create', {
       playerName,
       sessionToken: this.session.sessionToken(),
+      password,
       config: resolvedConfig,
     })
   }
 
-  joinLobby(code: string, playerName: string) {
+  joinLobby(code: string, playerName: string, password?: string) {
     this.store.setLoading(true)
     this.store.setError(null)
     this.session.setPlayerName(playerName)
@@ -219,7 +236,26 @@ export class GameFacadeService {
       code,
       playerName,
       sessionToken: this.session.sessionToken(),
+      password,
     })
+  }
+
+  spectateLobby(code: string, playerName: string, password?: string) {
+    this.store.setLoading(true)
+    this.store.setError(null)
+    this.session.setPlayerName(playerName)
+    this.session.setLastLobbyCode(code)
+
+    this.socketService.getSocket().emit('lobby:spectate', {
+      code,
+      playerName,
+      sessionToken: this.session.sessionToken(),
+      password,
+    })
+  }
+
+  listLobbies() {
+    this.socketService.getSocket().emit('lobby:list')
   }
 
   reconnectLobby(code: string) {
@@ -350,6 +386,14 @@ export class GameFacadeService {
 
   setAudioEnabled(code: string, enabled: boolean) {
     this.applyAudioEnabled(code, enabled, false)
+  }
+
+  setInGame(code: string, inGame: boolean) {
+    this.socketService.getSocket().emit('player:setInGame', {
+      code,
+      sessionToken: this.session.sessionToken(),
+      inGame,
+    })
   }
 
   private applyAudioEnabled(code: string, enabled: boolean, silent: boolean) {

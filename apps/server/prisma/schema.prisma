@@ -29,6 +29,7 @@ enum OpenPredictionRestriction {
 enum PlayerRole {
   HOST
   PLAYER
+  SPECTATOR
 }
 
 model Lobby {
@@ -59,6 +60,7 @@ model Player {
   name           String
   role           PlayerRole
   connected      Boolean    @default(true)
+  inGame         Boolean    @default(false)
   joinedAt       DateTime   @default(now())
   disconnectedAt DateTime?
   audioEnabled   Boolean    @default(false)

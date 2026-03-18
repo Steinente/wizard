@@ -1,4 +1,5 @@
 import type { GameConfig, LobbySummary } from '@wizard/shared'
+import crypto from 'node:crypto'
 import { prisma } from '../db/prisma.js'
 import {
   LobbyStatus,
@@ -10,8 +11,12 @@ import { defaultGameConfig } from '../utils/default-game-config.js'
 import { mapLobbyToSummary } from './lobby-mapper.js'
 
 const CODE_LENGTH = 6
+const lobbyPasswordHashes = new Map<string, string>()
 
 const normalizeCode = (code: string) => code.trim().toUpperCase()
+const normalizePassword = (password: string | undefined) => password?.trim() ?? ''
+const hashPassword = (password: string) =>
+  crypto.createHash('sha256').update(password).digest('hex')
 const now = () => new Date()
 
 const includePlayersByJoinOrder = () => ({
@@ -102,6 +107,58 @@ const loadLobbyByIdWithPlayersOrThrow = (id: string) =>
     include: includePlayersByJoinOrder(),
   })
 
+const loadJoinableLobbiesWithPlayers = () =>
+  prisma.lobby.findMany({
+    where: {
+      status: { in: [LobbyStatus.WAITING, LobbyStatus.RUNNING] },
+    },
+    include: {
+      ...includePlayersByJoinOrder(),
+      gameState: {
+        select: {
+          createdAt: true,
+        },
+      },
+    },
+  })
+
+type JoinableLobby = Awaited<ReturnType<typeof loadJoinableLobbiesWithPlayers>>[number]
+
+const activePlayersCount = (lobby: JoinableLobby) =>
+  lobby.players.filter((player) => player.role !== PlayerRole.SPECTATOR).length
+
+const runningStartTime = (lobby: JoinableLobby) =>
+  (lobby.gameState?.createdAt ?? lobby.updatedAt).getTime()
+
+const compareJoinableLobbies = (a: JoinableLobby, b: JoinableLobby) => {
+  const aWaiting = a.status === LobbyStatus.WAITING
+  const bWaiting = b.status === LobbyStatus.WAITING
+
+  // Waiting lobbies are always shown first.
+  if (aWaiting !== bWaiting) {
+    return aWaiting ? -1 : 1
+  }
+
+  if (aWaiting) {
+    // Fewer active players first.
+    const byPlayers = activePlayersCount(a) - activePlayersCount(b)
+    if (byPlayers !== 0) {
+      return byPlayers
+    }
+
+    // If player count is equal, newest lobby first.
+    return b.createdAt.getTime() - a.createdAt.getTime()
+  }
+
+  // Running lobbies: newest started game first (least time elapsed).
+  const byStartTime = runningStartTime(b) - runningStartTime(a)
+  if (byStartTime !== 0) {
+    return byStartTime
+  }
+
+  return b.createdAt.getTime() - a.createdAt.getTime()
+}
+
 const toPredictionVisibility = (value: GameConfig['predictionVisibility']) =>
   value === 'hidden'
     ? PredictionVisibility.HIDDEN
@@ -138,10 +195,16 @@ const generateLobbyCode = async (): Promise<string> => {
   }
 }
 
+const withPasswordFlag = (summary: LobbySummary): LobbySummary => ({
+  ...summary,
+  hasPassword: lobbyPasswordHashes.has(summary.code),
+})
+
 export class LobbyService {
   async createLobby(input: {
     playerName: string
     sessionToken: string
+    password?: string
     config?: Partial<GameConfig>
   }): Promise<{ lobby: LobbySummary; playerId: string }> {
     const lastKnownHostedConfig = await getLastKnownHostedConfig(
@@ -155,6 +218,7 @@ export class LobbyService {
     }
 
     const code = await generateLobbyCode()
+    const password = normalizePassword(input.password)
 
     const audioEnabledFromPrevious = await getLastKnownAudioEnabled(
       input.sessionToken,
@@ -179,6 +243,7 @@ export class LobbyService {
             sessionToken: input.sessionToken,
             role: PlayerRole.HOST,
             connected: true,
+            inGame: false,
             audioEnabled: audioEnabledFromPrevious,
           },
         },
@@ -196,8 +261,14 @@ export class LobbyService {
       include: includePlayersByJoinOrder(),
     })
 
+    if (password) {
+      lobbyPasswordHashes.set(code, hashPassword(password))
+    } else {
+      lobbyPasswordHashes.delete(code)
+    }
+
     return {
-      lobby: mapLobbyToSummary(lobby),
+      lobby: withPasswordFlag(mapLobbyToSummary(lobby)),
       playerId: hostPlayer.id,
     }
   }
@@ -206,8 +277,10 @@ export class LobbyService {
     code: string
     playerName: string
     sessionToken: string
+    password?: string
   }): Promise<{ lobby: LobbySummary; playerId: string }> {
     const lobby = await loadLobbyByCodeWithPlayers(input.code)
+    const normalizedCode = normalizeCode(input.code)
 
     if (!lobby || lobby.status === LobbyStatus.CLOSED) {
       throw new Error('error.lobbyNotFound')
@@ -215,6 +288,19 @@ export class LobbyService {
 
     if (lobby.status !== LobbyStatus.WAITING) {
       throw new Error('error.lobbyNotAccepting')
+    }
+
+    const requiredHash = lobbyPasswordHashes.get(normalizedCode)
+    if (requiredHash) {
+      const password = normalizePassword(input.password)
+
+      if (!password) {
+        throw new Error('error.lobbyPasswordRequired')
+      }
+
+      if (hashPassword(password) !== requiredHash) {
+        throw new Error('error.lobbyPasswordInvalid')
+      }
     }
 
     if (lobby.players.length >= 6) {
@@ -231,6 +317,7 @@ export class LobbyService {
         where: { id: existingByToken.id },
         data: {
           connected: true,
+          inGame: false,
           name: input.playerName.trim(),
           disconnectedAt: null,
         },
@@ -239,7 +326,7 @@ export class LobbyService {
       const refreshed = await loadLobbyByIdWithPlayersOrThrow(lobby.id)
 
       return {
-        lobby: mapLobbyToSummary(refreshed),
+        lobby: withPasswordFlag(mapLobbyToSummary(refreshed)),
         playerId: updated.id,
       }
     }
@@ -255,6 +342,7 @@ export class LobbyService {
         sessionToken: input.sessionToken,
         role: PlayerRole.PLAYER,
         connected: true,
+        inGame: false,
         audioEnabled: audioEnabledFromPrevious,
       },
     })
@@ -262,9 +350,85 @@ export class LobbyService {
     const refreshed = await loadLobbyByIdWithPlayersOrThrow(lobby.id)
 
     return {
-      lobby: mapLobbyToSummary(refreshed),
+      lobby: withPasswordFlag(mapLobbyToSummary(refreshed)),
       playerId: created.id,
     }
+  }
+
+  async spectateLobby(input: {
+    code: string
+    playerName: string
+    sessionToken: string
+    password?: string
+  }): Promise<{ lobby: LobbySummary; playerId: string }> {
+    const lobby = await loadLobbyByCodeWithPlayers(input.code)
+    const normalizedCode = normalizeCode(input.code)
+
+    if (!lobby || lobby.status === LobbyStatus.CLOSED) {
+      throw new Error('error.lobbyNotFound')
+    }
+
+    if (lobby.status !== LobbyStatus.RUNNING) {
+      throw new Error('error.lobbyNotRunning')
+    }
+
+    const requiredHash = lobbyPasswordHashes.get(normalizedCode)
+    if (requiredHash) {
+      const password = normalizePassword(input.password)
+
+      if (!password) {
+        throw new Error('error.lobbyPasswordRequired')
+      }
+
+      if (hashPassword(password) !== requiredHash) {
+        throw new Error('error.lobbyPasswordInvalid')
+      }
+    }
+
+    const existingByToken = findPlayerBySessionToken(
+      lobby.players,
+      input.sessionToken,
+    )
+
+    if (existingByToken) {
+      const updated = await prisma.player.update({
+        where: { id: existingByToken.id },
+        data: {
+          connected: true,
+          inGame: true,
+          name: input.playerName.trim(),
+          disconnectedAt: null,
+        },
+      })
+
+      const refreshed = await loadLobbyByIdWithPlayersOrThrow(lobby.id)
+      return { lobby: withPasswordFlag(mapLobbyToSummary(refreshed)), playerId: updated.id }
+    }
+
+    const audioEnabledFromPrevious = await getLastKnownAudioEnabled(input.sessionToken)
+
+    const created = await prisma.player.create({
+      data: {
+        lobbyId: lobby.id,
+        name: input.playerName.trim(),
+        sessionToken: input.sessionToken,
+        role: PlayerRole.SPECTATOR,
+        connected: true,
+        inGame: true,
+        audioEnabled: audioEnabledFromPrevious,
+      },
+    })
+
+    const refreshed = await loadLobbyByIdWithPlayersOrThrow(lobby.id)
+    return { lobby: withPasswordFlag(mapLobbyToSummary(refreshed)), playerId: created.id }
+  }
+
+  async listLobbies(): Promise<LobbySummary[]> {
+    const lobbies = await loadJoinableLobbiesWithPlayers()
+
+    lobbies.sort(compareJoinableLobbies)
+
+    return lobbies.map((lobby) => withPasswordFlag(mapLobbyToSummary(lobby)))
   }
 
   async reconnectLobby(input: {
@@ -287,6 +451,8 @@ export class LobbyService {
       where: { id: player.id },
       data: {
         connected: true,
+        inGame:
+          lobby.status === LobbyStatus.RUNNING && player.role !== PlayerRole.SPECTATOR,
         disconnectedAt: null,
       },
     })
@@ -306,7 +472,7 @@ export class LobbyService {
     })
 
     return {
-      lobby: mapLobbyToSummary(refreshed),
+      lobby: withPasswordFlag(mapLobbyToSummary(refreshed)),
       playerId: player.id,
     }
   }
@@ -337,7 +503,7 @@ export class LobbyService {
 
     const refreshed = await loadLobbyByIdWithPlayersOrThrow(lobby.id)
 
-    return mapLobbyToSummary(refreshed)
+    return withPasswordFlag(mapLobbyToSummary(refreshed))
   }
 
   async updateConfig(input: {
@@ -373,7 +539,7 @@ export class LobbyService {
       include: includePlayersByJoinOrder(),
     })
 
-    return mapLobbyToSummary(updated)
+    return withPasswordFlag(mapLobbyToSummary(updated))
   }
 
   async kickPlayer(input: {
@@ -412,7 +578,7 @@ export class LobbyService {
     const refreshed = await loadLobbyByIdWithPlayersOrThrow(lobby.id)
 
     return {
-      lobby: mapLobbyToSummary(refreshed),
+      lobby: withPasswordFlag(mapLobbyToSummary(refreshed)),
       kickedSessionToken: targetPlayer.sessionToken,
     }
   }
@@ -443,6 +609,8 @@ export class LobbyService {
       },
     })
 
+    lobbyPasswordHashes.delete(lobby.code)
+
     return lobby.code
   }
 
@@ -466,6 +634,7 @@ export class LobbyService {
       where: { id: player.id },
       data: {
         connected: false,
+        inGame: false,
         disconnectedAt: now(),
       },
     })
@@ -484,7 +653,36 @@ export class LobbyService {
       include: includePlayersByJoinOrder(),
     })
 
-    return mapLobbyToSummary(refreshed)
+    return withPasswordFlag(mapLobbyToSummary(refreshed))
+  }
+
+  async setPlayerInGame(input: {
+    code: string
+    sessionToken: string
+    inGame: boolean
+  }): Promise<void> {
+    const lobby = await loadLobbyByCodeWithUnorderedPlayers(input.code)
+
+    if (!lobby) {
+      throw new Error('error.lobbyNotFound')
+    }
+
+    const player = findPlayerBySessionToken(lobby.players, input.sessionToken)
+
+    if (!player) {
+      throw new Error('error.playerNotFound')
+    }
+
+    if (player.role === PlayerRole.SPECTATOR) {
+      return
+    }
+
+    await prisma.player.update({
+      where: { id: player.id },
+      data: {
+        inGame: input.inGame,
+      },
+    })
   }
 
   async closeExpiredHostLobbies(): Promise<string[]> {
@@ -507,6 +705,10 @@ export class LobbyService {
     }
 
     const codes = expired.map((entry) => entry.code)
+
+    for (const code of codes) {
+      lobbyPasswordHashes.delete(code)
+    }
 
     await prisma.lobby.updateMany({
       where: {

@@ -1,6 +1,7 @@
-import { Component } from '@angular/core'
+import { Component, OnDestroy, OnInit } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { Router } from '@angular/router'
+import type { LobbySummary } from '@wizard/shared'
 import { I18nService } from '../../core/i18n/i18n.service'
 import type { TranslationLanguage } from '../../core/i18n/translations'
 import { GameFacadeService } from '../../core/services/game-facade.service'
@@ -37,10 +38,17 @@ import { TPipe } from '../../shared/pipes/t.pipe'
           <div class="error-box">{{ store.error() }}</div>
         }
 
+        <div class="panel">
+          <label class="label">{{ 'playerName' | t }}</label>
+          <input class="input" [(ngModel)]="playerName" />
+        </div>
+
         <div class="grid" style="grid-template-columns: 1fr 1fr;">
           <div class="panel">
-            <label class="label">{{ 'playerName' | t }}</label>
-            <input class="input" [(ngModel)]="playerName" />
+            <h3 style="margin-top: 0;">{{ 'createLobby' | t }}</h3>
+
+            <label class="label">{{ 'lobbyPasswordOptional' | t }}</label>
+            <input class="input" [(ngModel)]="createPassword" type="password" />
 
             <div style="margin-top: 16px;">
               <button
@@ -54,13 +62,15 @@ import { TPipe } from '../../shared/pipes/t.pipe'
           </div>
 
           <div class="panel">
-            <label class="label">{{ 'playerName' | t }}</label>
-            <input class="input" [(ngModel)]="joinPlayerName" />
+            <h3 style="margin-top: 0;">{{ 'joinLobby' | t }}</h3>
+
+            <label class="label">{{ 'lobbyCode' | t }}</label>
+            <input class="input" [(ngModel)]="joinCode" />
 
             <label class="label" style="margin-top: 12px;">{{
-              'lobbyCode' | t
+              'lobbyPassword' | t
             }}</label>
-            <input class="input" [(ngModel)]="joinCode" />
+            <input class="input" [(ngModel)]="joinPassword" type="password" />
 
             <div style="margin-top: 16px;" class="row">
               <button
@@ -83,14 +93,103 @@ import { TPipe } from '../../shared/pipes/t.pipe'
             </div>
           </div>
         </div>
+
+        <div class="panel">
+          <div style="margin-bottom: 12px;">
+            <h3 style="margin: 0;">{{ 'lobbyListTitle' | t }}</h3>
+          </div>
+
+          @if (!store.lobbyList().length) {
+            <div class="muted">{{ 'noLobbiesAvailable' | t }}</div>
+          } @else {
+            <div class="grid" style="gap: 10px;">
+              @for (lobby of store.lobbyList(); track lobby.code) {
+                <div class="panel" style="padding: 10px;">
+                  <div class="spread" style="align-items: center;">
+                    <div>
+                      <div>
+                        <strong>{{ lobby.code }}</strong>
+                        @if (lobby.hasPassword) {
+                          <span class="muted">
+                            • {{ 'passwordProtected' | t }}</span
+                          >
+                        }
+                        <span class="muted"> • </span
+                        ><span
+                          class="muted"
+                          [style.color]="
+                            isLobbyRunning(lobby.status)
+                              ? 'var(--color-warning, #e6a817)'
+                              : 'inherit'
+                          "
+                          >{{ statusLabel(lobby.status) }}</span
+                        >
+                      </div>
+                      <div class="muted">
+                        {{ 'players' | t }}: {{ playingPlayersCount(lobby) }}/6
+                        • {{ 'spectators' | t }}: {{ spectatorsCount(lobby) }}
+                      </div>
+                    </div>
+
+                    <div class="row" style="align-items: center; gap: 8px;">
+                      @if (lobby.hasPassword) {
+                        <input
+                          class="input"
+                          [(ngModel)]="lobbyPasswords[lobby.code]"
+                          type="password"
+                          [placeholder]="'lobbyPasswordShort' | t"
+                          style="width: 150px;"
+                        />
+                      }
+                      @if (isLobbyRunning(lobby.status)) {
+                        @if (canReconnectLobby(lobby)) {
+                          <button
+                            class="btn"
+                            [disabled]="store.loading()"
+                            (click)="reconnectListedLobby(lobby.code)"
+                          >
+                            {{ 'reconnect' | t }}
+                          </button>
+                        } @else {
+                          <button
+                            class="btn"
+                            [disabled]="store.loading()"
+                            (click)="
+                              spectateListedLobby(lobby.code, lobby.hasPassword)
+                            "
+                          >
+                            {{ 'watchAsSpectator' | t }}
+                          </button>
+                        }
+                      } @else {
+                        <button
+                          class="btn btn-primary"
+                          [disabled]="store.loading()"
+                          (click)="
+                            joinListedLobby(lobby.code, lobby.hasPassword)
+                          "
+                        >
+                          {{ 'joinThisLobby' | t }}
+                        </button>
+                      }
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
       </div>
     </div>
   `,
 })
-export class HomePageComponent {
+export class HomePageComponent implements OnInit, OnDestroy {
   playerName = this.session.playerName()
-  joinPlayerName = this.session.playerName()
   joinCode = this.session.lastLobbyCode()
+  createPassword = ''
+  joinPassword = ''
+  lobbyPasswords: Record<string, string> = {}
+  private refreshIntervalId: ReturnType<typeof setInterval> | null = null
   protected readonly store = this.appStore
 
   constructor(
@@ -105,17 +204,104 @@ export class HomePageComponent {
     this.language.setLanguage(language)
   }
 
+  ngOnInit() {
+    this.refreshLobbies()
+    this.refreshIntervalId = setInterval(() => {
+      this.refreshLobbies()
+    }, 5000)
+  }
+
+  ngOnDestroy() {
+    if (this.refreshIntervalId) {
+      clearInterval(this.refreshIntervalId)
+      this.refreshIntervalId = null
+    }
+  }
+
+  isLobbyRunning(status: string) {
+    return status.trim().toLowerCase() === 'running'
+  }
+
+  statusLabel(status: string) {
+    return this.isLobbyRunning(status)
+      ? this.language.t('lobbyStatusRunning')
+      : this.language.t('lobbyStatusWaiting')
+  }
+
+  playingPlayersCount(lobby: LobbySummary) {
+    return lobby.players.filter((player) => player.role !== 'spectator').length
+  }
+
+  spectatorsCount(lobby: LobbySummary) {
+    return lobby.players.filter((player) => player.role === 'spectator').length
+  }
+
+  canReconnectLobby(lobby: LobbySummary) {
+    const token = this.session.sessionToken()
+
+    return lobby.players.some(
+      (player) => player.sessionToken === token && player.role !== 'spectator',
+    )
+  }
+
+  private currentActiveGameLobby(excludeCode?: string) {
+    const token = this.session.sessionToken()
+    const exclude = excludeCode?.trim().toUpperCase()
+
+    return this.store
+      .lobbyList()
+      .find(
+        (lobby) =>
+          this.isLobbyRunning(lobby.status) &&
+          lobby.code !== exclude &&
+          lobby.players.some(
+            (player) =>
+              player.sessionToken === token && player.role !== 'spectator',
+          ),
+      )
+  }
+
+  private confirmSwitchFromCurrentGame(targetCode: string) {
+    const previousLobby = this.currentActiveGameLobby(targetCode)
+
+    if (!previousLobby) {
+      return true
+    }
+
+    const confirmed = window.confirm(
+      this.language.format('confirmSwitchGameWarning', {
+        currentCode: previousLobby.code,
+      }),
+    )
+
+    if (!confirmed) {
+      return false
+    }
+
+    this.facade.leaveLobby(previousLobby.code)
+    return true
+  }
+
+  private trimmedPassword(value: string) {
+    const normalized = value.trim()
+    return normalized.length > 0 ? normalized : undefined
+  }
+
   createLobby() {
     if (!this.playerName.trim()) {
       this.appStore.setError(this.language.t('error.playerNameRequired'))
       return
     }
 
-    this.facade.createLobby(this.playerName.trim())
+    this.facade.createLobby(
+      this.playerName.trim(),
+      undefined,
+      this.trimmedPassword(this.createPassword),
+    )
   }
 
   joinLobby() {
-    if (!this.joinPlayerName.trim() || !this.joinCode.trim()) {
+    if (!this.playerName.trim() || !this.joinCode.trim()) {
       this.appStore.setError(
         this.language.t('error.playerNameAndLobbyCodeRequired'),
       )
@@ -124,7 +310,15 @@ export class HomePageComponent {
 
     const code = this.joinCode.trim().toUpperCase()
 
-    this.facade.joinLobby(code, this.joinPlayerName.trim())
+    if (!this.confirmSwitchFromCurrentGame(code)) {
+      return
+    }
+
+    this.facade.joinLobby(
+      code,
+      this.playerName.trim(),
+      this.trimmedPassword(this.joinPassword),
+    )
     this.router.navigateByUrl(`/lobby/${code}`)
   }
 
@@ -136,5 +330,56 @@ export class HomePageComponent {
     }
 
     this.facade.reconnectLobby(code)
+  }
+
+  reconnectListedLobby(code: string) {
+    this.facade.reconnectLobby(code)
+  }
+
+  spectateListedLobby(code: string, hasPassword: boolean) {
+    if (!this.playerName.trim()) {
+      this.appStore.setError(this.language.t('error.playerNameRequired'))
+      return
+    }
+
+    if (!this.confirmSwitchFromCurrentGame(code)) {
+      return
+    }
+
+    const password = this.lobbyPasswords[code]?.trim()
+    if (hasPassword && !password) {
+      this.appStore.setError(this.language.t('error.lobbyPasswordRequired'))
+      return
+    }
+
+    this.facade.spectateLobby(
+      code,
+      this.playerName.trim(),
+      password || undefined,
+    )
+  }
+
+  joinListedLobby(code: string, hasPassword: boolean) {
+    if (!this.playerName.trim()) {
+      this.appStore.setError(this.language.t('error.playerNameRequired'))
+      return
+    }
+
+    if (!this.confirmSwitchFromCurrentGame(code)) {
+      return
+    }
+
+    const password = this.lobbyPasswords[code]?.trim()
+    if (hasPassword && !password) {
+      this.appStore.setError(this.language.t('error.lobbyPasswordRequired'))
+      return
+    }
+
+    this.facade.joinLobby(code, this.playerName.trim(), password || undefined)
+    this.router.navigateByUrl(`/lobby/${code}`)
+  }
+
+  refreshLobbies() {
+    this.facade.listLobbies()
   }
 }

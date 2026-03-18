@@ -18,9 +18,7 @@ import { TPipe } from '../pipes/t.pipe'
             <span class="cloud-indicator" title="Cloud adjustment pending">☁</span>
           }
         </strong>
-        <span class="status-pill" [class]="connected ? 'status-online' : 'status-offline'">{{
-          connected ? ('online' | t) : ('offline' | t)
-        }}</span>
+        <span class="status-pill" [class]="statusClass">{{ statusText | t }}</span>
       </div>
 
       <div class="row" style="margin-top: 8px; flex-wrap: wrap;">
@@ -50,10 +48,26 @@ import { TPipe } from '../pipes/t.pipe'
 })
 export class PlayerBadgeComponent {
   @Input({ required: true }) name!: string
-  @Input({ required: true }) connected!: boolean
+  @Input({ required: true }) presence!: 'online' | 'away' | 'offline'
   @Input({ required: true }) seatIndex!: number
   @Input() tricksWon = 0
   @Input() prediction: number | null = null
   @Input() active = false
   @Input() showCloudIndicator = false
+
+  get statusClass() {
+    return this.presence === 'online'
+      ? 'status-online'
+      : this.presence === 'away'
+        ? 'status-away'
+        : 'status-offline'
+  }
+
+  get statusText() {
+    return this.presence === 'online'
+      ? 'online'
+      : this.presence === 'away'
+        ? 'notInGame'
+        : 'offline'
+  }
 }

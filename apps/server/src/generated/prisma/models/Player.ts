@@ -31,6 +31,7 @@ export type PlayerMinAggregateOutputType = {
   name: string | null
   role: $Enums.PlayerRole | null
   connected: boolean | null
+  inGame: boolean | null
   joinedAt: Date | null
   disconnectedAt: Date | null
   audioEnabled: boolean | null
@@ -45,6 +46,7 @@ export type PlayerMaxAggregateOutputType = {
   name: string | null
   role: $Enums.PlayerRole | null
   connected: boolean | null
+  inGame: boolean | null
   joinedAt: Date | null
   disconnectedAt: Date | null
   audioEnabled: boolean | null
@@ -59,6 +61,7 @@ export type PlayerCountAggregateOutputType = {
   name: number
   role: number
   connected: number
+  inGame: number
   joinedAt: number
   disconnectedAt: number
   audioEnabled: number
@@ -75,6 +78,7 @@ export type PlayerMinAggregateInputType = {
   name?: true
   role?: true
   connected?: true
+  inGame?: true
   joinedAt?: true
   disconnectedAt?: true
   audioEnabled?: true
@@ -89,6 +93,7 @@ export type PlayerMaxAggregateInputType = {
   name?: true
   role?: true
   connected?: true
+  inGame?: true
   joinedAt?: true
   disconnectedAt?: true
   audioEnabled?: true
@@ -103,6 +108,7 @@ export type PlayerCountAggregateInputType = {
   name?: true
   role?: true
   connected?: true
+  inGame?: true
   joinedAt?: true
   disconnectedAt?: true
   audioEnabled?: true
@@ -190,6 +196,7 @@ export type PlayerGroupByOutputType = {
   name: string
   role: $Enums.PlayerRole
   connected: boolean
+  inGame: boolean
   joinedAt: Date
   disconnectedAt: Date | null
   audioEnabled: boolean
@@ -225,6 +232,7 @@ export type PlayerWhereInput = {
   name?: Prisma.StringFilter<"Player"> | string
   role?: Prisma.EnumPlayerRoleFilter<"Player"> | $Enums.PlayerRole
   connected?: Prisma.BoolFilter<"Player"> | boolean
+  inGame?: Prisma.BoolFilter<"Player"> | boolean
   joinedAt?: Prisma.DateTimeFilter<"Player"> | Date | string
   disconnectedAt?: Prisma.DateTimeNullableFilter<"Player"> | Date | string | null
   audioEnabled?: Prisma.BoolFilter<"Player"> | boolean
@@ -240,6 +248,7 @@ export type PlayerOrderByWithRelationInput = {
   name?: Prisma.SortOrder
   role?: Prisma.SortOrder
   connected?: Prisma.SortOrder
+  inGame?: Prisma.SortOrder
   joinedAt?: Prisma.SortOrder
   disconnectedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   audioEnabled?: Prisma.SortOrder
@@ -260,6 +269,7 @@ export type PlayerWhereUniqueInput = Prisma.AtLeast<{
   name?: Prisma.StringFilter<"Player"> | string
   role?: Prisma.EnumPlayerRoleFilter<"Player"> | $Enums.PlayerRole
   connected?: Prisma.BoolFilter<"Player"> | boolean
+  inGame?: Prisma.BoolFilter<"Player"> | boolean
   joinedAt?: Prisma.DateTimeFilter<"Player"> | Date | string
   disconnectedAt?: Prisma.DateTimeNullableFilter<"Player"> | Date | string | null
   audioEnabled?: Prisma.BoolFilter<"Player"> | boolean
@@ -275,6 +285,7 @@ export type PlayerOrderByWithAggregationInput = {
   name?: Prisma.SortOrder
   role?: Prisma.SortOrder
   connected?: Prisma.SortOrder
+  inGame?: Prisma.SortOrder
   joinedAt?: Prisma.SortOrder
   disconnectedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   audioEnabled?: Prisma.SortOrder
@@ -295,6 +306,7 @@ export type PlayerScalarWhereWithAggregatesInput = {
   name?: Prisma.StringWithAggregatesFilter<"Player"> | string
   role?: Prisma.EnumPlayerRoleWithAggregatesFilter<"Player"> | $Enums.PlayerRole
   connected?: Prisma.BoolWithAggregatesFilter<"Player"> | boolean
+  inGame?: Prisma.BoolWithAggregatesFilter<"Player"> | boolean
   joinedAt?: Prisma.DateTimeWithAggregatesFilter<"Player"> | Date | string
   disconnectedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Player"> | Date | string | null
   audioEnabled?: Prisma.BoolWithAggregatesFilter<"Player"> | boolean
@@ -308,6 +320,7 @@ export type PlayerCreateInput = {
   name: string
   role: $Enums.PlayerRole
   connected?: boolean
+  inGame?: boolean
   joinedAt?: Date | string
   disconnectedAt?: Date | string | null
   audioEnabled?: boolean
@@ -323,6 +336,7 @@ export type PlayerUncheckedCreateInput = {
   name: string
   role: $Enums.PlayerRole
   connected?: boolean
+  inGame?: boolean
   joinedAt?: Date | string
   disconnectedAt?: Date | string | null
   audioEnabled?: boolean
@@ -336,6 +350,7 @@ export type PlayerUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.EnumPlayerRoleFieldUpdateOperationsInput | $Enums.PlayerRole
   connected?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  inGame?: Prisma.BoolFieldUpdateOperationsInput | boolean
   joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   disconnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   audioEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -351,6 +366,7 @@ export type PlayerUncheckedUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.EnumPlayerRoleFieldUpdateOperationsInput | $Enums.PlayerRole
   connected?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  inGame?: Prisma.BoolFieldUpdateOperationsInput | boolean
   joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   disconnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   audioEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -365,6 +381,7 @@ export type PlayerCreateManyInput = {
   name: string
   role: $Enums.PlayerRole
   connected?: boolean
+  inGame?: boolean
   joinedAt?: Date | string
   disconnectedAt?: Date | string | null
   audioEnabled?: boolean
@@ -378,6 +395,7 @@ export type PlayerUpdateManyMutationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.EnumPlayerRoleFieldUpdateOperationsInput | $Enums.PlayerRole
   connected?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  inGame?: Prisma.BoolFieldUpdateOperationsInput | boolean
   joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   disconnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   audioEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -392,6 +410,7 @@ export type PlayerUncheckedUpdateManyInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.EnumPlayerRoleFieldUpdateOperationsInput | $Enums.PlayerRole
   connected?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  inGame?: Prisma.BoolFieldUpdateOperationsInput | boolean
   joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   disconnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   audioEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -426,6 +445,7 @@ export type PlayerCountOrderByAggregateInput = {
   name?: Prisma.SortOrder
   role?: Prisma.SortOrder
   connected?: Prisma.SortOrder
+  inGame?: Prisma.SortOrder
   joinedAt?: Prisma.SortOrder
   disconnectedAt?: Prisma.SortOrder
   audioEnabled?: Prisma.SortOrder
@@ -440,6 +460,7 @@ export type PlayerMaxOrderByAggregateInput = {
   name?: Prisma.SortOrder
   role?: Prisma.SortOrder
   connected?: Prisma.SortOrder
+  inGame?: Prisma.SortOrder
   joinedAt?: Prisma.SortOrder
   disconnectedAt?: Prisma.SortOrder
   audioEnabled?: Prisma.SortOrder
@@ -454,6 +475,7 @@ export type PlayerMinOrderByAggregateInput = {
   name?: Prisma.SortOrder
   role?: Prisma.SortOrder
   connected?: Prisma.SortOrder
+  inGame?: Prisma.SortOrder
   joinedAt?: Prisma.SortOrder
   disconnectedAt?: Prisma.SortOrder
   audioEnabled?: Prisma.SortOrder
@@ -513,6 +535,7 @@ export type PlayerCreateWithoutLobbyInput = {
   name: string
   role: $Enums.PlayerRole
   connected?: boolean
+  inGame?: boolean
   joinedAt?: Date | string
   disconnectedAt?: Date | string | null
   audioEnabled?: boolean
@@ -526,6 +549,7 @@ export type PlayerUncheckedCreateWithoutLobbyInput = {
   name: string
   role: $Enums.PlayerRole
   connected?: boolean
+  inGame?: boolean
   joinedAt?: Date | string
   disconnectedAt?: Date | string | null
   audioEnabled?: boolean
@@ -569,6 +593,7 @@ export type PlayerScalarWhereInput = {
   name?: Prisma.StringFilter<"Player"> | string
   role?: Prisma.EnumPlayerRoleFilter<"Player"> | $Enums.PlayerRole
   connected?: Prisma.BoolFilter<"Player"> | boolean
+  inGame?: Prisma.BoolFilter<"Player"> | boolean
   joinedAt?: Prisma.DateTimeFilter<"Player"> | Date | string
   disconnectedAt?: Prisma.DateTimeNullableFilter<"Player"> | Date | string | null
   audioEnabled?: Prisma.BoolFilter<"Player"> | boolean
@@ -582,6 +607,7 @@ export type PlayerCreateManyLobbyInput = {
   name: string
   role: $Enums.PlayerRole
   connected?: boolean
+  inGame?: boolean
   joinedAt?: Date | string
   disconnectedAt?: Date | string | null
   audioEnabled?: boolean
@@ -595,6 +621,7 @@ export type PlayerUpdateWithoutLobbyInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.EnumPlayerRoleFieldUpdateOperationsInput | $Enums.PlayerRole
   connected?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  inGame?: Prisma.BoolFieldUpdateOperationsInput | boolean
   joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   disconnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   audioEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -608,6 +635,7 @@ export type PlayerUncheckedUpdateWithoutLobbyInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.EnumPlayerRoleFieldUpdateOperationsInput | $Enums.PlayerRole
   connected?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  inGame?: Prisma.BoolFieldUpdateOperationsInput | boolean
   joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   disconnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   audioEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -621,6 +649,7 @@ export type PlayerUncheckedUpdateManyWithoutLobbyInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.EnumPlayerRoleFieldUpdateOperationsInput | $Enums.PlayerRole
   connected?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  inGame?: Prisma.BoolFieldUpdateOperationsInput | boolean
   joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   disconnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   audioEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -637,6 +666,7 @@ export type PlayerSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   name?: boolean
   role?: boolean
   connected?: boolean
+  inGame?: boolean
   joinedAt?: boolean
   disconnectedAt?: boolean
   audioEnabled?: boolean
@@ -652,6 +682,7 @@ export type PlayerSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   name?: boolean
   role?: boolean
   connected?: boolean
+  inGame?: boolean
   joinedAt?: boolean
   disconnectedAt?: boolean
   audioEnabled?: boolean
@@ -667,6 +698,7 @@ export type PlayerSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   name?: boolean
   role?: boolean
   connected?: boolean
+  inGame?: boolean
   joinedAt?: boolean
   disconnectedAt?: boolean
   audioEnabled?: boolean
@@ -682,6 +714,7 @@ export type PlayerSelectScalar = {
   name?: boolean
   role?: boolean
   connected?: boolean
+  inGame?: boolean
   joinedAt?: boolean
   disconnectedAt?: boolean
   audioEnabled?: boolean
@@ -689,7 +722,7 @@ export type PlayerSelectScalar = {
   updatedAt?: boolean
 }
 
-export type PlayerOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "lobbyId" | "sessionToken" | "name" | "role" | "connected" | "joinedAt" | "disconnectedAt" | "audioEnabled" | "createdAt" | "updatedAt", ExtArgs["result"]["player"]>
+export type PlayerOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "lobbyId" | "sessionToken" | "name" | "role" | "connected" | "inGame" | "joinedAt" | "disconnectedAt" | "audioEnabled" | "createdAt" | "updatedAt", ExtArgs["result"]["player"]>
 export type PlayerInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   lobby?: boolean | Prisma.LobbyDefaultArgs<ExtArgs>
 }
@@ -712,6 +745,7 @@ export type $PlayerPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     name: string
     role: $Enums.PlayerRole
     connected: boolean
+    inGame: boolean
     joinedAt: Date
     disconnectedAt: Date | null
     audioEnabled: boolean
@@ -1147,6 +1181,7 @@ export interface PlayerFieldRefs {
   readonly name: Prisma.FieldRef<"Player", 'String'>
   readonly role: Prisma.FieldRef<"Player", 'PlayerRole'>
   readonly connected: Prisma.FieldRef<"Player", 'Boolean'>
+  readonly inGame: Prisma.FieldRef<"Player", 'Boolean'>
   readonly joinedAt: Prisma.FieldRef<"Player", 'DateTime'>
   readonly disconnectedAt: Prisma.FieldRef<"Player", 'DateTime'>
   readonly audioEnabled: Prisma.FieldRef<"Player", 'Boolean'>

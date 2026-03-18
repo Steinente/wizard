@@ -16,6 +16,7 @@ export interface GamePlayerViewMeta {
   name: string
   seatIndex: number
   connected: boolean
+  presence: 'online' | 'away' | 'offline'
   isHost: boolean
   audioEnabled: boolean
 }
@@ -65,6 +66,7 @@ export interface WizardGameViewState {
   lobbyStatus: LobbyStatus
   config: GameConfig
   players: GamePlayerViewMeta[]
+  spectators: string[]
   phase: GamePhase
   maxRounds: number
   currentRound: RoundViewState | null

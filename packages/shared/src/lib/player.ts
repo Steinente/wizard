@@ -1,4 +1,4 @@
-export type PlayerRole = 'host' | 'player'
+export type PlayerRole = 'host' | 'player' | 'spectator'
 
 export interface PlayerIdentity {
   id: string

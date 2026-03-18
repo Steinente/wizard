@@ -693,6 +693,7 @@ export const PlayerScalarFieldEnum = {
   name: 'name',
   role: 'role',
   connected: 'connected',
+  inGame: 'inGame',
   joinedAt: 'joinedAt',
   disconnectedAt: 'disconnectedAt',
   audioEnabled: 'audioEnabled',

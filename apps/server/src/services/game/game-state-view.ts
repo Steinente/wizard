@@ -68,12 +68,18 @@ const toRoundView = (
 export const createGameStateView = (
   state: WizardGameState,
   selfPlayerId: string,
+  spectators: string[],
+  playerPresence: Record<string, 'online' | 'away' | 'offline'>,
 ): WizardGameViewState => ({
   selfPlayerId,
   lobbyCode: state.lobbyCode,
   lobbyStatus: state.lobbyStatus,
   config: state.config,
-  players: state.players,
+  players: state.players.map((player) => ({
+    ...player,
+    presence: playerPresence[player.playerId] ?? 'offline',
+  })),
+  spectators,
   phase: state.phase,
   maxRounds: state.maxRounds,
   currentRound: state.currentRound

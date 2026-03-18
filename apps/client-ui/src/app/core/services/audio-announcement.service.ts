@@ -18,6 +18,32 @@ export class AudioAnnouncementService {
     this.trySpeakNext()
   }
 
+  bing() {
+    if (typeof window === 'undefined' || !('AudioContext' in window || 'webkitAudioContext' in window)) {
+      return
+    }
+
+    const AudioCtx = (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext ?? AudioContext
+    const ctx = new AudioCtx()
+    const oscillator = ctx.createOscillator()
+    const gain = ctx.createGain()
+
+    oscillator.connect(gain)
+    gain.connect(ctx.destination)
+
+    oscillator.type = 'sine'
+    oscillator.frequency.setValueAtTime(880, ctx.currentTime)
+    oscillator.frequency.exponentialRampToValueAtTime(1320, ctx.currentTime + 0.08)
+
+    gain.gain.setValueAtTime(0.4, ctx.currentTime)
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4)
+
+    oscillator.start(ctx.currentTime)
+    oscillator.stop(ctx.currentTime + 0.4)
+
+    oscillator.onended = () => ctx.close()
+  }
+
   unlock() {
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
       return

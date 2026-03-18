@@ -4,12 +4,14 @@ import type { LobbySummary, WizardGameViewState } from '@wizard/shared'
 @Injectable({ providedIn: 'root' })
 export class AppStore {
   private readonly lobbySignal = signal<LobbySummary | null>(null)
+  private readonly lobbyListSignal = signal<LobbySummary[]>([])
   private readonly gameStateSignal = signal<WizardGameViewState | null>(null)
   private readonly playerIdSignal = signal<string | null>(null)
   private readonly errorSignal = signal<string | null>(null)
   private readonly loadingSignal = signal(false)
 
   readonly lobby = computed(() => this.lobbySignal())
+  readonly lobbyList = computed(() => this.lobbyListSignal())
   readonly gameState = computed(() => this.gameStateSignal())
   readonly playerId = computed(() => this.playerIdSignal())
   readonly error = computed(() => this.errorSignal())
@@ -17,6 +19,10 @@ export class AppStore {
 
   setLobby(lobby: LobbySummary | null) {
     this.lobbySignal.set(lobby)
+  }
+
+  setLobbyList(lobbies: LobbySummary[]) {
+    this.lobbyListSignal.set(lobbies)
   }
 
   setGameState(state: WizardGameViewState | null) {

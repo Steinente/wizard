@@ -3,6 +3,7 @@ import { z } from 'zod'
 export const createLobbySchema = z.object({
   playerName: z.string().trim().min(1).max(24),
   sessionToken: z.string().trim().min(1).max(200),
+  password: z.string().trim().max(64).optional(),
   config: z
     .object({
       predictionVisibility: z.enum(['open', 'hidden', 'secret']).optional(),
@@ -19,7 +20,17 @@ export const joinLobbySchema = z.object({
   code: z.string().trim().min(4).max(12),
   playerName: z.string().trim().min(1).max(24),
   sessionToken: z.string().trim().min(1).max(200),
+  password: z.string().trim().max(64).optional(),
 })
+
+export const spectateLobbySchema = z.object({
+  code: z.string().trim().min(4).max(12),
+  playerName: z.string().trim().min(1).max(24),
+  sessionToken: z.string().trim().min(1).max(200),
+  password: z.string().trim().max(64).optional(),
+})
+
+export const listLobbiesSchema = z.object({}).optional()
 
 export const reconnectLobbySchema = z.object({
   code: z.string().trim().min(4).max(12),
@@ -116,4 +127,10 @@ export const setAudioEnabledSchema = z.object({
   code: z.string().trim().min(4).max(12),
   sessionToken: z.string().trim().min(1).max(200),
   enabled: z.boolean(),
+})
+
+export const setInGameSchema = z.object({
+  code: z.string().trim().min(4).max(12),
+  sessionToken: z.string().trim().min(1).max(200),
+  inGame: z.boolean(),
 })

@@ -62,34 +62,43 @@ import { TrickAreaComponent } from './components/trick-area.component'
               [resolvedCardEffects]="store.gameState()!.resolvedCardEffects"
             />
 
-            @if (myPendingDecision()) {
-              <wiz-pending-decision-panel
-                [decision]="myPendingDecision()"
-                [onSelectTrump]="selectTrumpFn"
-                [onResolveWerewolfTrumpSwap]="resolveWerewolfTrumpSwapFn"
-                [onResolveShapeShifter]="resolveShapeShifterFn"
-                [onResolveCloudSuit]="resolveCloudSuitFn"
-                [onResolveCloudAdjustment]="resolveCloudAdjustmentFn"
-                [onResolveJugglerSuit]="resolveJugglerSuitFn"
+            @if (!isSpectator()) {
+              @if (myPendingDecision()) {
+                <wiz-pending-decision-panel
+                  class="active-turn"
+                  [decision]="myPendingDecision()"
+                  [onSelectTrump]="selectTrumpFn"
+                  [onResolveWerewolfTrumpSwap]="resolveWerewolfTrumpSwapFn"
+                  [onResolveShapeShifter]="resolveShapeShifterFn"
+                  [onResolveCloudSuit]="resolveCloudSuitFn"
+                  [onResolveCloudAdjustment]="resolveCloudAdjustmentFn"
+                  [onResolveJugglerSuit]="resolveJugglerSuitFn"
+                />
+              } @else if (foreignPendingDecisionText()) {
+                <div class="panel">
+                  <span class="muted">{{ foreignPendingDecisionText() }}</span>
+                </div>
+              }
+
+              @if (canPredict()) {
+                <wiz-prediction-panel
+                  class="active-turn"
+                  [values]="predictionOptions()"
+                  [submit]="predictFn"
+                />
+              }
+
+              <wiz-hand-area
+                [class.active-turn]="isMyTurnToPlay()"
+                [cards]="myHand()"
+                [canPlay]="canPlayCardFn"
+                [play]="playCardFn"
               />
-            } @else if (foreignPendingDecisionText()) {
+            } @else {
               <div class="panel">
-                <span class="muted">{{ foreignPendingDecisionText() }}</span>
+                <span class="muted">{{ 'spectatorMode' | t }}</span>
               </div>
             }
-
-            @if (canPredict()) {
-              <wiz-prediction-panel
-                [values]="predictionOptions()"
-                [submit]="predictFn"
-              />
-            }
-
-            <wiz-hand-area
-              [cards]="myHand()"
-              [canPlay]="canPlayCardFn"
-              [play]="playCardFn"
-            />
           </div>
 
           <div class="game-column">
@@ -151,6 +160,13 @@ export class GamePageComponent {
     )
   }
 
+  isSpectator() {
+    const state = this.store.gameState()
+
+    if (!state) return false
+    return !state.players.some((p) => p.playerId === state.selfPlayerId)
+  }
+
   myHand() {
     const state = this.store.gameState()
     const selfId = state?.selfPlayerId
@@ -206,6 +222,10 @@ export class GamePageComponent {
       state.phase === 'prediction' &&
       state.currentRound?.activePlayerId === state.selfPlayerId
     )
+  }
+
+  isMyTurnToPlay() {
+    return this.myHand().some((card) => this.canPlayCard(card))
   }
 
   predictionOptions() {

@@ -20,7 +20,7 @@ import { TPipe } from '../../../shared/pipes/t.pipe'
                 ? ' (' + ('self' | t) + ')'
                 : '')
             "
-            [connected]="player.connected"
+            [presence]="player.presence"
             [seatIndex]="player.seatIndex"
             [tricksWon]="getTricksWon(player.playerId)"
             [prediction]="getPrediction(player.playerId)"

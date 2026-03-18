@@ -4,9 +4,12 @@ import type { WizardGameViewState } from './game/state-view.js'
 import type { LobbySummary } from './lobby.js'
 
 export interface ClientToServerEvents {
+  'lobby:list': () => void
+
   'lobby:create': (payload: {
     playerName: string
     sessionToken: string
+    password?: string
     config?: Partial<GameConfig>
   }) => void
 
@@ -14,6 +17,14 @@ export interface ClientToServerEvents {
     code: string
     playerName: string
     sessionToken: string
+    password?: string
+  }) => void
+
+  'lobby:spectate': (payload: {
+    code: string
+    playerName: string
+    sessionToken: string
+    password?: string
   }) => void
 
   'lobby:reconnect': (payload: { code: string; sessionToken: string }) => void
@@ -98,9 +109,17 @@ export interface ClientToServerEvents {
     sessionToken: string
     enabled: boolean
   }) => void
+
+  'player:setInGame': (payload: {
+    code: string
+    sessionToken: string
+    inGame: boolean
+  }) => void
 }
 
 export interface ServerToClientEvents {
+  'lobby:list': (payload: { lobbies: LobbySummary[] }) => void
+
   'lobby:created': (payload: { lobby: LobbySummary; playerId: string }) => void
   'lobby:joined': (payload: { lobby: LobbySummary; playerId: string }) => void
   'lobby:updated': (payload: { lobby: LobbySummary }) => void

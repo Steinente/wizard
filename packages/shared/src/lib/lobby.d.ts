@@ -5,6 +5,7 @@ export interface LobbySummary {
     code: string;
     hostPlayerId: string;
     status: LobbyStatus;
+    hasPassword: boolean;
     config: GameConfig;
     players: Array<PlayerIdentity & PlayerLobbyState>;
     createdAt: string;

@@ -1,16 +1,25 @@
 import type { GameConfig } from './game-config.js';
-import type { WizardGameState } from './game/state.js';
+import type { WizardGameViewState } from './game/state-view.js';
 import type { LobbySummary } from './lobby.js';
 export interface ClientToServerEvents {
+    'lobby:list': () => void;
     'lobby:create': (payload: {
         playerName: string;
         sessionToken: string;
+        password?: string;
         config?: Partial<GameConfig>;
     }) => void;
     'lobby:join': (payload: {
         code: string;
         playerName: string;
         sessionToken: string;
+        password?: string;
+    }) => void;
+    'lobby:spectate': (payload: {
+        code: string;
+        playerName: string;
+        sessionToken: string;
+        password?: string;
     }) => void;
     'lobby:reconnect': (payload: {
         code: string;
@@ -50,10 +59,19 @@ export interface ClientToServerEvents {
         sessionToken: string;
         enabled: boolean;
     }) => void;
+    'player:setInGame': (payload: {
+        code: string;
+        sessionToken: string;
+        inGame: boolean;
+    }) => void;
 }
 export interface ServerToClientEvents {
+    'lobby:list': (payload: {
+        lobbies: LobbySummary[];
+    }) => void;
     'lobby:created': (payload: {
         lobby: LobbySummary;
+        playerId: string;
     }) => void;
     'lobby:joined': (payload: {
         lobby: LobbySummary;
@@ -67,7 +85,7 @@ export interface ServerToClientEvents {
         reason: string;
     }) => void;
     'game:state': (payload: {
-        state: WizardGameState;
+        state: WizardGameViewState;
     }) => void;
     'game:event': (payload: {
         type: 'predictionAccepted' | 'cardPlayed' | 'trickResolved' | 'roundScored' | 'specialEffect' | 'audioPreferenceChanged';

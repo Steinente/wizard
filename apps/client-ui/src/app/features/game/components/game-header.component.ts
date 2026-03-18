@@ -3,6 +3,7 @@ import { Router } from '@angular/router'
 import type { WizardGameViewState } from '@wizard/shared'
 import { I18nService } from '../../../core/i18n/i18n.service'
 import type { TranslationKey } from '../../../core/i18n/translations'
+import { GameFacadeService } from '../../../core/services/game-facade.service'
 import { TPipe } from '../../../shared/pipes/t.pipe'
 import { SUIT_BACKGROUNDS } from '../../../shared/utils/suit-colors.util'
 import {
@@ -28,6 +29,10 @@ const SPECIAL_TRUMP_REASON_CARDS = new Set([
         <div>
           <h2 style="margin: 0;">{{ 'gameTable' | t }}</h2>
           <div class="muted">{{ 'lobby' | t }} {{ state.lobbyCode }}</div>
+          <div class="muted">
+            {{ 'rules' | t }}: {{ predictionVisibilityText }} |
+            {{ openRestrictionText }}
+          </div>
         </div>
 
         <div class="row" style="flex-wrap: wrap; justify-content: flex-end;">
@@ -45,23 +50,75 @@ const SPECIAL_TRUMP_REASON_CARDS = new Set([
           </span>
 
           <span class="status-pill">{{ 'round' | t }} {{ roundLabel }}</span>
+          <span
+            class="status-pill"
+            role="button"
+            tabindex="0"
+            (click)="toggleSpectators()"
+            (keydown.enter)="toggleSpectators()"
+            (keydown.space)="toggleSpectators()"
+            style="cursor: pointer; user-select: none;"
+          >
+            {{ 'spectators' | t }} {{ spectatorCount }}
+          </span>
           <button class="btn" type="button" (click)="confirmLeaveGame()">
             {{ 'home' | t }}
           </button>
         </div>
       </div>
+
+      @if (showSpectators) {
+        <div class="panel" style="margin-top: 10px;">
+          <div class="label" style="margin-bottom: 8px;">
+            {{ 'spectators' | t }}:
+          </div>
+          @if (!state.spectators.length) {
+            <div class="muted">{{ 'noSpectators' | t }}</div>
+          } @else {
+            <div class="grid" style="gap: 6px;">
+              @for (spectator of state.spectators; track spectator) {
+                <div class="muted">{{ spectator }}</div>
+              }
+            </div>
+          }
+        </div>
+      }
     </div>
   `,
 })
 export class GameHeaderComponent {
   private readonly i18n = inject(I18nService)
   private readonly router = inject(Router)
+  private readonly facade = inject(GameFacadeService)
   private readonly t = (key: TranslationKey) => this.i18n.t(key)
+  showSpectators = false
 
   @Input({ required: true }) state!: WizardGameViewState
 
   get translatedPhase() {
     return this.i18n.t(`phase_${this.state.phase}` as TranslationKey)
+  }
+
+  get predictionVisibilityText() {
+    const key =
+      this.state.config.predictionVisibility === 'open'
+        ? 'predictionOpen'
+        : this.state.config.predictionVisibility === 'hidden'
+          ? 'predictionHidden'
+          : 'predictionSecret'
+
+    return this.i18n.t(key as TranslationKey)
+  }
+
+  get openRestrictionText() {
+    const key =
+      this.state.config.openPredictionRestriction === 'mustEqualTricks'
+        ? 'predictionRestrictionMustEqual'
+        : this.state.config.openPredictionRestriction === 'mustNotEqualTricks'
+          ? 'predictionRestrictionMustNotEqual'
+          : 'predictionRestrictionNone'
+
+    return this.i18n.t(key as TranslationKey)
   }
 
   private getTranslatedCardReason() {
@@ -150,6 +207,10 @@ export class GameHeaderComponent {
     return this.state.currentRound?.roundNumber ?? '-'
   }
 
+  get spectatorCount() {
+    return this.state.spectators.length
+  }
+
   get trumpBackground() {
     const suit = this.state.currentRound?.trumpSuit
 
@@ -170,10 +231,25 @@ export class GameHeaderComponent {
     return this.trumpBackground
   }
 
+  toggleSpectators() {
+    this.showSpectators = !this.showSpectators
+  }
+
+  isSpectator() {
+    return !this.state.players.some(
+      (player) => player.playerId === this.state.selfPlayerId,
+    )
+  }
+
   confirmLeaveGame() {
     const confirmed = window.confirm(this.i18n.t('confirmLeaveGame'))
 
     if (confirmed) {
+      if (this.isSpectator()) {
+        this.facade.leaveLobby(this.state.lobbyCode)
+      } else {
+        this.facade.setInGame(this.state.lobbyCode, false)
+      }
       this.router.navigateByUrl('/')
     }
   }

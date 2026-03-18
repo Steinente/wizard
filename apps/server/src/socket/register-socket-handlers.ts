@@ -8,6 +8,7 @@ import {
   gameStartSchema,
   joinLobbySchema,
   kickPlayerSchema,
+  listLobbiesSchema,
   makePredictionSchema,
   playCardSchema,
   reconnectLobbySchema,
@@ -17,8 +18,10 @@ import {
   resolveShapeShifterSchema,
   resolveWerewolfTrumpSwapSchema,
   selectJugglerPassCardSchema,
+  setInGameSchema,
   selectTrumpSuitSchema,
   setAudioEnabledSchema,
+  spectateLobbySchema,
   updateConfigSchema,
 } from './schemas.js'
 import { SocketSessionStore } from './socket-session-store.js'
@@ -81,6 +84,21 @@ const emitStateForCode = async (
   await emitStateToLobby(io, roomCode, room, sessionStore, gameService)
 }
 
+const emitLobbyList = async (
+  io: WizardIoServer,
+  lobbyService: LobbyService,
+  socket?: WizardSocket,
+) => {
+  const lobbies = await lobbyService.listLobbies()
+
+  if (socket) {
+    socket.emit('lobby:list', { lobbies })
+    return
+  }
+
+  io.emit('lobby:list', { lobbies })
+}
+
 const resolveCompletedTrickAfterDelay = async (
   io: WizardIoServer,
   code: string,
@@ -138,6 +156,18 @@ export const registerSocketHandlers = (
   gameService: GameService,
   sessionStore: SocketSessionStore,
 ) => {
+  socket.on('lobby:list', async () => {
+    try {
+      listLobbiesSchema.parse({})
+      await emitLobbyList(io, lobbyService, socket)
+    } catch (error) {
+      emitError(
+        socket,
+        error instanceof Error ? error.message : 'error.lobbyListFailed',
+      )
+    }
+  })
+
   socket.on('lobby:create', async (payload) => {
     try {
       const input = createLobbySchema.parse(payload)
@@ -154,6 +184,7 @@ export const registerSocketHandlers = (
         playerId: result.playerId,
       })
       io.to(result.lobby.code).emit('lobby:updated', { lobby: result.lobby })
+      await emitLobbyList(io, lobbyService)
     } catch (error) {
       emitError(
         socket,
@@ -178,6 +209,31 @@ export const registerSocketHandlers = (
         playerId: result.playerId,
       })
       io.to(result.lobby.code).emit('lobby:updated', { lobby: result.lobby })
+      await emitLobbyList(io, lobbyService)
+    } catch (error) {
+      emitError(
+        socket,
+        error instanceof Error ? error.message : 'error.joinFailed',
+      )
+    }
+  })
+
+  socket.on('lobby:spectate', async (payload) => {
+    try {
+      const input = spectateLobbySchema.parse(payload)
+      const result = await lobbyService.spectateLobby(input)
+
+      sessionStore.set(socket.id, {
+        code: result.lobby.code,
+        sessionToken: input.sessionToken,
+      })
+
+      await socket.join(result.lobby.code)
+      socket.emit('lobby:joined', {
+        lobby: result.lobby,
+        playerId: result.playerId,
+      })
+      await emitStateForCode(io, result.lobby.code, sessionStore, gameService)
     } catch (error) {
       emitError(
         socket,
@@ -227,6 +283,7 @@ export const registerSocketHandlers = (
       sessionStore.delete(socket.id)
 
       io.to(lobby.code).emit('lobby:updated', { lobby })
+      await emitLobbyList(io, lobbyService)
     } catch (error) {
       emitError(
         socket,
@@ -240,6 +297,7 @@ export const registerSocketHandlers = (
       const input = updateConfigSchema.parse(payload)
       const lobby = await lobbyService.updateConfig(input)
       io.to(lobby.code).emit('lobby:updated', { lobby })
+      await emitLobbyList(io, lobbyService)
     } catch (error) {
       emitError(
         socket,
@@ -255,6 +313,7 @@ export const registerSocketHandlers = (
       const result = await lobbyService.kickPlayer(input)
 
       io.to(result.lobby.code).emit('lobby:updated', { lobby: result.lobby })
+      await emitLobbyList(io, lobbyService)
 
       const targetSocket = [...io.sockets.sockets.values()].find((entry) => {
         const session = sessionStore.get(entry.id)
@@ -289,6 +348,7 @@ export const registerSocketHandlers = (
         code,
         reason: 'info.lobbyEndedByHost',
       })
+      await emitLobbyList(io, lobbyService)
     } catch (error) {
       emitError(
         socket,
@@ -306,6 +366,7 @@ export const registerSocketHandlers = (
         const { lobby } = await gameService.startGame(input)
 
         io.to(lobby.code).emit('lobby:updated', { lobby })
+        await emitLobbyList(io, lobbyService)
         await emitStateForCode(io, lobby.code, sessionStore, gameService)
       },
       'error.gameStartFailed',
@@ -484,6 +545,24 @@ export const registerSocketHandlers = (
         await emitStateForCode(io, input.code, sessionStore, gameService)
       },
       'Audio setting failed',
+    )
+  })
+
+  socket.on('player:setInGame', async (payload) => {
+    await runSocketAction(
+      socket,
+      payload,
+      setInGameSchema.parse,
+      async (input) => {
+        await lobbyService.setPlayerInGame(input)
+
+        if (!input.inGame) {
+          await socket.leave(normalizeRoomCode(input.code))
+        }
+
+        await emitStateForCode(io, input.code, sessionStore, gameService)
+      },
+      'Player in-game setting failed',
     )
   })
 

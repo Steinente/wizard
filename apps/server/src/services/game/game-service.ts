@@ -835,6 +835,18 @@ export class GameService {
       },
     })
 
+    await prisma.player.updateMany({
+      where: {
+        lobbyId: lobby.id,
+        role: {
+          not: PlayerRole.SPECTATOR,
+        },
+      },
+      data: {
+        inGame: true,
+      },
+    })
+
     await this.persistState(lobby.id, state)
 
     const updatedLobby = await prisma.lobby.findUniqueOrThrow({
@@ -1551,6 +1563,10 @@ export class GameService {
   async getViewState(input: { code: string; sessionToken: string }) {
     const { lobby, state } = await this.loadStateOrThrow(input.code)
     const player = getPlayerBySessionToken(lobby, input.sessionToken)
+    const spectators = lobby.players
+      .filter((entry) => entry.role === PlayerRole.SPECTATOR && entry.connected)
+      .map((entry) => entry.name)
+    const playerPresence: Record<string, 'online' | 'away' | 'offline'> = {}
 
     // Sync player connection status from lobby to state
     for (const statePlayer of state.players) {
@@ -1559,10 +1575,15 @@ export class GameService {
       )
       if (lobbyPlayer) {
         statePlayer.connected = lobbyPlayer.connected
+        playerPresence[statePlayer.playerId] = !lobbyPlayer.connected
+          ? 'offline'
+          : lobbyPlayer.inGame
+            ? 'online'
+            : 'away'
       }
     }
 
-    return createGameStateView(state, player.id)
+    return createGameStateView(state, player.id, spectators, playerPresence)
   }
 
   async resolvePendingCompletedTrick(code: string) {

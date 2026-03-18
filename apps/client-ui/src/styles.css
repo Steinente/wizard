@@ -163,6 +163,17 @@ button {
   border-color: var(--danger);
 }
 
+.status-away {
+  background-color: #d97706;
+  color: white;
+  border-color: #d97706;
+}
+
+.active-turn {
+  outline: 3px solid var(--accent);
+  border-radius: 14px;
+}
+
 .error-box {
   border: 1px solid #7f1d1d;
   background: rgb(127 29 29 / 0.2);

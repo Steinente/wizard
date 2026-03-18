@@ -12,8 +12,8 @@ type LobbyWithPlayers = Lobby & {
   players: Player[]
 }
 
-const mapPlayerRole = (role: PlayerRole): 'host' | 'player' =>
-  role === 'HOST' ? 'host' : 'player'
+const mapPlayerRole = (role: PlayerRole): 'host' | 'player' | 'spectator' =>
+  role === 'HOST' ? 'host' : role === 'SPECTATOR' ? 'spectator' : 'player'
 
 const mapPredictionVisibility = (value: string): PredictionVisibility =>
   value.toLowerCase() as PredictionVisibility
@@ -70,6 +70,7 @@ export const mapLobbyToSummary = (lobby: LobbyWithPlayers): LobbySummary => {
           : lobby.status === 'FINISHED'
             ? 'finished'
             : 'closed',
+      hasPassword: false,
     config,
     players,
     createdAt: lobby.createdAt.toISOString(),

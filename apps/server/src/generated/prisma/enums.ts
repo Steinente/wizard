@@ -39,7 +39,8 @@ export type OpenPredictionRestriction = (typeof OpenPredictionRestriction)[keyof
 
 export const PlayerRole = {
   HOST: 'HOST',
-  PLAYER: 'PLAYER'
+  PLAYER: 'PLAYER',
+  SPECTATOR: 'SPECTATOR'
 } as const
 
 export type PlayerRole = (typeof PlayerRole)[keyof typeof PlayerRole]
