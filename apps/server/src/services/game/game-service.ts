@@ -1,638 +1,43 @@
-﻿import type {
-  Card,
-  GameConfig,
+import type {
   PlayerPrediction,
-  Suit,
-  WizardGameState,
+  Suit
 } from '@wizard/shared'
 import {
-  calculateRoundScore,
-  createInitialGameState,
   getAllowedPredictionValues,
   isLegalPlay,
-  resolveTrickWinner,
-  setupRound,
   validatePredictionRestriction,
 } from '@wizard/shared'
 import crypto from 'node:crypto'
 import { prisma } from '../../db/prisma.js'
-import {
-  LobbyStatus,
-  PlayerRole,
-} from '../../generated/prisma/client.js'
+import { LobbyStatus, PlayerRole } from '../../generated/prisma/client.js'
 import { mapLobbyToSummary } from '../lobby-mapper.js'
-import { createGameStateView } from './game-state-view.js'
 import {
-  SPECIAL_TRUMP_CARDS,
+  appendCardToCurrentTrick,
+  registerResolvedEffect,
+  removeCardFromHand,
+} from './game-mutations.js'
+import { loadStateOrThrow, persistState } from './game-persistence.js'
+import {
   NO_TRUMP_SELECTABLE_SPECIALS,
-  disablesFollowSuitAsLeadCard,
-  ensurePredictionRevealedForScoring,
   fromJson,
-  getHypotheticalNextLeaderPlayerId,
   getNextPlayerId,
-  getPlayerBeforeRoundLeader,
   getPlayerBySessionToken,
   getReadableCardLabel,
-  getResolvedEffectForCard,
   getSeatOrderedPlayerIds,
-  getWerewolfOwnerPlayerId,
   isFollowSuitDisabledInTrick,
   loadLobbyByCode,
-  lobbyConfigToShared,
-  normalizeCode,
   nowIso,
-  toJson,
-  type LobbyWithPlayers,
 } from './game-service-support.js'
+import { createGameStateView } from './game-state-view.js'
+import {
+  buildInitialState,
+  continueOrResolveCurrentTrick,
+  finishRoundAndAdvance,
+  resolveCompletedTrick,
+} from './lifecycle/index.js'
 import { handleShapeShifterBeforePlay } from './specials/index.js'
 
 export class GameService {
-  private async persistState(lobbyId: string, state: WizardGameState) {
-    state.updatedAt = nowIso()
-
-    await prisma.gameState.upsert({
-      where: { lobbyId },
-      update: {
-        roundNumber: state.currentRound?.roundNumber ?? 0,
-        dealerIndex: state.currentRound?.dealerIndex ?? 0,
-        currentPlayerId: state.currentRound?.activePlayerId ?? null,
-        phase: state.phase,
-        stateJson: toJson(state),
-      },
-      create: {
-        lobbyId,
-        roundNumber: state.currentRound?.roundNumber ?? 0,
-        dealerIndex: state.currentRound?.dealerIndex ?? 0,
-        currentPlayerId: state.currentRound?.activePlayerId ?? null,
-        phase: state.phase,
-        stateJson: toJson(state),
-      },
-    })
-  }
-
-  // Centralizes start-of-round decision flow so initial setup and next rounds stay in sync.
-  private applyRoundStartState(state: WizardGameState) {
-    if (!state.currentRound) {
-      throw new Error('Round not initialized')
-    }
-
-    const round = state.currentRound
-    const werewolfOwnerPlayerId = getWerewolfOwnerPlayerId(state)
-
-    if (werewolfOwnerPlayerId && round.trumpCard) {
-      state.phase = 'trumpSelection'
-      round.activePlayerId = werewolfOwnerPlayerId
-      state.pendingDecision = {
-        id: crypto.randomUUID(),
-        type: 'werewolfTrumpSwap',
-        playerId: werewolfOwnerPlayerId,
-        createdAt: nowIso(),
-        allowedSuits: ['red', 'yellow', 'green', 'blue', null],
-      }
-
-      state.logs.push({
-        id: crypto.randomUUID(),
-        createdAt: nowIso(),
-        type: 'system',
-        messageKey: 'game.trump.selection.pending',
-        messageParams: {
-          playerId: werewolfOwnerPlayerId,
-        },
-      })
-      return
-    }
-
-    if (round.trumpCard?.type === 'wizard') {
-      state.phase = 'trumpSelection'
-      round.activePlayerId = getPlayerBeforeRoundLeader(state)
-      state.pendingDecision = round.activePlayerId
-        ? {
-            id: crypto.randomUUID(),
-            type: 'selectTrumpSuit',
-            playerId: round.activePlayerId,
-            createdAt: nowIso(),
-            special: 'wizard',
-          }
-        : null
-
-      if (round.activePlayerId) {
-        state.logs.push({
-          id: crypto.randomUUID(),
-          createdAt: nowIso(),
-          type: 'system',
-          messageKey: 'game.trump.selection.pending',
-          messageParams: {
-            playerId: round.activePlayerId,
-          },
-        })
-      }
-      return
-    }
-
-    if (
-      round.trumpCard?.type === 'special' &&
-      SPECIAL_TRUMP_CARDS.includes(round.trumpCard.special as any)
-    ) {
-      state.phase = 'trumpSelection'
-      round.activePlayerId = getPlayerBeforeRoundLeader(state)
-      state.pendingDecision = round.activePlayerId
-        ? {
-            id: crypto.randomUUID(),
-            type: 'selectTrumpSuit',
-            playerId: round.activePlayerId,
-            createdAt: nowIso(),
-            special: round.trumpCard.special,
-          }
-        : null
-
-      if (round.activePlayerId) {
-        state.logs.push({
-          id: crypto.randomUUID(),
-          createdAt: nowIso(),
-          type: 'system',
-          messageKey: 'game.trump.selection.pending',
-          messageParams: {
-            playerId: round.activePlayerId,
-          },
-        })
-      }
-      return
-    }
-
-    state.phase = 'prediction'
-    round.activePlayerId = round.roundLeaderPlayerId
-    state.pendingDecision = null
-
-    if (round.trumpSuit === null && round.trumpCard !== null) {
-      state.logs.push({
-        id: crypto.randomUUID(),
-        createdAt: nowIso(),
-        type: 'system',
-        messageKey: 'game.trump.noTrumpDueToCard',
-        messageParams: {
-          cardLabel: getReadableCardLabel(round.trumpCard),
-        },
-      })
-    } else {
-      state.logs.push({
-        id: crypto.randomUUID(),
-        createdAt: nowIso(),
-        type: 'system',
-        messageKey: 'game.trump.roundStart',
-        messageParams: {
-          suit: round.trumpSuit ?? 'none',
-        },
-      })
-    }
-  }
-
-  private async continueOrResolveCurrentTrick(
-    lobby: NonNullable<LobbyWithPlayers>,
-    state: WizardGameState,
-    playerId: string,
-  ) {
-    const playerCount = state.players.length
-    const playsInCurrentTrick =
-      state.currentRound?.currentTrick?.plays.length ?? 0
-
-    if (playsInCurrentTrick < playerCount) {
-      if (!state.currentRound) {
-        throw new Error('Round not initialized')
-      }
-
-      state.currentRound.activePlayerId = getNextPlayerId(
-        getSeatOrderedPlayerIds(state),
-        playerId,
-      )
-      await this.persistState(lobby.id, state)
-      return
-    }
-
-    // Mirror normal card play flow: persist the completed trick first so clients
-    // can see the final card, and let the socket handler trigger delayed resolution.
-    await this.persistState(lobby.id, state)
-  }
-
-  private buildInitialState(
-    lobby: NonNullable<LobbyWithPlayers>,
-  ): WizardGameState {
-    const config = lobbyConfigToShared(lobby)
-
-    // Shuffle players for random seating order instead of join order
-    const shuffledPlayers = [...lobby.players].sort(() => Math.random() - 0.5)
-
-    const players = shuffledPlayers.map((player, index) => ({
-      playerId: player.id,
-      name: player.name,
-      seatIndex: index,
-      connected: player.connected,
-      isHost: player.role === PlayerRole.HOST,
-      readLogEnabled: player.readLogEnabled ?? config.readLogEnabledByDefault,
-    }))
-
-    const state = createInitialGameState({
-      lobbyCode: lobby.code,
-      config,
-      players,
-    })
-
-    const round = setupRound({
-      lobbyCode: lobby.code,
-      players,
-      currentRoundNumber: 1,
-      // Start with seatIndex 0 by placing the dealer one seat before the top seat.
-      dealerIndex: players.length - 1,
-      includeSpecialCards: config.allowIncludedSpecialCards,
-    })
-
-    state.currentRound = round
-
-    state.logs.push({
-      id: crypto.randomUUID(),
-      createdAt: nowIso(),
-      type: 'system',
-      messageKey: 'game.started',
-    })
-
-    this.applyRoundStartState(state)
-
-    return state
-  }
-
-  private async loadStateOrThrow(code: string) {
-    const lobby = await loadLobbyByCode(code)
-
-    if (!lobby) {
-      throw new Error('error.lobbyNotFound')
-    }
-
-    if (!lobby.gameState) {
-      throw new Error('Game state not found')
-    }
-
-    return {
-      lobby,
-      state: fromJson(lobby.gameState.stateJson),
-    }
-  }
-
-  private registerResolvedEffect(
-    state: WizardGameState,
-    effect: WizardGameState['resolvedCardEffects'][number],
-  ) {
-    state.resolvedCardEffects = state.resolvedCardEffects.filter(
-      (entry) => entry.cardId !== effect.cardId,
-    )
-    state.resolvedCardEffects.push(effect)
-  }
-
-  private removeCardFromHand(
-    state: WizardGameState,
-    playerId: string,
-    cardId: string,
-  ): Card {
-    const roundPlayer = state.currentRound?.players.find(
-      (entry) => entry.playerId === playerId,
-    )
-
-    if (!roundPlayer) {
-      throw new Error('Player is not part of the round')
-    }
-
-    const card = roundPlayer.hand.find((entry) => entry.id === cardId)
-
-    if (!card) {
-      throw new Error('Card not found in hand')
-    }
-
-    roundPlayer.hand = roundPlayer.hand.filter((entry) => entry.id !== cardId)
-
-    return card
-  }
-
-  private appendCardToCurrentTrick(
-    state: WizardGameState,
-    playerId: string,
-    card: Card,
-  ) {
-    if (!state.currentRound) {
-      throw new Error('Round not initialized')
-    }
-
-    const trick = state.currentRound.currentTrick ?? {
-      leadPlayerId: playerId,
-      leadSuit: null,
-      plays: [],
-      winnerPlayerId: null,
-      winningCard: null,
-      cancelledByBomb: false,
-    }
-
-    trick.plays.push({
-      playerId,
-      card,
-      playedAt: nowIso(),
-    })
-
-    if (!trick.leadSuit && !isFollowSuitDisabledInTrick(trick, state)) {
-      if (card.type === 'number') {
-        trick.leadSuit = card.suit
-      } else if (card.type === 'special') {
-        const effect = getResolvedEffectForCard(state, card.id)
-        if (effect?.chosenSuit) {
-          trick.leadSuit = effect.chosenSuit
-        }
-      }
-    }
-
-    state.currentRound.currentTrick = trick
-
-    // Don't log shape shifter, juggler or cloud plays here - the detailed logs are created when resolving special effects
-    if (
-      card.type !== 'special' ||
-      (card.special !== 'shapeShifter' &&
-        card.special !== 'juggler' &&
-        card.special !== 'cloud')
-    ) {
-      state.logs.push({
-        id: crypto.randomUUID(),
-        createdAt: nowIso(),
-        type: 'cardPlayed',
-        messageKey: 'game.card.played',
-        messageParams: {
-          playerId,
-          cardLabel: getReadableCardLabel(card),
-        },
-      })
-    }
-  }
-
-  private async finishRoundAndAdvance(
-    lobby: NonNullable<LobbyWithPlayers>,
-    state: WizardGameState,
-  ) {
-    if (!state.currentRound) {
-      throw new Error('Round state missing')
-    }
-
-    ensurePredictionRevealedForScoring(state)
-
-    const totals = new Map<string, number>()
-
-    for (const entry of state.scoreboard) {
-      const previous = totals.get(entry.playerId) ?? 0
-      totals.set(entry.playerId, previous + entry.delta)
-    }
-
-    for (const player of state.currentRound.players) {
-      const predicted = player.prediction?.value ?? 0
-      const won = player.tricksWon
-      const delta = calculateRoundScore(predicted, won)
-      const previousTotal = totals.get(player.playerId) ?? 0
-      const nextTotal = previousTotal + delta
-
-      totals.set(player.playerId, nextTotal)
-
-      state.scoreboard.push({
-        playerId: player.playerId,
-        roundNumber: state.currentRound.roundNumber,
-        predicted,
-        won,
-        delta,
-        total: nextTotal,
-        predictionAdjustment: player.prediction?.cloudDelta ?? 0,
-      })
-    }
-
-    state.pendingDecision = null
-    state.resolvedCardEffects = []
-
-    if (state.currentRound.roundNumber >= state.maxRounds) {
-      state.logs.push({
-        id: crypto.randomUUID(),
-        createdAt: nowIso(),
-        type: 'roundScored',
-        messageKey: 'game.round.scored',
-        messageParams: {
-          roundNumber: state.currentRound.roundNumber,
-        },
-      })
-
-      state.phase = 'finished'
-      state.lobbyStatus = 'finished'
-
-      state.logs.push({
-        id: crypto.randomUUID(),
-        createdAt: nowIso(),
-        type: 'gameFinished',
-        messageKey: 'game.finished',
-      })
-
-      await prisma.lobby.update({
-        where: { id: lobby.id },
-        data: {
-          status: LobbyStatus.FINISHED,
-        },
-      })
-
-      await this.persistState(lobby.id, state)
-      return
-    }
-
-    const nextRoundNumber = state.currentRound.roundNumber + 1
-    const nextDealerIndex =
-      (state.currentRound.dealerIndex + 1) % state.players.length
-
-    const nextRound = setupRound({
-      lobbyCode: state.lobbyCode,
-      players: state.players,
-      currentRoundNumber: nextRoundNumber,
-      dealerIndex: nextDealerIndex,
-      includeSpecialCards: state.config.allowIncludedSpecialCards,
-    })
-
-    state.currentRound = nextRound
-    this.applyRoundStartState(state)
-
-    await this.persistState(lobby.id, state)
-  }
-
-  private beginJugglerPassDecision(state: WizardGameState) {
-    if (!state.currentRound) {
-      return
-    }
-
-    const orderedPlayerIds = getSeatOrderedPlayerIds(state)
-    const eligible = orderedPlayerIds.filter((playerId) => {
-      const roundPlayer = state.currentRound?.players.find(
-        (entry) => entry.playerId === playerId,
-      )
-      return !!roundPlayer && roundPlayer.hand.length > 0
-    })
-
-    if (!eligible.length) {
-      return
-    }
-
-    state.logs.push({
-      id: crypto.randomUUID(),
-      createdAt: nowIso(),
-      type: 'specialEffect',
-      messageKey: 'special.juggler.pass.started',
-    })
-
-    state.pendingDecision = {
-      id: crypto.randomUUID(),
-      type: 'jugglerPassCard',
-      playerId: eligible[0],
-      createdAt: nowIso(),
-      special: 'juggler',
-      orderedPlayerIds: eligible,
-      selections: {},
-      remainingPlayerIds: eligible,
-    }
-  }
-
-  private async resolveCompletedTrick(
-    lobby: NonNullable<LobbyWithPlayers>,
-    state: WizardGameState,
-  ) {
-    if (!state.currentRound?.currentTrick) {
-      throw new Error('No active trick')
-    }
-
-    const trick = state.currentRound.currentTrick
-
-    const resolvedTrick = resolveTrickWinner(
-      trick,
-      state.currentRound.trumpSuit,
-      state.resolvedCardEffects,
-    )
-
-    state.currentRound.currentTrick = null
-    state.currentRound.completedTricks.push(resolvedTrick)
-
-    const playedJuggler = resolvedTrick.plays.find(
-      (play) => play.card.type === 'special' && play.card.special === 'juggler',
-    )
-    const playedCloud = resolvedTrick.plays.find(
-      (play) => play.card.type === 'special' && play.card.special === 'cloud',
-    )
-
-    const hypotheticalLeaderPlayerId = getHypotheticalNextLeaderPlayerId(
-      trick,
-      state.currentRound.trumpSuit,
-      state.resolvedCardEffects,
-    )
-
-    if (resolvedTrick.cancelledByBomb) {
-      state.logs.push({
-        id: crypto.randomUUID(),
-        createdAt: nowIso(),
-        type: 'specialEffect',
-        messageKey: 'game.trick.canceledByBomb',
-      })
-    } else {
-      const winner = state.currentRound.players.find(
-        (entry) => entry.playerId === resolvedTrick.winnerPlayerId,
-      )
-
-      if (winner) {
-        winner.tricksWon += 1
-      }
-
-      state.logs.push({
-        id: crypto.randomUUID(),
-        createdAt: nowIso(),
-        type: 'trickWon',
-        messageKey: 'game.trick.won',
-        messageParams: {
-          playerId: resolvedTrick.winnerPlayerId ?? '',
-        },
-      })
-
-      if (playedCloud && resolvedTrick.winnerPlayerId) {
-        state.logs.push({
-          id: crypto.randomUUID(),
-          createdAt: nowIso(),
-          type: 'specialEffect',
-          messageKey: 'special.cloud.wonTrickNineThreeQuarters',
-          messageParams: {
-            playerId: resolvedTrick.winnerPlayerId,
-          },
-        })
-
-        const cloudWinner = state.currentRound.players.find(
-          (entry) => entry.playerId === resolvedTrick.winnerPlayerId,
-        )
-        if (cloudWinner) {
-          cloudWinner.pendingCloudAdjustment = true
-        }
-      }
-    }
-
-    state.resolvedCardEffects = []
-
-    const isLastTrick =
-      state.currentRound.completedTricks.length >=
-      state.currentRound.roundNumber
-
-    if (isLastTrick) {
-      // Look for cloud in ANY completed trick of this round, not just the last one
-      let cloudTrickWinner: string | null = null
-      let cloudCardId: string | null = null
-
-      for (const completedTrick of state.currentRound.completedTricks) {
-        const cloud = completedTrick.plays.find(
-          (play) =>
-            play.card.type === 'special' && play.card.special === 'cloud',
-        )
-
-        if (cloud && completedTrick.winnerPlayerId) {
-          cloudTrickWinner = completedTrick.winnerPlayerId
-          cloudCardId = cloud.card.id
-          break
-        }
-      }
-
-      if (cloudTrickWinner && cloudCardId) {
-        const winnerState = state.currentRound.players.find(
-          (entry) => entry.playerId === cloudTrickWinner,
-        )
-
-        if (winnerState?.prediction) {
-          state.pendingDecision = {
-            id: crypto.randomUUID(),
-            type: 'cloudPredictionAdjustment',
-            playerId: cloudTrickWinner,
-            createdAt: nowIso(),
-            cardId: cloudCardId,
-            special: 'cloud',
-            currentPrediction: winnerState.prediction.value,
-          }
-
-          // Keep the current phase as 'playing' but with pending decision
-          await this.persistState(lobby.id, state)
-          return
-        }
-      }
-
-      await this.finishRoundAndAdvance(lobby, state)
-      return
-    }
-
-    state.currentRound.activePlayerId =
-      hypotheticalLeaderPlayerId ??
-      resolvedTrick.winnerPlayerId ??
-      state.currentRound.roundLeaderPlayerId
-
-    if (playedJuggler) {
-      this.beginJugglerPassDecision(state)
-    }
-
-    await this.persistState(lobby.id, state)
-  }
-
   async startGame(input: { code: string; sessionToken: string }) {
     const lobby = await loadLobbyByCode(input.code)
 
@@ -650,7 +55,7 @@ export class GameService {
       throw new Error('error.wizardMinPlayers')
     }
 
-    const state = this.buildInitialState(lobby)
+    const state = buildInitialState(lobby)
 
     await prisma.lobby.update({
       where: { id: lobby.id },
@@ -673,7 +78,7 @@ export class GameService {
       },
     })
 
-    await this.persistState(lobby.id, state)
+    await persistState(lobby.id, state)
 
     const updatedLobby = await prisma.lobby.findUniqueOrThrow({
       where: { id: lobby.id },
@@ -697,7 +102,7 @@ export class GameService {
     sessionToken: string
     value: number
   }) {
-    const { lobby, state } = await this.loadStateOrThrow(input.code)
+    const { lobby, state } = await loadStateOrThrow(input.code)
 
     if (!state.currentRound) {
       throw new Error('Round not initialized')
@@ -810,7 +215,7 @@ export class GameService {
       state.currentRound.activePlayerId = state.currentRound.roundLeaderPlayerId
     }
 
-    await this.persistState(lobby.id, state)
+    await persistState(lobby.id, state)
 
     return state
   }
@@ -820,7 +225,7 @@ export class GameService {
     sessionToken: string
     suit: Suit | null
   }) {
-    const { lobby, state } = await this.loadStateOrThrow(input.code)
+    const { lobby, state } = await loadStateOrThrow(input.code)
 
     if (!state.currentRound) {
       throw new Error('Round not initialized')
@@ -872,7 +277,7 @@ export class GameService {
       },
     })
 
-    await this.persistState(lobby.id, state)
+    await persistState(lobby.id, state)
 
     return state
   }
@@ -882,7 +287,7 @@ export class GameService {
     sessionToken: string
     suit: Suit | null
   }) {
-    const { lobby, state } = await this.loadStateOrThrow(input.code)
+    const { lobby, state } = await loadStateOrThrow(input.code)
 
     if (!state.currentRound) {
       throw new Error('Round not initialized')
@@ -932,7 +337,7 @@ export class GameService {
     state.pendingDecision = null
 
     // Register the werewolf effect so it displays in the trump display
-    this.registerResolvedEffect(state, {
+    registerResolvedEffect(state, {
       cardId: werewolfCard.id,
       ownerPlayerId: player.id,
       special: 'werewolf',
@@ -958,7 +363,7 @@ export class GameService {
       },
     })
 
-    await this.persistState(lobby.id, state)
+    await persistState(lobby.id, state)
 
     return state
   }
@@ -969,7 +374,7 @@ export class GameService {
     cardId: string
     mode: 'wizard' | 'jester'
   }) {
-    const { lobby, state } = await this.loadStateOrThrow(input.code)
+    const { lobby, state } = await loadStateOrThrow(input.code)
     const player = getPlayerBySessionToken(lobby, input.sessionToken)
 
     if (
@@ -981,7 +386,7 @@ export class GameService {
       throw new Error('No matching shape shifter decision pending')
     }
 
-    this.registerResolvedEffect(state, {
+    registerResolvedEffect(state, {
       cardId: input.cardId,
       ownerPlayerId: player.id,
       special: 'shapeShifter',
@@ -991,8 +396,8 @@ export class GameService {
 
     state.pendingDecision = null
 
-    const card = this.removeCardFromHand(state, player.id, input.cardId)
-    this.appendCardToCurrentTrick(state, player.id, card)
+    const card = removeCardFromHand(state, player.id, input.cardId)
+    appendCardToCurrentTrick(state, player.id, card)
 
     state.logs.push({
       id: crypto.randomUUID(),
@@ -1005,7 +410,7 @@ export class GameService {
       },
     })
 
-    await this.continueOrResolveCurrentTrick(lobby, state, player.id)
+    await continueOrResolveCurrentTrick(lobby, state, player.id)
     return state
   }
 
@@ -1015,7 +420,7 @@ export class GameService {
     cardId: string
     suit: Suit
   }) {
-    const { lobby, state } = await this.loadStateOrThrow(input.code)
+    const { lobby, state } = await loadStateOrThrow(input.code)
     const player = getPlayerBySessionToken(lobby, input.sessionToken)
 
     if (
@@ -1027,7 +432,7 @@ export class GameService {
       throw new Error('No matching cloud decision pending')
     }
 
-    this.registerResolvedEffect(state, {
+    registerResolvedEffect(state, {
       cardId: input.cardId,
       ownerPlayerId: player.id,
       special: 'cloud',
@@ -1038,8 +443,8 @@ export class GameService {
 
     state.pendingDecision = null
 
-    const card = this.removeCardFromHand(state, player.id, input.cardId)
-    this.appendCardToCurrentTrick(state, player.id, card)
+    const card = removeCardFromHand(state, player.id, input.cardId)
+    appendCardToCurrentTrick(state, player.id, card)
 
     state.logs.push({
       id: crypto.randomUUID(),
@@ -1052,7 +457,7 @@ export class GameService {
       },
     })
 
-    await this.continueOrResolveCurrentTrick(lobby, state, player.id)
+    await continueOrResolveCurrentTrick(lobby, state, player.id)
     return state
   }
 
@@ -1061,7 +466,7 @@ export class GameService {
     sessionToken: string
     delta: 1 | -1
   }) {
-    const { lobby, state } = await this.loadStateOrThrow(input.code)
+    const { lobby, state } = await loadStateOrThrow(input.code)
     const player = getPlayerBySessionToken(lobby, input.sessionToken)
 
     if (
@@ -1104,7 +509,7 @@ export class GameService {
       },
     })
 
-    await this.finishRoundAndAdvance(lobby, state)
+    await finishRoundAndAdvance(lobby, state)
 
     return state
   }
@@ -1115,7 +520,7 @@ export class GameService {
     cardId: string
     suit: Suit
   }) {
-    const { lobby, state } = await this.loadStateOrThrow(input.code)
+    const { lobby, state } = await loadStateOrThrow(input.code)
     const player = getPlayerBySessionToken(lobby, input.sessionToken)
 
     if (
@@ -1127,7 +532,7 @@ export class GameService {
       throw new Error('No matching juggler decision pending')
     }
 
-    this.registerResolvedEffect(state, {
+    registerResolvedEffect(state, {
       cardId: input.cardId,
       ownerPlayerId: player.id,
       special: 'juggler',
@@ -1138,8 +543,8 @@ export class GameService {
 
     state.pendingDecision = null
 
-    const card = this.removeCardFromHand(state, player.id, input.cardId)
-    this.appendCardToCurrentTrick(state, player.id, card)
+    const card = removeCardFromHand(state, player.id, input.cardId)
+    appendCardToCurrentTrick(state, player.id, card)
 
     state.logs.push({
       id: crypto.randomUUID(),
@@ -1152,7 +557,7 @@ export class GameService {
       },
     })
 
-    await this.continueOrResolveCurrentTrick(lobby, state, player.id)
+    await continueOrResolveCurrentTrick(lobby, state, player.id)
     return state
   }
 
@@ -1161,7 +566,7 @@ export class GameService {
     sessionToken: string
     cardId: string
   }) {
-    const { lobby, state } = await this.loadStateOrThrow(input.code)
+    const { lobby, state } = await loadStateOrThrow(input.code)
     const player = getPlayerBySessionToken(lobby, input.sessionToken)
 
     if (
@@ -1189,7 +594,7 @@ export class GameService {
     if (state.pendingDecision.remainingPlayerIds.length > 0) {
       state.pendingDecision.playerId =
         state.pendingDecision.remainingPlayerIds[0]
-      await this.persistState(lobby.id, state)
+      await persistState(lobby.id, state)
       return state
     }
 
@@ -1205,7 +610,7 @@ export class GameService {
 
       return {
         fromPlayerId: playerId,
-        card: this.removeCardFromHand(state, playerId, selectedCardId),
+        card: removeCardFromHand(state, playerId, selectedCardId),
       }
     })
 
@@ -1240,7 +645,7 @@ export class GameService {
 
     state.pendingDecision = null
 
-    await this.persistState(lobby.id, state)
+    await persistState(lobby.id, state)
 
     return state
   }
@@ -1250,7 +655,7 @@ export class GameService {
     sessionToken: string
     cardId: string
   }) {
-    const { lobby, state } = await this.loadStateOrThrow(input.code)
+    const { lobby, state } = await loadStateOrThrow(input.code)
 
     if (!state.currentRound) {
       throw new Error('Round not initialized')
@@ -1314,7 +719,7 @@ export class GameService {
         })
 
         if (before.requiresDecision) {
-          await this.persistState(lobby.id, state)
+          await persistState(lobby.id, state)
           return state
         }
       }
@@ -1330,7 +735,7 @@ export class GameService {
           allowedSuits: ['red', 'yellow', 'green', 'blue'],
         }
 
-        await this.persistState(lobby.id, state)
+        await persistState(lobby.id, state)
         return state
       }
 
@@ -1345,13 +750,13 @@ export class GameService {
           allowedSuits: ['red', 'yellow', 'green', 'blue'],
         }
 
-        await this.persistState(lobby.id, state)
+        await persistState(lobby.id, state)
         return state
       }
     }
 
-    const playedCard = this.removeCardFromHand(state, player.id, card.id)
-    this.appendCardToCurrentTrick(state, player.id, playedCard)
+    const playedCard = removeCardFromHand(state, player.id, card.id)
+    appendCardToCurrentTrick(state, player.id, playedCard)
 
     const playerCount = state.players.length
 
@@ -1361,12 +766,12 @@ export class GameService {
         player.id,
       )
 
-      await this.persistState(lobby.id, state)
+      await persistState(lobby.id, state)
       return state
     }
 
     // Trick resolution is triggered by a dedicated follow-up event to keep socket flow deterministic.
-    await this.persistState(lobby.id, state)
+    await persistState(lobby.id, state)
 
     return state
   }
@@ -1399,7 +804,7 @@ export class GameService {
 
       if (gamePlayer) {
         gamePlayer.readLogEnabled = input.enabled
-        await this.persistState(lobby.id, state)
+        await persistState(lobby.id, state)
         return state
       }
     }
@@ -1408,7 +813,7 @@ export class GameService {
   }
 
   async getViewState(input: { code: string; sessionToken: string }) {
-    const { lobby, state } = await this.loadStateOrThrow(input.code)
+    const { lobby, state } = await loadStateOrThrow(input.code)
     const player = getPlayerBySessionToken(lobby, input.sessionToken)
     const spectators = lobby.players
       .filter((entry) => entry.role === PlayerRole.SPECTATOR && entry.connected)
@@ -1434,7 +839,7 @@ export class GameService {
   }
 
   async resolvePendingCompletedTrick(code: string) {
-    const { lobby, state } = await this.loadStateOrThrow(code)
+    const { lobby, state } = await loadStateOrThrow(code)
 
     if (!state.currentRound) {
       return
@@ -1446,7 +851,7 @@ export class GameService {
     // Only resolve if currentTrick exists and is complete (has all plays)
     if (trick && trick.plays.length === playerCount) {
       // All players have played - resolve the trick
-      await this.resolveCompletedTrick(lobby, state)
+      await resolveCompletedTrick(lobby, state)
     }
   }
 }
