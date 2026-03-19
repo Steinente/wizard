@@ -50,6 +50,7 @@ const SPECIAL_TRUMP_REASON_CARDS = new Set([
           <span class="status-pill">{{ 'trick' | t }} {{ trickLabel }}</span>
           <span
             class="status-pill"
+            [class.active-turn]="spectatorCount > 0"
             role="button"
             tabindex="0"
             (click)="toggleSpectators()"
