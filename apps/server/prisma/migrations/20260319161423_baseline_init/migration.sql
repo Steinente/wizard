@@ -8,7 +8,7 @@ CREATE TYPE "PredictionVisibility" AS ENUM ('OPEN', 'HIDDEN', 'SECRET');
 CREATE TYPE "OpenPredictionRestriction" AS ENUM ('NONE', 'MUST_EQUAL_TRICKS', 'MUST_NOT_EQUAL_TRICKS');
 
 -- CreateEnum
-CREATE TYPE "PlayerRole" AS ENUM ('HOST', 'PLAYER');
+CREATE TYPE "PlayerRole" AS ENUM ('HOST', 'PLAYER', 'SPECTATOR');
 
 -- CreateTable
 CREATE TABLE "Lobby" (
@@ -18,7 +18,7 @@ CREATE TABLE "Lobby" (
     "hostPlayerId" TEXT,
     "predictionVisibility" "PredictionVisibility" NOT NULL DEFAULT 'OPEN',
     "openPredictionRestriction" "OpenPredictionRestriction" NOT NULL DEFAULT 'NONE',
-    "audioEnabledByDefault" BOOLEAN NOT NULL DEFAULT false,
+    "readLogEnabledByDefault" BOOLEAN NOT NULL DEFAULT false,
     "languageDefault" TEXT NOT NULL DEFAULT 'en',
     "allowIncludedSpecialCards" BOOLEAN NOT NULL DEFAULT true,
     "hostDisconnectedAt" TIMESTAMP(3),
@@ -37,8 +37,10 @@ CREATE TABLE "Player" (
     "name" TEXT NOT NULL,
     "role" "PlayerRole" NOT NULL,
     "connected" BOOLEAN NOT NULL DEFAULT true,
+    "inGame" BOOLEAN NOT NULL DEFAULT false,
     "joinedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "disconnectedAt" TIMESTAMP(3),
+    "readLogEnabled" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
