@@ -281,6 +281,12 @@ export class GamePageComponent {
       return null
     }
 
+    if (state.pendingDecision.type === 'jugglerPassCard') {
+      return state.pendingDecision.remainingPlayerIds.includes(state.selfPlayerId)
+        ? state.pendingDecision
+        : null
+    }
+
     return state.pendingDecision.playerId === state.selfPlayerId
       ? state.pendingDecision
       : null
@@ -288,23 +294,37 @@ export class GamePageComponent {
 
   foreignPendingDecisionText() {
     const state = this.store.gameState()
+    const pendingDecision = state?.pendingDecision
 
     if (
-      !state?.pendingDecision ||
-      state.pendingDecision.playerId === state.selfPlayerId
+      !pendingDecision ||
+      (pendingDecision.type !== 'jugglerPassCard' &&
+        pendingDecision.playerId === state.selfPlayerId)
     ) {
       return ''
     }
 
+    if (pendingDecision.type === 'jugglerPassCard') {
+      const pendingPlayerNames = state.players
+        .filter((player) => pendingDecision.remainingPlayerIds.includes(player.playerId))
+        .map((player) => player.name)
+
+      if (!pendingPlayerNames.length) {
+        return ''
+      }
+
+      return `${pendingPlayerNames.join(', ')} wählen gerade eine Karte zum Weitergeben`
+    }
+
     const player = state.players.find(
-      (p) => p.playerId === state.pendingDecision?.playerId,
+      (p) => p.playerId === pendingDecision.playerId,
     )
 
     if (!player) {
       return ''
     }
 
-    if (state.pendingDecision.type === 'werewolfTrumpSwap') {
+    if (pendingDecision.type === 'werewolfTrumpSwap') {
       return `${player.name} wählt gerade den Trumpf durch den Werwolf`
     }
 
@@ -359,7 +379,7 @@ export class GamePageComponent {
 
     if (
       state.pendingDecision?.type === 'jugglerPassCard' &&
-      state.pendingDecision.playerId === state.selfPlayerId
+      state.pendingDecision.remainingPlayerIds.includes(state.selfPlayerId)
     ) {
       return this.myHand().some((entry) => entry.id === card.id)
     }
@@ -391,7 +411,7 @@ export class GamePageComponent {
 
     if (
       state.pendingDecision?.type === 'jugglerPassCard' &&
-      state.pendingDecision.playerId === state.selfPlayerId
+      state.pendingDecision.remainingPlayerIds.includes(state.selfPlayerId)
     ) {
       this.facade.selectJugglerPassCard(state.lobbyCode, card.id)
       return

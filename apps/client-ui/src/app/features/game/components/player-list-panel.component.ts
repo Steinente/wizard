@@ -57,6 +57,10 @@ export class PlayerListPanelComponent {
 
   isActive(playerId: string) {
     if (this.state.pendingDecision) {
+      if (this.state.pendingDecision.type === 'jugglerPassCard') {
+        return this.state.pendingDecision.remainingPlayerIds.includes(playerId)
+      }
+
       return this.state.pendingDecision.playerId === playerId
     }
 

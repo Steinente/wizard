@@ -292,6 +292,13 @@ export class GameFacadeService {
 
     const pendingDecision = state.pendingDecision
 
+    if (
+      pendingDecision?.type === 'jugglerPassCard' &&
+      pendingDecision.remainingPlayerIds.includes(selfId)
+    ) {
+      return `decision:${pendingDecision.id}:${selfId}`
+    }
+
     if (pendingDecision?.playerId === selfId) {
       return `decision:${pendingDecision.id}`
     }

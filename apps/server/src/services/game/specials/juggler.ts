@@ -10,7 +10,9 @@ interface ResolveJugglerContext {
   playerId: string
   cardId: string
   suit: Suit
-  registerResolvedEffect: (effect: WizardGameState['resolvedCardEffects'][number]) => void
+  registerResolvedEffect: (
+    effect: WizardGameState['resolvedCardEffects'][number],
+  ) => void
   removeCardFromHand: (playerId: string, cardId: string) => Card
   appendCardToCurrentTrick: (playerId: string, card: Card) => void
 }
@@ -83,8 +85,13 @@ export const selectJugglerPassCardSelection = (
 ): { completed: boolean } => {
   if (
     !context.state.pendingDecision ||
-    context.state.pendingDecision.type !== 'jugglerPassCard' ||
-    context.state.pendingDecision.playerId !== context.playerId
+    context.state.pendingDecision.type !== 'jugglerPassCard'
+  ) {
+    throw new Error('No juggler pass selection pending')
+  }
+
+  if (
+    !context.state.pendingDecision.remainingPlayerIds.includes(context.playerId)
   ) {
     throw new Error('No juggler pass selection pending')
   }
@@ -104,8 +111,6 @@ export const selectJugglerPassCardSelection = (
     )
 
   if (context.state.pendingDecision.remainingPlayerIds.length > 0) {
-    context.state.pendingDecision.playerId =
-      context.state.pendingDecision.remainingPlayerIds[0]
     return { completed: false }
   }
 
@@ -158,4 +163,3 @@ export const selectJugglerPassCardSelection = (
 
   return { completed: true }
 }
-
