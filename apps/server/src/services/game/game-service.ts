@@ -16,252 +16,35 @@ import {
 } from '@wizard/shared'
 import crypto from 'node:crypto'
 import { prisma } from '../../db/prisma.js'
-import type { Prisma } from '../../generated/prisma/client.js'
 import {
   LobbyStatus,
-  OpenPredictionRestriction,
   PlayerRole,
-  PredictionVisibility,
 } from '../../generated/prisma/client.js'
 import { mapLobbyToSummary } from '../lobby-mapper.js'
 import { createGameStateView } from './game-state-view.js'
+import {
+  SPECIAL_TRUMP_CARDS,
+  NO_TRUMP_SELECTABLE_SPECIALS,
+  disablesFollowSuitAsLeadCard,
+  ensurePredictionRevealedForScoring,
+  fromJson,
+  getHypotheticalNextLeaderPlayerId,
+  getNextPlayerId,
+  getPlayerBeforeRoundLeader,
+  getPlayerBySessionToken,
+  getReadableCardLabel,
+  getResolvedEffectForCard,
+  getSeatOrderedPlayerIds,
+  getWerewolfOwnerPlayerId,
+  isFollowSuitDisabledInTrick,
+  loadLobbyByCode,
+  lobbyConfigToShared,
+  normalizeCode,
+  nowIso,
+  toJson,
+  type LobbyWithPlayers,
+} from './game-service-support.js'
 import { handleShapeShifterBeforePlay } from './specials/index.js'
-
-type LobbyWithPlayers = Awaited<ReturnType<typeof loadLobbyByCode>>
-
-const normalizeCode = (code: string) => code.trim().toUpperCase()
-
-const toPredictionVisibility = (
-  value: PredictionVisibility,
-): GameConfig['predictionVisibility'] =>
-  value === PredictionVisibility.HIDDEN
-    ? 'hidden'
-    : value === PredictionVisibility.SECRET
-      ? 'secret'
-      : 'open'
-
-const toOpenPredictionRestriction = (
-  value: OpenPredictionRestriction,
-): GameConfig['openPredictionRestriction'] =>
-  value === OpenPredictionRestriction.MUST_EQUAL_TRICKS
-    ? 'mustEqualTricks'
-    : value === OpenPredictionRestriction.MUST_NOT_EQUAL_TRICKS
-      ? 'mustNotEqualTricks'
-      : 'none'
-
-const lobbyConfigToShared = (
-  lobby: NonNullable<LobbyWithPlayers>,
-): GameConfig => ({
-  predictionVisibility: toPredictionVisibility(lobby.predictionVisibility),
-  openPredictionRestriction: toOpenPredictionRestriction(
-    lobby.openPredictionRestriction,
-  ),
-  readLogEnabledByDefault: lobby.readLogEnabledByDefault,
-  languageDefault: lobby.languageDefault === 'de' ? 'de' : 'en',
-  allowIncludedSpecialCards: lobby.allowIncludedSpecialCards,
-})
-
-const loadLobbyByCode = async (code: string) =>
-  prisma.lobby.findUnique({
-    where: { code: normalizeCode(code) },
-    include: {
-      players: {
-        orderBy: {
-          joinedAt: 'asc',
-        },
-      },
-      gameState: true,
-    },
-  })
-
-const toJson = (value: WizardGameState): Prisma.JsonObject =>
-  JSON.parse(JSON.stringify(value)) as Prisma.JsonObject
-
-const fromJson = (value: unknown): WizardGameState => value as WizardGameState
-
-const nowIso = () => new Date().toISOString()
-
-const getPlayerBySessionToken = (
-  lobby: NonNullable<LobbyWithPlayers>,
-  sessionToken: string,
-) => {
-  const player = lobby.players.find(
-    (entry) => entry.sessionToken === sessionToken,
-  )
-
-  if (!player) {
-    throw new Error('Player not found in lobby')
-  }
-
-  return player
-}
-
-const getSeatOrderedPlayerIds = (state: WizardGameState) =>
-  state.players
-    .slice()
-    .sort((a, b) => a.seatIndex - b.seatIndex)
-    .map((player) => player.playerId)
-
-const getNextPlayerId = (
-  orderedPlayerIds: string[],
-  currentPlayerId: string,
-): string | null => {
-  const index = orderedPlayerIds.findIndex(
-    (playerId) => playerId === currentPlayerId,
-  )
-
-  if (index === -1) {
-    return null
-  }
-
-  return orderedPlayerIds[(index + 1) % orderedPlayerIds.length] ?? null
-}
-
-const ensurePredictionRevealedForScoring = (state: WizardGameState) => {
-  if (!state.currentRound) {
-    return
-  }
-
-  for (const player of state.currentRound.players) {
-    if (player.prediction) {
-      player.prediction.revealed = true
-    }
-  }
-}
-
-const getReadableCardLabel = (card: Card): string => {
-  if (card.type === 'number') {
-    return `${card.suit} ${card.value}`
-  }
-
-  if (card.type === 'wizard') {
-    return 'wizard'
-  }
-
-  if (card.type === 'jester') {
-    return 'jester'
-  }
-
-  return card.special
-}
-
-const NO_TRUMP_SELECTABLE_SPECIALS = new Set([
-  'wizard',
-  'shapeShifter',
-  'juggler',
-  'cloud',
-  'dragon',
-  'werewolf',
-])
-
-const getResolvedEffectForCard = (state: WizardGameState, cardId: string) =>
-  state.resolvedCardEffects.find((entry) => entry.cardId === cardId)
-
-const disablesFollowSuitAsLeadCard = (
-  card: Card,
-  state: WizardGameState,
-): boolean => {
-  if (card.type === 'wizard') {
-    return true
-  }
-
-  if (card.type === 'special' && card.special === 'dragon') {
-    return true
-  }
-
-  if (card.type === 'special' && card.special === 'shapeShifter') {
-    return (
-      getResolvedEffectForCard(state, card.id)?.shapeShifterMode === 'wizard'
-    )
-  }
-
-  return false
-}
-
-const isFollowSuitDisabledInTrick = (
-  trick: NonNullable<WizardGameState['currentRound']>['currentTrick'] | null,
-  state: WizardGameState,
-): boolean => {
-  const firstPlay = trick?.plays[0]
-
-  if (!firstPlay) {
-    return false
-  }
-
-  return disablesFollowSuitAsLeadCard(firstPlay.card, state)
-}
-
-const getHypotheticalNextLeaderPlayerId = (
-  trick: NonNullable<WizardGameState['currentRound']>['currentTrick'],
-  trumpSuit: Suit | null,
-  resolvedEffects: WizardGameState['resolvedCardEffects'],
-): string | null => {
-  if (!trick) {
-    return null
-  }
-
-  const filteredPlays = trick.plays.filter(
-    (play) => !(play.card.type === 'special' && play.card.special === 'bomb'),
-  )
-
-  if (!filteredPlays.length) {
-    return trick.leadPlayerId
-  }
-
-  const simulated = resolveTrickWinner(
-    {
-      ...trick,
-      plays: filteredPlays,
-      cancelledByBomb: false,
-    },
-    trumpSuit,
-    resolvedEffects,
-  )
-
-  return simulated.winnerPlayerId
-}
-
-const getWerewolfOwnerPlayerId = (state: WizardGameState): string | null => {
-  if (!state.currentRound) {
-    return null
-  }
-
-  const owner = state.currentRound.players.find((player) =>
-    player.hand.some(
-      (card) => card.type === 'special' && card.special === 'werewolf',
-    ),
-  )
-
-  return owner?.playerId ?? null
-}
-
-const SPECIAL_TRUMP_CARDS = [
-  'shapeShifter',
-  'dragon',
-  'werewolf',
-  'juggler',
-  'cloud',
-] as const
-
-const getPlayerBeforeRoundLeader = (state: WizardGameState): string | null => {
-  if (!state.currentRound) {
-    return null
-  }
-
-  const players = state.players
-  const roundLeaderPlayerId = state.currentRound.roundLeaderPlayerId
-  const roundLeaderIndex = players.findIndex(
-    (player) => player.playerId === roundLeaderPlayerId,
-  )
-
-  if (roundLeaderIndex === -1) {
-    return null
-  }
-
-  const previousIndex =
-    roundLeaderIndex === 0 ? players.length - 1 : roundLeaderIndex - 1
-  return players[previousIndex].playerId
-}
 
 export class GameService {
   private async persistState(lobbyId: string, state: WizardGameState) {

@@ -7,7 +7,7 @@ import { createApp } from './http/create-app.js'
 import { GameService } from './services/game/game-service.js'
 import { HostTimeoutService } from './services/host-timeout-service.js'
 import { LobbyService } from './services/lobby-service.js'
-import { registerSocketHandlers } from './socket/register-socket-handlers.js'
+import { registerHandlers } from './socket/handlers/register-handlers.js'
 import { SocketSessionStore } from './socket/socket-session-store.js'
 
 const bootstrap = async () => {
@@ -32,7 +32,7 @@ const bootstrap = async () => {
   const hostTimeoutService = new HostTimeoutService(io, lobbyService)
 
   io.on('connection', (socket) => {
-    registerSocketHandlers(io, socket, lobbyService, gameService, sessionStore)
+    registerHandlers(io, socket, lobbyService, gameService, sessionStore)
   })
 
   hostTimeoutService.start()

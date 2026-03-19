@@ -1,13 +1,16 @@
-import { GameService } from '../services/game/game-service.js'
-import { LobbyService } from '../services/lobby-service.js'
-import { registerGameHandlers } from './register-game-handlers.js'
-import { registerLobbyHandlers } from './register-lobby-handlers.js'
-import { registerPlayerHandlers } from './register-player-handlers.js'
-import { SocketSessionStore } from './socket-session-store.js'
-import { emitStateForCode, type WizardIoServer } from './socket-handler-utils.js'
-import type { WizardSocket } from './types.js'
+import { GameService } from '../../services/game/game-service.js'
+import { LobbyService } from '../../services/lobby-service.js'
+import { registerGameHandlers } from './game-handlers.js'
+import { registerLobbyHandlers } from './lobby-handlers.js'
+import { registerPlayerHandlers } from './player-handlers.js'
+import { SocketSessionStore } from '../socket-session-store.js'
+import {
+  emitStateForCode,
+  type WizardIoServer,
+} from '../utils/socket-handler-utils.js'
+import type { WizardSocket } from '../types.js'
 
-export const registerSocketHandlers = (
+export const registerHandlers = (
   io: WizardIoServer,
   socket: WizardSocket,
   lobbyService: LobbyService,
