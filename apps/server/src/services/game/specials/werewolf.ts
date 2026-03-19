@@ -1,17 +1,94 @@
-import type { WizardGameState } from '@wizard/shared'
+import type { Card, Suit, WizardGameState } from '@wizard/shared'
 import { createDecisionId, nowIso } from './special-utils.js'
 
-export const applyWerewolfImmediateEffect = (
-  state: WizardGameState,
-  playerId: string,
+interface ResolveWerewolfTrumpSwapContext {
+  state: WizardGameState
+  playerId: string
+  suit: Suit | null
+  registerResolvedEffect: (effect: WizardGameState['resolvedCardEffects'][number]) => void
+}
+
+export const resolveWerewolfTrumpSwapDecision = (
+  context: ResolveWerewolfTrumpSwapContext,
 ) => {
-  state.logs.push({
+  if (!context.state.currentRound) {
+    throw new Error('Round not initialized')
+  }
+
+  if (
+    !context.state.pendingDecision ||
+    context.state.pendingDecision.type !== 'werewolfTrumpSwap' ||
+    context.state.pendingDecision.playerId !== context.playerId
+  ) {
+    throw new Error('No werewolf trump swap pending')
+  }
+
+  const roundPlayer = context.state.currentRound.players.find(
+    (entry) => entry.playerId === context.playerId,
+  )
+
+  if (!roundPlayer) {
+    throw new Error('Player is not part of the round')
+  }
+
+  const werewolfCard = roundPlayer.hand.find(
+    (entry) => entry.type === 'special' && entry.special === 'werewolf',
+  )
+
+  if (!werewolfCard) {
+    throw new Error('Werewolf is not in hand')
+  }
+
+  const currentTrumpCard = context.state.currentRound.trumpCard
+
+  if (!currentTrumpCard) {
+    throw new Error('No trump card available to swap')
+  }
+
+  roundPlayer.hand = roundPlayer.hand.filter(
+    (entry) => entry.id !== werewolfCard.id,
+  )
+  roundPlayer.hand.push(currentTrumpCard)
+
+  context.state.currentRound.trumpCard = werewolfCard
+  context.state.currentRound.trumpSuit = context.suit
+  context.state.currentRound.activePlayerId =
+    context.state.currentRound.roundLeaderPlayerId
+  context.state.phase = 'prediction'
+  context.state.pendingDecision = null
+
+  context.registerResolvedEffect({
+    cardId: werewolfCard.id,
+    ownerPlayerId: context.playerId,
+    special: 'werewolf',
+    note: 'trump swapped',
+  })
+
+  context.state.logs.push({
     id: createDecisionId(),
     createdAt: nowIso(),
     type: 'specialEffect',
     messageKey: 'special.werewolf.pendingTrumpEffect',
     messageParams: {
-      playerId,
+      playerId: context.playerId,
+      suit: context.suit ?? 'none',
+      swappedCardLabel: describeCard(currentTrumpCard),
     },
   })
+}
+
+const describeCard = (card: Card): string => {
+  if (card.type === 'number') {
+    return `${card.suit} ${card.value}`
+  }
+
+  if (card.type === 'wizard') {
+    return 'wizard'
+  }
+
+  if (card.type === 'jester') {
+    return 'jester'
+  }
+
+  return card.special
 }

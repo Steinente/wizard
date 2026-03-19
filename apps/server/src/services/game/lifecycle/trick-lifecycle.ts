@@ -10,6 +10,7 @@ import {
   nowIso,
   type LobbyWithPlayers,
 } from '../game-service-support.js'
+import { logBombCancelledTrick } from '../specials/index.js'
 import { finishRoundAndAdvance } from './round-lifecycle.js'
 
 export async function continueOrResolveCurrentTrick(
@@ -72,12 +73,7 @@ export async function resolveCompletedTrick(
   )
 
   if (resolvedTrick.cancelledByBomb) {
-    state.logs.push({
-      id: crypto.randomUUID(),
-      createdAt: nowIso(),
-      type: 'specialEffect',
-      messageKey: 'game.trick.canceledByBomb',
-    })
+    logBombCancelledTrick(state)
   } else {
     const winner = state.currentRound.players.find(
       (entry) => entry.playerId === resolvedTrick.winnerPlayerId,

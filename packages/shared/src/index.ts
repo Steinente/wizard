@@ -24,6 +24,7 @@ export * from './lib/game/state.js'
 
 export * from './lib/rules/card-ranking.js'
 export * from './lib/rules/legal-play.js'
+export * from './lib/rules/special-duels.js'
 export * from './lib/rules/special-rules.js'
 
 export * from './lib/events/game-actions.js'

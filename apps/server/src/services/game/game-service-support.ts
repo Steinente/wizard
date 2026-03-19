@@ -1,17 +1,12 @@
-import type {
-  Card,
-  GameConfig,
-  Suit,
-  WizardGameState,
-} from '@wizard/shared'
-import { resolveTrickWinner } from '@wizard/shared'
+import type { Card, GameConfig, Suit, WizardGameState } from '@wizard/shared'
+import { filterOutBombPlays, resolveTrickWinner } from '@wizard/shared'
 import { prisma } from '../../db/prisma.js'
 import type { Prisma } from '../../generated/prisma/client.js'
 import {
   OpenPredictionRestriction,
-  PlayerRole,
   PredictionVisibility,
 } from '../../generated/prisma/client.js'
+import { disablesFollowSuitForDragonLead } from './specials/index.js'
 
 export const normalizeCode = (code: string) => code.trim().toUpperCase()
 
@@ -154,7 +149,7 @@ export const disablesFollowSuitAsLeadCard = (
     return true
   }
 
-  if (card.type === 'special' && card.special === 'dragon') {
+  if (disablesFollowSuitForDragonLead(card)) {
     return true
   }
 
@@ -189,9 +184,7 @@ export const getHypotheticalNextLeaderPlayerId = (
     return null
   }
 
-  const filteredPlays = trick.plays.filter(
-    (play) => !(play.card.type === 'special' && play.card.special === 'bomb'),
-  )
+  const filteredPlays = filterOutBombPlays(trick.plays)
 
   if (!filteredPlays.length) {
     return trick.leadPlayerId

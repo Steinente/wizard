@@ -35,7 +35,17 @@ import {
   finishRoundAndAdvance,
   resolveCompletedTrick,
 } from './lifecycle/index.js'
-import { handleShapeShifterBeforePlay } from './specials/index.js'
+import {
+  resolveCloudAdjustmentDecision,
+  handleCloudBeforePlay,
+  handleJugglerBeforePlay,
+  handleShapeShifterBeforePlay,
+  resolveCloudDecision,
+  resolveJugglerDecision,
+  resolveShapeShifterDecision,
+  resolveWerewolfTrumpSwapDecision,
+  selectJugglerPassCardSelection,
+} from './specials/index.js'
 
 export class GameService {
   async startGame(input: { code: string; sessionToken: string }) {
@@ -289,78 +299,13 @@ export class GameService {
   }) {
     const { lobby, state } = await loadStateOrThrow(input.code)
 
-    if (!state.currentRound) {
-      throw new Error('Round not initialized')
-    }
-
     const player = getPlayerBySessionToken(lobby, input.sessionToken)
 
-    if (
-      !state.pendingDecision ||
-      state.pendingDecision.type !== 'werewolfTrumpSwap' ||
-      state.pendingDecision.playerId !== player.id
-    ) {
-      throw new Error('No werewolf trump swap pending')
-    }
-
-    const roundPlayer = state.currentRound.players.find(
-      (entry) => entry.playerId === player.id,
-    )
-
-    if (!roundPlayer) {
-      throw new Error('Player is not part of the round')
-    }
-
-    const werewolfCard = roundPlayer.hand.find(
-      (entry) => entry.type === 'special' && entry.special === 'werewolf',
-    )
-
-    if (!werewolfCard) {
-      throw new Error('Werewolf is not in hand')
-    }
-
-    const currentTrumpCard = state.currentRound.trumpCard
-
-    if (!currentTrumpCard) {
-      throw new Error('No trump card available to swap')
-    }
-
-    roundPlayer.hand = roundPlayer.hand.filter(
-      (entry) => entry.id !== werewolfCard.id,
-    )
-    roundPlayer.hand.push(currentTrumpCard)
-
-    state.currentRound.trumpCard = werewolfCard
-    state.currentRound.trumpSuit = input.suit
-    state.currentRound.activePlayerId = state.currentRound.roundLeaderPlayerId
-    state.phase = 'prediction'
-    state.pendingDecision = null
-
-    // Register the werewolf effect so it displays in the trump display
-    registerResolvedEffect(state, {
-      cardId: werewolfCard.id,
-      ownerPlayerId: player.id,
-      special: 'werewolf',
-      note: 'trump swapped',
-    })
-
-    state.logs.push({
-      id: crypto.randomUUID(),
-      createdAt: nowIso(),
-      type: 'specialEffect',
-      messageKey: 'special.werewolf.pendingTrumpEffect',
-      messageParams: {
-        playerId: player.id,
-        suit: input.suit ?? 'none',
-        swappedCardLabel:
-          currentTrumpCard.type === 'number'
-            ? `${currentTrumpCard.suit} ${currentTrumpCard.value}`
-            : currentTrumpCard.type === 'wizard'
-              ? 'wizard'
-              : currentTrumpCard.type === 'jester'
-                ? 'jester'
-                : currentTrumpCard.special,
-      },
+    resolveWerewolfTrumpSwapDecision({
+      state,
+      playerId: player.id,
+      suit: input.suit,
+      registerResolvedEffect: (effect) => registerResolvedEffect(state, effect),
     })
 
     await persistState(lobby.id, state)
@@ -377,37 +322,16 @@ export class GameService {
     const { lobby, state } = await loadStateOrThrow(input.code)
     const player = getPlayerBySessionToken(lobby, input.sessionToken)
 
-    if (
-      !state.pendingDecision ||
-      state.pendingDecision.type !== 'shapeShifterChoice' ||
-      state.pendingDecision.playerId !== player.id ||
-      state.pendingDecision.cardId !== input.cardId
-    ) {
-      throw new Error('No matching shape shifter decision pending')
-    }
-
-    registerResolvedEffect(state, {
+    resolveShapeShifterDecision({
+      state,
+      playerId: player.id,
       cardId: input.cardId,
-      ownerPlayerId: player.id,
-      special: 'shapeShifter',
-      shapeShifterMode: input.mode,
-      note: 'chosen by player',
-    })
-
-    state.pendingDecision = null
-
-    const card = removeCardFromHand(state, player.id, input.cardId)
-    appendCardToCurrentTrick(state, player.id, card)
-
-    state.logs.push({
-      id: crypto.randomUUID(),
-      createdAt: nowIso(),
-      type: 'specialEffect',
-      messageKey: 'special.shapeShifter.resolved',
-      messageParams: {
-        playerId: player.id,
-        mode: input.mode === 'wizard' ? 'card.wizard' : 'card.jester',
-      },
+      mode: input.mode,
+      registerResolvedEffect: (effect) => registerResolvedEffect(state, effect),
+      removeCardFromHand: (targetPlayerId, cardId) =>
+        removeCardFromHand(state, targetPlayerId, cardId),
+      appendCardToCurrentTrick: (targetPlayerId, card) =>
+        appendCardToCurrentTrick(state, targetPlayerId, card),
     })
 
     await continueOrResolveCurrentTrick(lobby, state, player.id)
@@ -423,38 +347,16 @@ export class GameService {
     const { lobby, state } = await loadStateOrThrow(input.code)
     const player = getPlayerBySessionToken(lobby, input.sessionToken)
 
-    if (
-      !state.pendingDecision ||
-      state.pendingDecision.type !== 'cloudSuitChoice' ||
-      state.pendingDecision.playerId !== player.id ||
-      state.pendingDecision.cardId !== input.cardId
-    ) {
-      throw new Error('No matching cloud decision pending')
-    }
-
-    registerResolvedEffect(state, {
+    resolveCloudDecision({
+      state,
+      playerId: player.id,
       cardId: input.cardId,
-      ownerPlayerId: player.id,
-      special: 'cloud',
-      chosenSuit: input.suit,
-      chosenValue: 9.75,
-      note: 'cloud suit chosen',
-    })
-
-    state.pendingDecision = null
-
-    const card = removeCardFromHand(state, player.id, input.cardId)
-    appendCardToCurrentTrick(state, player.id, card)
-
-    state.logs.push({
-      id: crypto.randomUUID(),
-      createdAt: nowIso(),
-      type: 'specialEffect',
-      messageKey: 'special.cloud.played',
-      messageParams: {
-        playerId: player.id,
-        suit: input.suit,
-      },
+      suit: input.suit,
+      registerResolvedEffect: (effect) => registerResolvedEffect(state, effect),
+      removeCardFromHand: (targetPlayerId, cardId) =>
+        removeCardFromHand(state, targetPlayerId, cardId),
+      appendCardToCurrentTrick: (targetPlayerId, card) =>
+        appendCardToCurrentTrick(state, targetPlayerId, card),
     })
 
     await continueOrResolveCurrentTrick(lobby, state, player.id)
@@ -469,47 +371,12 @@ export class GameService {
     const { lobby, state } = await loadStateOrThrow(input.code)
     const player = getPlayerBySessionToken(lobby, input.sessionToken)
 
-    if (
-      !state.pendingDecision ||
-      state.pendingDecision.type !== 'cloudPredictionAdjustment' ||
-      state.pendingDecision.playerId !== player.id
-    ) {
-      throw new Error('No cloud prediction adjustment pending')
-    }
-
-    const roundPlayer = state.currentRound?.players.find(
-      (entry) => entry.playerId === player.id,
-    )
-
-    if (!roundPlayer?.prediction || !state.currentRound) {
-      throw new Error('Prediction not found')
-    }
-
-    const nextValue = roundPlayer.prediction.value + input.delta
-
-    if (nextValue < 0 || nextValue > state.currentRound.roundNumber) {
-      throw new Error('Adjusted prediction is out of range')
-    }
-
-    roundPlayer.prediction.value = nextValue
-    roundPlayer.prediction.changedByCloud = true
-    roundPlayer.prediction.cloudDelta = input.delta
-    roundPlayer.prediction.revealed = true
-    roundPlayer.pendingCloudAdjustment = false
-    state.pendingDecision = null
-
-    state.logs.push({
-      id: crypto.randomUUID(),
-      createdAt: nowIso(),
-      type: 'specialEffect',
-      messageKey: 'special.cloud.predictionAdjusted',
-      messageParams: {
-        playerId: player.id,
-        delta: input.delta,
-      },
+    await resolveCloudAdjustmentDecision({
+      state,
+      playerId: player.id,
+      delta: input.delta,
+      finishRoundAndAdvance: () => finishRoundAndAdvance(lobby, state),
     })
-
-    await finishRoundAndAdvance(lobby, state)
 
     return state
   }
@@ -523,38 +390,16 @@ export class GameService {
     const { lobby, state } = await loadStateOrThrow(input.code)
     const player = getPlayerBySessionToken(lobby, input.sessionToken)
 
-    if (
-      !state.pendingDecision ||
-      state.pendingDecision.type !== 'jugglerSuitChoice' ||
-      state.pendingDecision.playerId !== player.id ||
-      state.pendingDecision.cardId !== input.cardId
-    ) {
-      throw new Error('No matching juggler decision pending')
-    }
-
-    registerResolvedEffect(state, {
+    resolveJugglerDecision({
+      state,
+      playerId: player.id,
       cardId: input.cardId,
-      ownerPlayerId: player.id,
-      special: 'juggler',
-      chosenSuit: input.suit,
-      chosenValue: 7.5,
-      note: 'juggler suit chosen',
-    })
-
-    state.pendingDecision = null
-
-    const card = removeCardFromHand(state, player.id, input.cardId)
-    appendCardToCurrentTrick(state, player.id, card)
-
-    state.logs.push({
-      id: crypto.randomUUID(),
-      createdAt: nowIso(),
-      type: 'specialEffect',
-      messageKey: 'special.juggler.played',
-      messageParams: {
-        playerId: player.id,
-        suit: input.suit,
-      },
+      suit: input.suit,
+      registerResolvedEffect: (effect) => registerResolvedEffect(state, effect),
+      removeCardFromHand: (targetPlayerId, cardId) =>
+        removeCardFromHand(state, targetPlayerId, cardId),
+      appendCardToCurrentTrick: (targetPlayerId, card) =>
+        appendCardToCurrentTrick(state, targetPlayerId, card),
     })
 
     await continueOrResolveCurrentTrick(lobby, state, player.id)
@@ -569,83 +414,20 @@ export class GameService {
     const { lobby, state } = await loadStateOrThrow(input.code)
     const player = getPlayerBySessionToken(lobby, input.sessionToken)
 
-    if (
-      !state.pendingDecision ||
-      state.pendingDecision.type !== 'jugglerPassCard' ||
-      state.pendingDecision.playerId !== player.id
-    ) {
-      throw new Error('No juggler pass selection pending')
-    }
-
-    const roundPlayer = state.currentRound?.players.find(
-      (entry) => entry.playerId === player.id,
-    )
-
-    if (!roundPlayer?.hand.some((card) => card.id === input.cardId)) {
-      throw new Error('Card not found in hand')
-    }
-
-    state.pendingDecision.selections[player.id] = input.cardId
-    state.pendingDecision.remainingPlayerIds =
-      state.pendingDecision.remainingPlayerIds.filter(
-        (entry) => entry !== player.id,
-      )
-
-    if (state.pendingDecision.remainingPlayerIds.length > 0) {
-      state.pendingDecision.playerId =
-        state.pendingDecision.remainingPlayerIds[0]
-      await persistState(lobby.id, state)
-      return state
-    }
-
-    const ordered = state.pendingDecision.orderedPlayerIds
-    const selections = state.pendingDecision.selections
-
-    const removedCards = ordered.map((playerId) => {
-      const selectedCardId = selections[playerId]
-
-      if (!selectedCardId) {
-        throw new Error('Missing juggler selection')
-      }
-
-      return {
-        fromPlayerId: playerId,
-        card: removeCardFromHand(state, playerId, selectedCardId),
-      }
+    const result = selectJugglerPassCardSelection({
+      state,
+      playerId: player.id,
+      cardId: input.cardId,
+      removeCardFromHand: (targetPlayerId, cardId) =>
+        removeCardFromHand(state, targetPlayerId, cardId),
+      getReadableCardLabel,
     })
-
-    removedCards.forEach((entry, index) => {
-      const receiverPlayerId = ordered[(index + 1) % ordered.length]
-      const receiver = state.currentRound?.players.find(
-        (player) => player.playerId === receiverPlayerId,
-      )
-
-      if (receiver) {
-        receiver.hand.push(entry.card)
-
-        state.logs.push({
-          id: crypto.randomUUID(),
-          createdAt: nowIso(),
-          type: 'specialEffect',
-          messageKey: 'special.juggler.pass.receivedCard',
-          messageParams: {
-            cardLabel: getReadableCardLabel(entry.card),
-          },
-          visibleToPlayerId: receiverPlayerId,
-        })
-      }
-    })
-
-    state.logs.push({
-      id: crypto.randomUUID(),
-      createdAt: nowIso(),
-      type: 'specialEffect',
-      messageKey: 'special.juggler.pass.completed',
-    })
-
-    state.pendingDecision = null
 
     await persistState(lobby.id, state)
+
+    if (!result.completed) {
+      return state
+    }
 
     return state
   }
@@ -725,33 +507,29 @@ export class GameService {
       }
 
       if (card.special === 'cloud') {
-        state.pendingDecision = {
-          id: crypto.randomUUID(),
-          type: 'cloudSuitChoice',
+        const before = handleCloudBeforePlay({
+          state,
           playerId: player.id,
-          createdAt: nowIso(),
-          cardId: card.id,
-          special: 'cloud',
-          allowedSuits: ['red', 'yellow', 'green', 'blue'],
-        }
+          card,
+        })
 
-        await persistState(lobby.id, state)
-        return state
+        if (before.requiresDecision) {
+          await persistState(lobby.id, state)
+          return state
+        }
       }
 
       if (card.special === 'juggler') {
-        state.pendingDecision = {
-          id: crypto.randomUUID(),
-          type: 'jugglerSuitChoice',
+        const before = handleJugglerBeforePlay({
+          state,
           playerId: player.id,
-          createdAt: nowIso(),
-          cardId: card.id,
-          special: 'juggler',
-          allowedSuits: ['red', 'yellow', 'green', 'blue'],
-        }
+          card,
+        })
 
-        await persistState(lobby.id, state)
-        return state
+        if (before.requiresDecision) {
+          await persistState(lobby.id, state)
+          return state
+        }
       }
     }
 

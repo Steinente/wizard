@@ -1,4 +1,5 @@
 import type { Card, WizardGameState } from '@wizard/shared'
+import { isBombCard } from '@wizard/shared'
 import crypto from 'node:crypto'
 import {
   getReadableCardLabel,
@@ -7,6 +8,12 @@ import {
   isFollowSuitDisabledInTrick,
   nowIso,
 } from './game-service-support.js'
+import {
+  isFairyCard,
+  logBombPlayed,
+  logDragonPlayed,
+  logFairyPlayed,
+} from './specials/index.js'
 
 export function registerResolvedEffect(
   state: WizardGameState,
@@ -86,6 +93,21 @@ export function appendCardToCurrentTrick(
       card.special !== 'juggler' &&
       card.special !== 'cloud')
   ) {
+    if (isBombCard(card)) {
+      logBombPlayed(state, playerId)
+      return
+    }
+
+    if (card.type === 'special' && card.special === 'dragon') {
+      logDragonPlayed(state, playerId)
+      return
+    }
+
+    if (isFairyCard(card)) {
+      logFairyPlayed(state, playerId)
+      return
+    }
+
     state.logs.push({
       id: crypto.randomUUID(),
       createdAt: nowIso(),

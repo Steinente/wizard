@@ -5,7 +5,14 @@ import {
   getLeadSuitFromCard,
 } from '../rules/card-ranking.js'
 import type { ResolvedCardRuntimeEffect } from './special-state.js'
-import type { TrickState } from './trick.js'
+import type { TrickPlay, TrickState } from './trick.js'
+
+export const isBombCard = (card: Card): boolean =>
+  card.type === 'special' && card.special === 'bomb'
+
+export const filterOutBombPlays = (
+  plays: ReadonlyArray<TrickPlay>,
+): TrickPlay[] => plays.filter((play) => !isBombCard(play.card))
 
 const getEffectForCard = (
   effects: ReadonlyArray<ResolvedCardRuntimeEffect>,
@@ -17,9 +24,7 @@ export const resolveTrickWinner = (
   trumpSuit: TrickState['leadSuit'],
   effects: ReadonlyArray<ResolvedCardRuntimeEffect> = [],
 ): TrickState => {
-  const bombPlay = trick.plays.find(
-    (play) => play.card.type === 'special' && play.card.special === 'bomb',
-  )
+  const bombPlay = trick.plays.find((play) => isBombCard(play.card))
 
   const derivedLeadSuit =
     trick.leadSuit ??

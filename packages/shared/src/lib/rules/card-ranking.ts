@@ -5,6 +5,7 @@ import {
   isSpecialCard,
   isWizardCard,
 } from '../cards.js'
+import { compareDragonFairyDuel } from './special-duels.js'
 
 export interface RuntimeCardEffectLookup {
   chosenSuit?: Suit | null
@@ -214,29 +215,13 @@ export const compareCards = (
   left: ClassifiedCard,
   right: ClassifiedCard,
 ): number => {
-  const leftIsDragon = left.className === 'dragon'
-  const rightIsDragon = right.className === 'dragon'
-  const leftIsFairy = left.className === 'fairy'
-  const rightIsFairy = right.className === 'fairy'
+  const dragonFairyDuelResult = compareDragonFairyDuel(
+    left.className,
+    right.className,
+  )
 
-  // Fairy beats Dragon only
-  if (leftIsFairy && rightIsDragon) {
-    return 1
-  }
-
-  // Dragon loses only to Fairy
-  if (leftIsDragon && rightIsFairy) {
-    return -1
-  }
-
-  // Fairy loses to everything except Dragon
-  if (leftIsFairy && !rightIsDragon) {
-    return -1
-  }
-
-  // Everything except Dragon beats Fairy
-  if (rightIsFairy && !leftIsDragon) {
-    return 1
+  if (dragonFairyDuelResult !== null) {
+    return dragonFairyDuelResult
   }
 
   if (left.numericStrength > right.numericStrength) {
