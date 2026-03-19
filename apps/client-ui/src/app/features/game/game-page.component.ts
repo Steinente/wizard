@@ -11,6 +11,7 @@ import { SessionService } from '../../core/services/session.service'
 import { AppStore } from '../../core/state/app.store'
 import { TPipe } from '../../shared/pipes/t.pipe'
 import { GameControlsPanelComponent } from './components/game-controls-panel.component'
+import { GameFinishedPanelComponent } from './components/game-finished-panel.component'
 import { GameHeaderComponent } from './components/game-header.component'
 import { HandAreaComponent } from './components/hand-area.component'
 import { LogPanelComponent } from './components/log-panel.component'
@@ -45,6 +46,7 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
   imports: [
     TPipe,
     GameHeaderComponent,
+    GameFinishedPanelComponent,
     PlayerListPanelComponent,
     TrickAreaComponent,
     HandAreaComponent,
@@ -63,85 +65,118 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
           <wiz-game-header [state]="store.gameState()!" />
         </div>
 
-        <div class="game-layout">
-          <div class="game-column">
-            <wiz-player-list-panel [state]="store.gameState()!" />
+        @if (store.gameState()!.phase === 'finished') {
+          <div class="game-finished-layout">
+            <wiz-game-finished-panel [state]="store.gameState()!" />
 
-            <wiz-game-controls-panel
-              [state]="store.gameState()!"
-              [audioEnabled]="readLogEnabledSignal()"
-              [audioVolume]="speechVolumeSignal()"
-              [audioSpeed]="speechSpeedSignal()"
-              [bingEnabled]="bingEnabledSignal()"
-              [isHost]="isHost()"
-              [onToggleAudio]="toggleReadLogFn"
-              [onBingToggle]="toggleBingFn"
-              [onAudioVolumeChange]="setSpeechVolumeFn"
-              [onAudioSpeedChange]="setSpeechSpeedFn"
-              [onEndLobby]="endLobbyFn"
-            />
+            <div class="game-column">
+              <wiz-scoreboard-panel [state]="store.gameState()!" />
+              <wiz-log-panel
+                [logs]="store.gameState()!.logs"
+                [players]="store.gameState()!.players"
+              />
+            </div>
           </div>
+        } @else {
+          <div class="game-layout">
+            <div class="game-column">
+              <wiz-player-list-panel [state]="store.gameState()!" />
 
-          <div class="game-column">
-            <wiz-trick-area
-              [trick]="store.gameState()!.currentRound?.currentTrick ?? null"
-              [players]="store.gameState()!.players"
-              [resolvedCardEffects]="store.gameState()!.resolvedCardEffects"
-            />
+              <wiz-game-controls-panel
+                [state]="store.gameState()!"
+                [audioEnabled]="readLogEnabledSignal()"
+                [audioVolume]="speechVolumeSignal()"
+                [audioSpeed]="speechSpeedSignal()"
+                [bingEnabled]="bingEnabledSignal()"
+                [isHost]="isHost()"
+                [onToggleAudio]="toggleReadLogFn"
+                [onBingToggle]="toggleBingFn"
+                [onAudioVolumeChange]="setSpeechVolumeFn"
+                [onAudioSpeedChange]="setSpeechSpeedFn"
+                [onEndLobby]="endLobbyFn"
+              />
+            </div>
 
-            @if (!isSpectator()) {
-              @if (myPendingDecision()) {
-                <wiz-pending-decision-panel
-                  class="active-turn"
-                  [decision]="myPendingDecision()"
-                  [cloudAdjustmentWonTricks]="myTricksWon()"
-                  [onSelectTrump]="selectTrumpFn"
-                  [onResolveWerewolfTrumpSwap]="resolveWerewolfTrumpSwapFn"
-                  [onResolveShapeShifter]="resolveShapeShifterFn"
-                  [onResolveCloudSuit]="resolveCloudSuitFn"
-                  [onResolveCloudAdjustment]="resolveCloudAdjustmentFn"
-                  [onResolveJugglerSuit]="resolveJugglerSuitFn"
+            <div class="game-column">
+              <wiz-trick-area
+                [trick]="store.gameState()!.currentRound?.currentTrick ?? null"
+                [players]="store.gameState()!.players"
+                [resolvedCardEffects]="store.gameState()!.resolvedCardEffects"
+              />
+
+              @if (!isSpectator()) {
+                @if (myPendingDecision()) {
+                  <wiz-pending-decision-panel
+                    class="active-turn"
+                    [decision]="myPendingDecision()"
+                    [cloudAdjustmentWonTricks]="myTricksWon()"
+                    [onSelectTrump]="selectTrumpFn"
+                    [onResolveWerewolfTrumpSwap]="resolveWerewolfTrumpSwapFn"
+                    [onResolveShapeShifter]="resolveShapeShifterFn"
+                    [onResolveCloudSuit]="resolveCloudSuitFn"
+                    [onResolveCloudAdjustment]="resolveCloudAdjustmentFn"
+                    [onResolveJugglerSuit]="resolveJugglerSuitFn"
+                  />
+                } @else if (foreignPendingDecisionText()) {
+                  <div class="panel">
+                    <span class="muted">{{
+                      foreignPendingDecisionText()
+                    }}</span>
+                  </div>
+                }
+
+                @if (canPredict()) {
+                  <wiz-prediction-panel
+                    class="active-turn"
+                    [values]="predictionOptions()"
+                    [submit]="predictFn"
+                  />
+                }
+
+                <wiz-hand-area
+                  [class.active-turn]="isMyTurnToPlay()"
+                  [cards]="displayHand()"
+                  [canPlay]="canPlayCardFn"
+                  [play]="playCardFn"
+                  [onSort]="sortHandFn"
+                  [onReorder]="reorderHandFn"
                 />
-              } @else if (foreignPendingDecisionText()) {
+              } @else {
                 <div class="panel">
-                  <span class="muted">{{ foreignPendingDecisionText() }}</span>
+                  <span class="muted">{{ 'spectatorMode' | t }}</span>
                 </div>
               }
+            </div>
 
-              @if (canPredict()) {
-                <wiz-prediction-panel
-                  class="active-turn"
-                  [values]="predictionOptions()"
-                  [submit]="predictFn"
-                />
-              }
-
-              <wiz-hand-area
-                [class.active-turn]="isMyTurnToPlay()"
-                [cards]="displayHand()"
-                [canPlay]="canPlayCardFn"
-                [play]="playCardFn"
-                [onSort]="sortHandFn"
-                [onReorder]="reorderHandFn"
+            <div class="game-column">
+              <wiz-scoreboard-panel [state]="store.gameState()!" />
+              <wiz-log-panel
+                [logs]="store.gameState()!.logs"
+                [players]="store.gameState()!.players"
               />
-            } @else {
-              <div class="panel">
-                <span class="muted">{{ 'spectatorMode' | t }}</span>
-              </div>
-            }
+            </div>
           </div>
-
-          <div class="game-column">
-            <wiz-scoreboard-panel [state]="store.gameState()!" />
-            <wiz-log-panel
-              [logs]="store.gameState()!.logs"
-              [players]="store.gameState()!.players"
-            />
-          </div>
-        </div>
+        }
       }
     </div>
   `,
+  styles: [
+    `
+      .game-finished-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 320px;
+        gap: 16px;
+        align-items: start;
+        margin-top: 16px;
+      }
+
+      @media (max-width: 1100px) {
+        .game-finished-layout {
+          grid-template-columns: 1fr;
+        }
+      }
+    `,
+  ],
 })
 export class GamePageComponent {
   protected readonly store = this.appStore
