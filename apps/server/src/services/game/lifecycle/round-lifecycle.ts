@@ -199,9 +199,11 @@ export async function finishRoundAndAdvance(
   }
 
   for (const player of state.currentRound.players) {
-    const predicted = player.prediction?.value ?? 0
+    const cloudDelta = player.prediction?.cloudDelta ?? 0
+    const effectivePredicted = player.prediction?.value ?? 0
+    const originalPredicted = effectivePredicted - cloudDelta
     const won = player.tricksWon
-    const delta = calculateRoundScore(predicted, won)
+    const delta = calculateRoundScore(effectivePredicted, won)
     const previousTotal = totals.get(player.playerId) ?? 0
     const nextTotal = previousTotal + delta
 
@@ -210,11 +212,11 @@ export async function finishRoundAndAdvance(
     state.scoreboard.push({
       playerId: player.playerId,
       roundNumber: state.currentRound.roundNumber,
-      predicted,
+      predicted: originalPredicted,
       won,
       delta,
       total: nextTotal,
-      predictionAdjustment: player.prediction?.cloudDelta ?? 0,
+      predictionAdjustment: cloudDelta,
     })
   }
 

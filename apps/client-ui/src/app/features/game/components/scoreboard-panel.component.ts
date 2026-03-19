@@ -124,7 +124,13 @@ export class ScoreboardPanelComponent {
     }
 
     const live = this.livePrediction(playerId, round)
-    return live?.value ?? ''
+
+    if (!live || live.value === null) {
+      return ''
+    }
+
+    const cloudDelta = live.cloudDelta ?? 0
+    return live.value - cloudDelta
   }
 
   bidAdjustment(playerId: string, round: number) {
