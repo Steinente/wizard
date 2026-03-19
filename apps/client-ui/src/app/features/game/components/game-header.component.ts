@@ -47,6 +47,7 @@ const SPECIAL_TRUMP_REASON_CARDS = new Set([
           </span>
 
           <span class="status-pill">{{ 'round' | t }} {{ roundLabel }}</span>
+          <span class="status-pill">{{ 'trick' | t }} {{ trickLabel }}</span>
           <span
             class="status-pill"
             role="button"
@@ -210,6 +211,16 @@ export class GameHeaderComponent {
 
   get roundLabel() {
     return this.state.currentRound?.roundNumber ?? '-'
+  }
+
+  get trickLabel() {
+    const round = this.state.currentRound
+
+    if (!round) {
+      return '-'
+    }
+
+    return Math.min(round.completedTricks.length + 1, round.roundNumber)
   }
 
   get spectatorCount() {
