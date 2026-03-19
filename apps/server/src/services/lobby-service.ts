@@ -1,5 +1,6 @@
 import type { GameConfig, LobbySummary } from '@wizard/shared'
 import crypto from 'node:crypto'
+import { env } from '../config/env.js'
 import { prisma } from '../db/prisma.js'
 import {
   LobbyStatus,
@@ -14,10 +15,12 @@ const CODE_LENGTH = 6
 const lobbyPasswordHashes = new Map<string, string>()
 
 const normalizeCode = (code: string) => code.trim().toUpperCase()
-const normalizePassword = (password: string | undefined) => password?.trim() ?? ''
+const normalizePassword = (password: string | undefined) =>
+  password?.trim() ?? ''
 const hashPassword = (password: string) =>
   crypto.createHash('sha256').update(password).digest('hex')
 const now = () => new Date()
+type ClosableLobby = { id: string; code: string }
 
 const includePlayersByJoinOrder = () => ({
   players: {
@@ -122,7 +125,9 @@ const loadJoinableLobbiesWithPlayers = () =>
     },
   })
 
-type JoinableLobby = Awaited<ReturnType<typeof loadJoinableLobbiesWithPlayers>>[number]
+type JoinableLobby = Awaited<
+  ReturnType<typeof loadJoinableLobbiesWithPlayers>
+>[number]
 
 const activePlayersCount = (lobby: JoinableLobby) =>
   lobby.players.filter((player) => player.role !== PlayerRole.SPECTATOR).length
@@ -201,6 +206,31 @@ const withPasswordFlag = (summary: LobbySummary): LobbySummary => ({
 })
 
 export class LobbyService {
+  private async closeLobbies(lobbies: ClosableLobby[]): Promise<string[]> {
+    if (!lobbies.length) {
+      return []
+    }
+
+    const codes = lobbies.map((entry) => entry.code)
+
+    for (const code of codes) {
+      lobbyPasswordHashes.delete(code)
+    }
+
+    await prisma.lobby.updateMany({
+      where: {
+        id: {
+          in: lobbies.map((entry) => entry.id),
+        },
+      },
+      data: {
+        status: LobbyStatus.CLOSED,
+      },
+    })
+
+    return codes
+  }
+
   async createLobby(input: {
     playerName: string
     sessionToken: string
@@ -402,10 +432,15 @@ export class LobbyService {
       })
 
       const refreshed = await loadLobbyByIdWithPlayersOrThrow(lobby.id)
-      return { lobby: withPasswordFlag(mapLobbyToSummary(refreshed)), playerId: updated.id }
+      return {
+        lobby: withPasswordFlag(mapLobbyToSummary(refreshed)),
+        playerId: updated.id,
+      }
     }
 
-    const readLogEnabledFromPrevious = await getLastKnownReadLogEnabled(input.sessionToken)
+    const readLogEnabledFromPrevious = await getLastKnownReadLogEnabled(
+      input.sessionToken,
+    )
 
     const created = await prisma.player.create({
       data: {
@@ -420,7 +455,10 @@ export class LobbyService {
     })
 
     const refreshed = await loadLobbyByIdWithPlayersOrThrow(lobby.id)
-    return { lobby: withPasswordFlag(mapLobbyToSummary(refreshed)), playerId: created.id }
+    return {
+      lobby: withPasswordFlag(mapLobbyToSummary(refreshed)),
+      playerId: created.id,
+    }
   }
 
   async listLobbies(): Promise<LobbySummary[]> {
@@ -452,7 +490,8 @@ export class LobbyService {
       data: {
         connected: true,
         inGame:
-          lobby.status === LobbyStatus.RUNNING && player.role !== PlayerRole.SPECTATOR,
+          lobby.status === LobbyStatus.RUNNING &&
+          player.role !== PlayerRole.SPECTATOR,
         disconnectedAt: null,
       },
     })
@@ -630,20 +669,24 @@ export class LobbyService {
       return null
     }
 
+    const disconnectedAt = now()
+
     await prisma.player.update({
       where: { id: player.id },
       data: {
         connected: false,
         inGame: false,
-        disconnectedAt: now(),
+        disconnectedAt,
       },
     })
 
     const data =
       player.id === lobby.hostPlayerId
         ? {
-            hostDisconnectedAt: now(),
-            hostDisconnectDeadline: new Date(now().getTime() + 10 * 60 * 1000),
+            hostDisconnectedAt: disconnectedAt,
+            hostDisconnectDeadline: new Date(
+              disconnectedAt.getTime() + env.LOBBY_INACTIVITY_TIMEOUT_MS,
+            ),
           }
         : {}
 
@@ -698,29 +741,35 @@ export class LobbyService {
           lte: current,
         },
       },
+      select: {
+        id: true,
+        code: true,
+      },
     })
 
-    if (!expired.length) {
-      return []
-    }
+    return this.closeLobbies(expired)
+  }
 
-    const codes = expired.map((entry) => entry.code)
+  async closeInactiveRunningGames(): Promise<string[]> {
+    const cutoff = new Date(Date.now() - env.LOBBY_INACTIVITY_TIMEOUT_MS)
 
-    for (const code of codes) {
-      lobbyPasswordHashes.delete(code)
-    }
-
-    await prisma.lobby.updateMany({
+    const expired = await prisma.lobby.findMany({
       where: {
-        id: {
-          in: expired.map((entry) => entry.id),
+        status: LobbyStatus.RUNNING,
+        gameState: {
+          is: {
+            updatedAt: {
+              lte: cutoff,
+            },
+          },
         },
       },
-      data: {
-        status: LobbyStatus.CLOSED,
+      select: {
+        id: true,
+        code: true,
       },
     })
 
-    return codes
+    return this.closeLobbies(expired)
   }
 }

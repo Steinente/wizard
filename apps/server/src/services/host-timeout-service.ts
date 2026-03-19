@@ -1,5 +1,5 @@
-import type { Server } from 'socket.io'
 import type { ClientToServerEvents, ServerToClientEvents } from '@wizard/shared'
+import type { Server } from 'socket.io'
 import { LobbyService } from './lobby-service.js'
 
 type WizardIoServer = Server<ClientToServerEvents, ServerToClientEvents>
@@ -24,7 +24,17 @@ export class HostTimeoutService {
         for (const code of expiredCodes) {
           this.io.to(code).emit('lobby:closed', {
             code,
-            reason: 'Host did not reconnect in time',
+            reason: 'info.lobbyClosedDueToHostTimeout',
+          })
+        }
+
+        const inactiveRunningCodes =
+          await this.lobbyService.closeInactiveRunningGames()
+
+        for (const code of inactiveRunningCodes) {
+          this.io.to(code).emit('lobby:closed', {
+            code,
+            reason: 'info.lobbyClosedDueToInactivity',
           })
         }
       } catch (error) {

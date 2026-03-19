@@ -120,6 +120,10 @@ export const translations = {
     'info.removedFromLobby': 'You were removed from the lobby',
     'info.leftLobby': 'You left the lobby',
     'info.lobbyEndedByHost': 'The lobby was ended by the host',
+    'info.lobbyClosedDueToHostTimeout':
+      'The lobby was closed because the host did not reconnect in time',
+    'info.lobbyClosedDueToInactivity':
+      'The lobby was closed after 30 minutes of inactivity',
     'error.lobbyNotFound': 'Lobby not found',
     'error.lobbyNotAccepting': 'This lobby is no longer accepting players',
     'error.lobbyFull': 'This lobby is full',
@@ -357,6 +361,10 @@ export const translations = {
     'info.removedFromLobby': 'Du wurdest aus der Lobby entfernt',
     'info.leftLobby': 'Du hast die Lobby verlassen',
     'info.lobbyEndedByHost': 'Die Lobby wurde vom Host beendet',
+    'info.lobbyClosedDueToHostTimeout':
+      'Die Lobby wurde geschlossen, weil der Host sich nicht rechtzeitig wieder verbunden hat',
+    'info.lobbyClosedDueToInactivity':
+      'Die Lobby wurde nach 30 Minuten Inaktivität geschlossen',
     'error.lobbyNotFound': 'Lobby nicht gefunden',
     'error.lobbyNotAccepting': 'Diese Lobby nimmt keine Spieler mehr an',
     'error.lobbyFull': 'Diese Lobby ist voll',

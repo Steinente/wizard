@@ -9,11 +9,11 @@ const envSchema = z.object({
   PORT: z.coerce.number().int().positive().default(3000),
   CLIENT_UI_URL: z.string().url(),
   CLIENT_A11Y_URL: z.string().url(),
-  HOST_DISCONNECT_TIMEOUT_MS: z.coerce
+  LOBBY_INACTIVITY_TIMEOUT_MS: z.coerce
     .number()
     .int()
     .positive()
-    .default(600000),
+    .default(1800000),
 })
 
 export const env = envSchema.parse(process.env)
