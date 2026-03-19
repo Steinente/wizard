@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core'
-
-const clamp = (value: number, min: number, max: number) =>
-  Math.min(max, Math.max(min, value))
+import {
+  normalizeSpeechRate,
+  normalizeSpeechVolume,
+} from '../config/speech.config'
 
 @Injectable({ providedIn: 'root' })
 export class SpeechAnnouncementService {
@@ -11,11 +12,11 @@ export class SpeechAnnouncementService {
   private speechRate = 1
 
   setSpeechVolume(volume: number) {
-    this.speechVolume = clamp(volume, 0, 1)
+    this.speechVolume = normalizeSpeechVolume(volume)
   }
 
   setSpeechRate(rate: number) {
-    this.speechRate = clamp(rate, 0.6, 3.0)
+    this.speechRate = normalizeSpeechRate(rate)
   }
 
   speak(text: string) {

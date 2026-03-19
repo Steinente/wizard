@@ -1,6 +1,14 @@
 import { Component, Input } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import type { WizardGameViewState } from '@wizard/shared'
+import {
+  SPEECH_RATE_MAX,
+  SPEECH_RATE_MIN,
+  SPEECH_RATE_STEP,
+  SPEECH_VOLUME_MAX,
+  SPEECH_VOLUME_MIN,
+  SPEECH_VOLUME_STEP,
+} from '../../../core/config/speech.config'
 import { TPipe } from '../../../shared/pipes/t.pipe'
 
 @Component({
@@ -19,7 +27,9 @@ import { TPipe } from '../../../shared/pipes/t.pipe'
             (ngModelChange)="toggleAudio($event)"
           />
           <span>
-            {{ audioEnabled ? ('readLogEnabled' | t) : ('readLogDisabled' | t) }}
+            {{
+              audioEnabled ? ('readLogEnabled' | t) : ('readLogDisabled' | t)
+            }}
           </span>
         </label>
       </div>
@@ -38,26 +48,30 @@ import { TPipe } from '../../../shared/pipes/t.pipe'
       </div>
 
       <div style="margin-top: 12px;">
-        <label class="label">{{ 'speechVolumeLabel' | t }}: {{ volumePercent() }}%</label>
+        <label class="label"
+          >{{ 'speechVolumeLabel' | t }}: {{ volumePercent() }}%</label
+        >
         <input
           class="input"
           type="range"
-          min="0"
-          max="1"
-          step="0.05"
+          [min]="speechVolumeMin"
+          [max]="speechVolumeMax"
+          [step]="speechVolumeStep"
           [ngModel]="audioVolume"
           (ngModelChange)="changeAudioVolume($event)"
         />
       </div>
 
       <div style="margin-top: 12px;">
-        <label class="label">{{ 'speechSpeedLabel' | t }}: {{ speedValue() }}x</label>
+        <label class="label"
+          >{{ 'speechSpeedLabel' | t }}: {{ speedValue() }}x</label
+        >
         <input
           class="input"
           type="range"
-          min="0.6"
-          max="3.0"
-          step="0.05"
+          [min]="speechRateMin"
+          [max]="speechRateMax"
+          [step]="speechRateStep"
           [ngModel]="audioSpeed"
           (ngModelChange)="changeAudioSpeed($event)"
         />
@@ -85,6 +99,13 @@ import { TPipe } from '../../../shared/pipes/t.pipe'
   `,
 })
 export class GameControlsPanelComponent {
+  readonly speechVolumeMin = SPEECH_VOLUME_MIN
+  readonly speechVolumeMax = SPEECH_VOLUME_MAX
+  readonly speechVolumeStep = SPEECH_VOLUME_STEP
+  readonly speechRateMin = SPEECH_RATE_MIN
+  readonly speechRateMax = SPEECH_RATE_MAX
+  readonly speechRateStep = SPEECH_RATE_STEP
+
   @Input({ required: true }) state!: WizardGameViewState
   @Input({ required: true }) audioEnabled = false
   @Input({ required: true }) audioVolume = 1

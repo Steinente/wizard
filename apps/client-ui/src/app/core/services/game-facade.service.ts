@@ -1,14 +1,33 @@
 import { Injectable } from '@angular/core'
 import { Router } from '@angular/router'
-import type { GameConfig, Suit, WizardGameViewState } from '@wizard/shared'
+import type {
+  ClientToServerEvents,
+  GameConfig,
+  Suit,
+  WizardGameViewState,
+} from '@wizard/shared'
 import { getLogTranslationKey } from '../../features/game/utils/log-label.util'
 import { normalizeLogParams } from '../../features/game/utils/log-params.util'
 import { I18nService } from '../i18n/i18n.service'
 import type { TranslationKey } from '../i18n/translations'
 import { AppStore } from '../state/app.store'
-import { SpeechAnnouncementService } from './speech-announcement.service'
 import { SessionService } from './session.service'
 import { SocketService } from './socket.service'
+import { SpeechAnnouncementService } from './speech-announcement.service'
+
+const INTERACTION_EVENTS = [
+  'game:makePrediction',
+  'game:playCard',
+  'game:selectTrumpSuit',
+  'game:resolveWerewolfTrumpSwap',
+  'game:resolveShapeShifter',
+  'game:resolveCloud',
+  'game:resolveCloudAdjustment',
+  'game:resolveJuggler',
+  'game:selectJugglerPassCard',
+] as const
+
+type InteractionEvent = (typeof INTERACTION_EVENTS)[number]
 
 @Injectable({ providedIn: 'root' })
 export class GameFacadeService {
@@ -16,6 +35,10 @@ export class GameFacadeService {
   private lastInteractionPromptKey: string | null = null
   private suppressNextSelfInteractionBing = false
   private wasConnected = false
+
+  private readonly interactionEvents = new Set<InteractionEvent>(
+    INTERACTION_EVENTS,
+  )
 
   constructor(
     private readonly socketService: SocketService,
@@ -25,8 +48,7 @@ export class GameFacadeService {
     private readonly audio: SpeechAnnouncementService,
     private readonly i18n: I18nService,
   ) {
-    this.audio.setSpeechVolume(this.session.speechVolume())
-    this.audio.setSpeechRate(this.session.speechRate())
+    this.syncSpeechSettings()
 
     const socket = this.socketService.connect()
 
@@ -166,8 +188,85 @@ export class GameFacadeService {
     })
   }
 
+  setSpeechVolume(volume: number) {
+    this.session.setSpeechVolume(volume)
+    this.audio.setSpeechVolume(this.session.speechVolume())
+  }
+
+  setSpeechRate(rate: number) {
+    this.session.setSpeechRate(rate)
+    this.audio.setSpeechRate(this.session.speechRate())
+  }
+
   private translateMessage(message: string): string {
     return this.i18n.t(message as TranslationKey)
+  }
+
+  private syncSpeechSettings() {
+    this.audio.setSpeechVolume(this.session.speechVolume())
+    this.audio.setSpeechRate(this.session.speechRate())
+  }
+
+  private beginRequest(clearError = true) {
+    this.store.setLoading(true)
+    if (clearError) {
+      this.store.setError(null)
+    }
+  }
+
+  private emitWithSessionToken<
+    E extends Exclude<keyof ClientToServerEvents, 'lobby:list'>,
+  >(
+    event: E,
+    payload: Omit<Parameters<ClientToServerEvents[E]>[0], 'sessionToken'>,
+  ) {
+    const args = [
+      {
+        ...payload,
+        sessionToken: this.session.sessionToken(),
+      } as Parameters<ClientToServerEvents[E]>[0],
+    ] as Parameters<ClientToServerEvents[E]>
+
+    this.socketService.getSocket().emit(event, ...args)
+  }
+
+  private emitCodeScoped<
+    E extends
+      | 'lobby:join'
+      | 'lobby:spectate'
+      | 'lobby:reconnect'
+      | 'lobby:leave'
+      | 'lobby:updateConfig'
+      | 'lobby:kickPlayer'
+      | 'lobby:end'
+      | 'game:start'
+      | 'game:makePrediction'
+      | 'game:playCard'
+      | 'game:selectTrumpSuit'
+      | 'game:resolveWerewolfTrumpSwap'
+      | 'game:resolveShapeShifter'
+      | 'game:resolveCloud'
+      | 'game:resolveCloudAdjustment'
+      | 'game:resolveJuggler'
+      | 'game:selectJugglerPassCard'
+      | 'player:setReadLogEnabled'
+      | 'player:setInGame',
+  >(
+    event: E,
+    code: string,
+    payload: Omit<
+      Omit<Parameters<ClientToServerEvents[E]>[0], 'sessionToken'>,
+      'code'
+    >,
+  ) {
+    if (this.interactionEvents.has(event as InteractionEvent)) {
+      this.markOwnInteractionSubmitted()
+    }
+
+    this.emitWithSessionToken(event, {
+      code,
+      ...payload,
+    } as Omit<Parameters<ClientToServerEvents[E]>[0], 'sessionToken'>)
   }
 
   private replaceParamsForSpeech(
@@ -292,44 +391,36 @@ export class GameFacadeService {
     config?: Partial<GameConfig>,
     password?: string,
   ) {
-    this.store.setLoading(true)
-    this.store.setError(null)
+    this.beginRequest()
     this.session.setPlayerName(playerName)
 
     const resolvedConfig = config ?? this.session.lobbyConfig() ?? undefined
 
-    this.socketService.getSocket().emit('lobby:create', {
+    this.emitWithSessionToken('lobby:create', {
       playerName,
-      sessionToken: this.session.sessionToken(),
       password,
       config: resolvedConfig,
     })
   }
 
   joinLobby(code: string, playerName: string, password?: string) {
-    this.store.setLoading(true)
-    this.store.setError(null)
+    this.beginRequest()
     this.session.setPlayerName(playerName)
     this.session.setLastLobbyCode(code)
 
-    this.socketService.getSocket().emit('lobby:join', {
-      code,
+    this.emitCodeScoped('lobby:join', code, {
       playerName,
-      sessionToken: this.session.sessionToken(),
       password,
     })
   }
 
   spectateLobby(code: string, playerName: string, password?: string) {
-    this.store.setLoading(true)
-    this.store.setError(null)
+    this.beginRequest()
     this.session.setPlayerName(playerName)
     this.session.setLastLobbyCode(code)
 
-    this.socketService.getSocket().emit('lobby:spectate', {
-      code,
+    this.emitCodeScoped('lobby:spectate', code, {
       playerName,
-      sessionToken: this.session.sessionToken(),
       password,
     })
   }
@@ -339,136 +430,90 @@ export class GameFacadeService {
   }
 
   reconnectLobby(code: string) {
-    this.store.setLoading(true)
-    this.store.setError(null)
-
-    this.socketService.getSocket().emit('lobby:reconnect', {
-      code,
-      sessionToken: this.session.sessionToken(),
-    })
+    this.beginRequest()
+    this.emitCodeScoped('lobby:reconnect', code, {})
   }
 
   leaveLobby(code: string) {
-    this.socketService.getSocket().emit('lobby:leave', {
-      code,
-      sessionToken: this.session.sessionToken(),
-    })
+    this.emitCodeScoped('lobby:leave', code, {})
   }
 
   updateConfig(code: string, config: Partial<GameConfig>) {
     this.session.mergeLobbyConfig(config)
 
-    this.socketService.getSocket().emit('lobby:updateConfig', {
-      code,
-      sessionToken: this.session.sessionToken(),
+    this.emitCodeScoped('lobby:updateConfig', code, {
       config,
     })
   }
 
   kickPlayer(code: string, targetPlayerId: string) {
-    this.socketService.getSocket().emit('lobby:kickPlayer', {
-      code,
-      sessionToken: this.session.sessionToken(),
+    this.emitCodeScoped('lobby:kickPlayer', code, {
       targetPlayerId,
     })
   }
 
   endLobby(code: string) {
-    this.socketService.getSocket().emit('lobby:end', {
-      code,
-      sessionToken: this.session.sessionToken(),
-    })
+    this.emitCodeScoped('lobby:end', code, {})
   }
 
   startGame(code: string) {
-    this.store.setLoading(true)
-
-    this.socketService.getSocket().emit('game:start', {
-      code,
-      sessionToken: this.session.sessionToken(),
-    })
+    this.beginRequest(false)
+    this.emitCodeScoped('game:start', code, {})
   }
 
   makePrediction(code: string, value: number) {
-    this.markOwnInteractionSubmitted()
-    this.socketService.getSocket().emit('game:makePrediction', {
-      code,
-      sessionToken: this.session.sessionToken(),
+    this.emitCodeScoped('game:makePrediction', code, {
       value,
     })
   }
 
   playCard(code: string, cardId: string) {
-    this.markOwnInteractionSubmitted()
-    this.socketService.getSocket().emit('game:playCard', {
-      code,
-      sessionToken: this.session.sessionToken(),
+    this.emitCodeScoped('game:playCard', code, {
       cardId,
     })
   }
 
   selectTrumpSuit(code: string, suit: Suit | null) {
-    this.markOwnInteractionSubmitted()
-    this.socketService.getSocket().emit('game:selectTrumpSuit', {
-      code,
-      sessionToken: this.session.sessionToken(),
+    this.emitCodeScoped('game:selectTrumpSuit', code, {
       suit,
     })
   }
 
   resolveWerewolfTrumpSwap(code: string, suit: Suit | null) {
-    this.markOwnInteractionSubmitted()
-    this.socketService.getSocket().emit('game:resolveWerewolfTrumpSwap', {
-      code,
-      sessionToken: this.session.sessionToken(),
+    this.emitCodeScoped('game:resolveWerewolfTrumpSwap', code, {
       suit,
     })
   }
 
   resolveShapeShifter(code: string, cardId: string, mode: 'wizard' | 'jester') {
-    this.markOwnInteractionSubmitted()
-    this.socketService.getSocket().emit('game:resolveShapeShifter', {
-      code,
-      sessionToken: this.session.sessionToken(),
+    this.emitCodeScoped('game:resolveShapeShifter', code, {
       cardId,
       mode,
     })
   }
 
   resolveCloud(code: string, cardId: string, suit: Suit) {
-    this.markOwnInteractionSubmitted()
-    this.socketService.getSocket().emit('game:resolveCloud', {
-      code,
-      sessionToken: this.session.sessionToken(),
+    this.emitCodeScoped('game:resolveCloud', code, {
       cardId,
       suit,
     })
   }
 
   resolveCloudAdjustment(code: string, delta: 1 | -1) {
-    this.markOwnInteractionSubmitted()
-    this.socketService.getSocket().emit('game:resolveCloudAdjustment', {
-      code,
-      sessionToken: this.session.sessionToken(),
+    this.emitCodeScoped('game:resolveCloudAdjustment', code, {
       delta,
     })
   }
 
   resolveJuggler(code: string, cardId: string, suit: Suit) {
-    this.markOwnInteractionSubmitted()
-    this.socketService.getSocket().emit('game:resolveJuggler', {
-      code,
-      sessionToken: this.session.sessionToken(),
+    this.emitCodeScoped('game:resolveJuggler', code, {
       cardId,
       suit,
     })
   }
 
   selectJugglerPassCard(code: string, cardId: string) {
-    this.markOwnInteractionSubmitted()
-    this.socketService.getSocket().emit('game:selectJugglerPassCard', {
-      code,
-      sessionToken: this.session.sessionToken(),
+    this.emitCodeScoped('game:selectJugglerPassCard', code, {
       cardId,
     })
   }
@@ -478,9 +523,7 @@ export class GameFacadeService {
   }
 
   setInGame(code: string, inGame: boolean) {
-    this.socketService.getSocket().emit('player:setInGame', {
-      code,
-      sessionToken: this.session.sessionToken(),
+    this.emitCodeScoped('player:setInGame', code, {
       inGame,
     })
   }
@@ -497,9 +540,7 @@ export class GameFacadeService {
       this.audio.clear()
     }
 
-    this.socketService.getSocket().emit('player:setReadLogEnabled', {
-      code,
-      sessionToken: this.session.sessionToken(),
+    this.emitCodeScoped('player:setReadLogEnabled', code, {
       enabled,
     })
   }

@@ -8,7 +8,6 @@ import {
 } from '@wizard/shared'
 import { GameFacadeService } from '../../core/services/game-facade.service'
 import { SessionService } from '../../core/services/session.service'
-import { SpeechAnnouncementService } from '../../core/services/speech-announcement.service'
 import { AppStore } from '../../core/state/app.store'
 import { TPipe } from '../../shared/pipes/t.pipe'
 import { GameControlsPanelComponent } from './components/game-controls-panel.component'
@@ -149,7 +148,7 @@ export class GamePageComponent {
   private readonly manualHandOrder = signal<string[] | null>(null)
   private lastSeenRoundKey: string | null = null
 
-  private readonly readLogEnabledFromServer = computed(() => {
+  readonly readLogEnabledSignal = computed(() => {
     const state = this.store.gameState()
     const selfId = state?.selfPlayerId
 
@@ -158,10 +157,6 @@ export class GamePageComponent {
         ?.readLogEnabled ?? false
     )
   })
-
-  readonly readLogEnabledSignal = computed(() =>
-    this.readLogEnabledFromServer(),
-  )
   readonly speechVolumeSignal = computed(() => this.session.speechVolume())
   readonly speechSpeedSignal = computed(() => this.session.speechRate())
   readonly bingEnabledSignal = computed(() => this.session.bingEnabled())
@@ -192,11 +187,7 @@ export class GamePageComponent {
     private readonly appStore: AppStore,
     private readonly facade: GameFacadeService,
     protected readonly session: SessionService,
-    private readonly audio: SpeechAnnouncementService,
   ) {
-    this.audio.setSpeechVolume(this.session.speechVolume())
-    this.audio.setSpeechRate(this.session.speechRate())
-
     effect(() => {
       const state = this.store.gameState()
       const roundNumber = state?.currentRound?.roundNumber ?? null
@@ -223,13 +214,11 @@ export class GamePageComponent {
   }
 
   setAudioVolume(volume: number) {
-    this.session.setSpeechVolume(volume)
-    this.audio.setSpeechVolume(this.session.speechVolume())
+    this.facade.setSpeechVolume(volume)
   }
 
   setAudioSpeed(speed: number) {
-    this.session.setSpeechRate(speed)
-    this.audio.setSpeechRate(this.session.speechRate())
+    this.facade.setSpeechRate(speed)
   }
 
   isHost() {
