@@ -14,12 +14,5 @@ export const createApp = (): Express => {
 
   app.use(express.json())
 
-  app.get('/health', (_req, res) => {
-    res.status(200).json({
-      ok: true,
-      service: 'wizard-server',
-    })
-  })
-
   return app
 }
