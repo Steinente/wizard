@@ -18,7 +18,7 @@ export interface GamePlayerViewMeta {
   connected: boolean
   presence: 'online' | 'away' | 'offline'
   isHost: boolean
-  audioEnabled: boolean
+  readLogEnabled: boolean
 }
 
 export interface RoundPlayerViewState {

@@ -39,7 +39,7 @@ model Lobby {
   hostPlayerId              String?
   predictionVisibility      PredictionVisibility      @default(OPEN)
   openPredictionRestriction OpenPredictionRestriction @default(NONE)
-  audioEnabledByDefault     Boolean                   @default(false)
+  readLogEnabledByDefault     Boolean                   @default(false)
   languageDefault           String                    @default("en")
   allowIncludedSpecialCards Boolean                   @default(true)
   hostDisconnectedAt        DateTime?
@@ -63,7 +63,7 @@ model Player {
   inGame         Boolean    @default(false)
   joinedAt       DateTime   @default(now())
   disconnectedAt DateTime?
-  audioEnabled   Boolean    @default(false)
+  readLogEnabled   Boolean    @default(false)
   createdAt      DateTime   @default(now())
   updatedAt      DateTime   @updatedAt
 

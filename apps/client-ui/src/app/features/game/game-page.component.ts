@@ -6,9 +6,9 @@ import {
   type Card,
   type Suit,
 } from '@wizard/shared'
-import { AudioAnnouncementService } from '../../core/services/audio-announcement.service'
 import { GameFacadeService } from '../../core/services/game-facade.service'
 import { SessionService } from '../../core/services/session.service'
+import { SpeechAnnouncementService } from '../../core/services/speech-announcement.service'
 import { AppStore } from '../../core/state/app.store'
 import { TPipe } from '../../shared/pipes/t.pipe'
 import { GameControlsPanelComponent } from './components/game-controls-panel.component'
@@ -70,15 +70,15 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
 
             <wiz-game-controls-panel
               [state]="store.gameState()!"
-              [audioEnabled]="audioEnabledSignal()"
-              [audioVolume]="audioVolumeSignal()"
-              [audioSpeed]="audioSpeedSignal()"
+              [audioEnabled]="readLogEnabledSignal()"
+              [audioVolume]="speechVolumeSignal()"
+              [audioSpeed]="speechSpeedSignal()"
               [bingEnabled]="bingEnabledSignal()"
               [isHost]="isHost()"
-              [onToggleAudio]="toggleAudioFn"
+              [onToggleAudio]="toggleReadLogFn"
               [onBingToggle]="toggleBingFn"
-              [onAudioVolumeChange]="setAudioVolumeFn"
-              [onAudioSpeedChange]="setAudioSpeedFn"
+              [onAudioVolumeChange]="setSpeechVolumeFn"
+              [onAudioSpeedChange]="setSpeechSpeedFn"
               [onEndLobby]="endLobbyFn"
             />
           </div>
@@ -149,19 +149,21 @@ export class GamePageComponent {
   private readonly manualHandOrder = signal<string[] | null>(null)
   private lastSeenRoundKey: string | null = null
 
-  private readonly audioEnabledFromServer = computed(() => {
+  private readonly readLogEnabledFromServer = computed(() => {
     const state = this.store.gameState()
     const selfId = state?.selfPlayerId
 
     return (
       state?.players.find((player) => player.playerId === selfId)
-        ?.audioEnabled ?? false
+        ?.readLogEnabled ?? false
     )
   })
 
-  readonly audioEnabledSignal = computed(() => this.audioEnabledFromServer())
-  readonly audioVolumeSignal = computed(() => this.session.audioVolume())
-  readonly audioSpeedSignal = computed(() => this.session.audioRate())
+  readonly readLogEnabledSignal = computed(() =>
+    this.readLogEnabledFromServer(),
+  )
+  readonly speechVolumeSignal = computed(() => this.session.speechVolume())
+  readonly speechSpeedSignal = computed(() => this.session.speechRate())
   readonly bingEnabledSignal = computed(() => this.session.bingEnabled())
 
   readonly playCardFn = (card: Card) => this.playCard(card)
@@ -176,24 +178,24 @@ export class GamePageComponent {
   readonly resolveCloudAdjustmentFn = (delta: 1 | -1) =>
     this.resolveCloudAdjustment(delta)
   readonly resolveJugglerSuitFn = (suit: Suit) => this.resolveJugglerSuit(suit)
-  readonly toggleAudioFn = (enabled: boolean) => this.toggleAudio(enabled)
+  readonly toggleReadLogFn = (enabled: boolean) => this.toggleAudio(enabled)
   readonly toggleBingFn = (enabled: boolean) =>
     this.session.setBingEnabled(enabled)
   readonly sortHandFn = () => this.sortHand()
   readonly reorderHandFn = (draggedCardId: string, targetCardId: string) =>
     this.reorderHand(draggedCardId, targetCardId)
-  readonly setAudioVolumeFn = (volume: number) => this.setAudioVolume(volume)
-  readonly setAudioSpeedFn = (speed: number) => this.setAudioSpeed(speed)
+  readonly setSpeechVolumeFn = (volume: number) => this.setAudioVolume(volume)
+  readonly setSpeechSpeedFn = (speed: number) => this.setAudioSpeed(speed)
   readonly endLobbyFn = () => this.endLobby()
 
   constructor(
     private readonly appStore: AppStore,
     private readonly facade: GameFacadeService,
     protected readonly session: SessionService,
-    private readonly audio: AudioAnnouncementService,
+    private readonly audio: SpeechAnnouncementService,
   ) {
-    this.audio.setSpeechVolume(this.session.audioVolume())
-    this.audio.setSpeechRate(this.session.audioRate())
+    this.audio.setSpeechVolume(this.session.speechVolume())
+    this.audio.setSpeechRate(this.session.speechRate())
 
     effect(() => {
       const state = this.store.gameState()
@@ -221,13 +223,13 @@ export class GamePageComponent {
   }
 
   setAudioVolume(volume: number) {
-    this.session.setAudioVolume(volume)
-    this.audio.setSpeechVolume(this.session.audioVolume())
+    this.session.setSpeechVolume(volume)
+    this.audio.setSpeechVolume(this.session.speechVolume())
   }
 
   setAudioSpeed(speed: number) {
-    this.session.setAudioRate(speed)
-    this.audio.setSpeechRate(this.session.audioRate())
+    this.session.setSpeechRate(speed)
+    this.audio.setSpeechRate(this.session.speechRate())
   }
 
   isHost() {
@@ -507,7 +509,7 @@ export class GamePageComponent {
       return
     }
 
-    this.facade.setAudioEnabled(state.lobbyCode, enabled)
+    this.facade.setReadLogEnabled(state.lobbyCode, enabled)
   }
 
   endLobby() {

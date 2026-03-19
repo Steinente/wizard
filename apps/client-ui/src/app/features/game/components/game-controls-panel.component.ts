@@ -19,7 +19,7 @@ import { TPipe } from '../../../shared/pipes/t.pipe'
             (ngModelChange)="toggleAudio($event)"
           />
           <span>
-            {{ audioEnabled ? ('audioEnabled' | t) : ('audioDisabled' | t) }}
+            {{ audioEnabled ? ('readLogEnabled' | t) : ('readLogDisabled' | t) }}
           </span>
         </label>
       </div>
@@ -38,7 +38,7 @@ import { TPipe } from '../../../shared/pipes/t.pipe'
       </div>
 
       <div style="margin-top: 12px;">
-        <label class="label">{{ 'audioVolumeLabel' | t }}: {{ volumePercent() }}%</label>
+        <label class="label">{{ 'speechVolumeLabel' | t }}: {{ volumePercent() }}%</label>
         <input
           class="input"
           type="range"
@@ -51,7 +51,7 @@ import { TPipe } from '../../../shared/pipes/t.pipe'
       </div>
 
       <div style="margin-top: 12px;">
-        <label class="label">{{ 'audioSpeedLabel' | t }}: {{ speedValue() }}x</label>
+        <label class="label">{{ 'speechSpeedLabel' | t }}: {{ speedValue() }}x</label>
         <input
           class="input"
           type="range"

@@ -48,7 +48,7 @@ export interface ClientToServerEvents {
     sessionToken: string
     suit: 'red' | 'yellow' | 'green' | 'blue' | null
   }) => void
-  'player:setAudioEnabled': (payload: {
+  'player:setReadLogEnabled': (payload: {
     code: string
     sessionToken: string
     enabled: boolean
@@ -73,7 +73,7 @@ export interface ServerToClientEvents {
       | 'trickResolved'
       | 'roundScored'
       | 'specialEffect'
-      | 'audioPreferenceChanged'
+      | 'readLogPreferenceChanged'
     messageKey: string
     params?: Record<string, string | number | boolean | null>
   }) => void

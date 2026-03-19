@@ -14,7 +14,7 @@ export type OpenPredictionRestriction =
 export interface GameConfig {
   predictionVisibility: PredictionVisibility
   openPredictionRestriction: OpenPredictionRestriction
-  audioEnabledByDefault: boolean
+  readLogEnabledByDefault: boolean
   languageDefault: 'en' | 'de'
   allowIncludedSpecialCards: boolean
 }

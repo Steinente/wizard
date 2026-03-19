@@ -13,7 +13,7 @@ export interface SetupRoundInput {
     name: string
     connected: boolean
     isHost: boolean
-    audioEnabled: boolean
+    readLogEnabled: boolean
     seatIndex: number
   }>
   currentRoundNumber: number

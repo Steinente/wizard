@@ -56,7 +56,7 @@ const lobbyConfigToShared = (
   openPredictionRestriction: toOpenPredictionRestriction(
     lobby.openPredictionRestriction,
   ),
-  audioEnabledByDefault: lobby.audioEnabledByDefault,
+  readLogEnabledByDefault: lobby.readLogEnabledByDefault,
   languageDefault: lobby.languageDefault === 'de' ? 'de' : 'en',
   allowIncludedSpecialCards: lobby.allowIncludedSpecialCards,
 })
@@ -444,7 +444,7 @@ export class GameService {
       seatIndex: index,
       connected: player.connected,
       isHost: player.role === PlayerRole.HOST,
-      audioEnabled: player.audioEnabled ?? config.audioEnabledByDefault,
+      readLogEnabled: player.readLogEnabled ?? config.readLogEnabledByDefault,
     }))
 
     const state = createInitialGameState({
@@ -1588,7 +1588,7 @@ export class GameService {
     return state
   }
 
-  async setAudioEnabled(input: {
+  async setReadLogEnabled(input: {
     code: string
     sessionToken: string
     enabled: boolean
@@ -1604,7 +1604,7 @@ export class GameService {
     // Persist to database so setting is remembered for future sessions
     await prisma.player.update({
       where: { id: player.id },
-      data: { audioEnabled: input.enabled },
+      data: { readLogEnabled: input.enabled },
     })
 
     // If game is running, also update the game state
@@ -1615,7 +1615,7 @@ export class GameService {
       )
 
       if (gamePlayer) {
-        gamePlayer.audioEnabled = input.enabled
+        gamePlayer.readLogEnabled = input.enabled
         await this.persistState(lobby.id, state)
         return state
       }

@@ -3,7 +3,7 @@ import type { GameConfig } from '@wizard/shared'
 export const defaultGameConfig: GameConfig = {
   predictionVisibility: 'open',
   openPredictionRestriction: 'none',
-  audioEnabledByDefault: false,
+  readLogEnabledByDefault: false,
   languageDefault: 'en',
   allowIncludedSpecialCards: true,
 }

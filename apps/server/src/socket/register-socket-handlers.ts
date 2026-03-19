@@ -20,7 +20,7 @@ import {
   selectJugglerPassCardSchema,
   setInGameSchema,
   selectTrumpSuitSchema,
-  setAudioEnabledSchema,
+  setReadLogEnabledSchema,
   spectateLobbySchema,
   updateConfigSchema,
 } from './schemas.js'
@@ -535,16 +535,16 @@ export const registerSocketHandlers = (
     }
   })
 
-  socket.on('player:setAudioEnabled', async (payload) => {
+  socket.on('player:setReadLogEnabled', async (payload) => {
     await runSocketAction(
       socket,
       payload,
-      setAudioEnabledSchema.parse,
+      setReadLogEnabledSchema.parse,
       async (input) => {
-        await gameService.setAudioEnabled(input)
+        await gameService.setReadLogEnabled(input)
         await emitStateForCode(io, input.code, sessionStore, gameService)
       },
-      'Audio setting failed',
+      'Log reading setting failed',
     )
   })
 

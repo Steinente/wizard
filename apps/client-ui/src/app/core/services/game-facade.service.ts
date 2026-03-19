@@ -6,7 +6,7 @@ import { normalizeLogParams } from '../../features/game/utils/log-params.util'
 import { I18nService } from '../i18n/i18n.service'
 import type { TranslationKey } from '../i18n/translations'
 import { AppStore } from '../state/app.store'
-import { AudioAnnouncementService } from './audio-announcement.service'
+import { SpeechAnnouncementService } from './speech-announcement.service'
 import { SessionService } from './session.service'
 import { SocketService } from './socket.service'
 
@@ -22,11 +22,11 @@ export class GameFacadeService {
     private readonly store: AppStore,
     private readonly session: SessionService,
     private readonly router: Router,
-    private readonly audio: AudioAnnouncementService,
+    private readonly audio: SpeechAnnouncementService,
     private readonly i18n: I18nService,
   ) {
-    this.audio.setSpeechVolume(this.session.audioVolume())
-    this.audio.setSpeechRate(this.session.audioRate())
+    this.audio.setSpeechVolume(this.session.speechVolume())
+    this.audio.setSpeechRate(this.session.speechRate())
 
     const socket = this.socketService.connect()
 
@@ -119,19 +119,19 @@ export class GameFacadeService {
 
       if (self) {
         if (
-          this.session.hasAudioPreference() &&
-          self.audioEnabled !== this.session.audioEnabled()
+          this.session.hasReadLogPreference() &&
+          self.readLogEnabled !== this.session.readLogEnabled()
         ) {
-          this.applyAudioEnabled(
+          this.applyReadLogEnabled(
             payload.state.lobbyCode,
-            this.session.audioEnabled(),
+            this.session.readLogEnabled(),
             true,
           )
         } else {
-          this.session.setAudioEnabled(self.audioEnabled)
+          this.session.setReadLogEnabled(self.readLogEnabled)
         }
 
-        if (this.session.audioEnabled()) {
+        if (this.session.readLogEnabled()) {
           this.audio.unlock()
         }
       }
@@ -247,7 +247,7 @@ export class GameFacadeService {
   }
 
   private announceNewLogs(state: WizardGameViewState) {
-    if (!this.session.audioEnabled() || !state.logs.length) {
+    if (!this.session.readLogEnabled() || !state.logs.length) {
       return
     }
 
@@ -473,8 +473,8 @@ export class GameFacadeService {
     })
   }
 
-  setAudioEnabled(code: string, enabled: boolean) {
-    this.applyAudioEnabled(code, enabled, false)
+  setReadLogEnabled(code: string, enabled: boolean) {
+    this.applyReadLogEnabled(code, enabled, false)
   }
 
   setInGame(code: string, inGame: boolean) {
@@ -485,19 +485,19 @@ export class GameFacadeService {
     })
   }
 
-  private applyAudioEnabled(code: string, enabled: boolean, silent: boolean) {
-    this.session.setAudioEnabled(enabled)
+  private applyReadLogEnabled(code: string, enabled: boolean, silent: boolean) {
+    this.session.setReadLogEnabled(enabled)
 
     if (!silent && enabled) {
       const currentState = this.store.gameState()
       this.lastAnnouncedLogId = currentState?.logs.at(-1)?.id ?? null
       this.audio.unlock()
-      this.audio.speak(this.i18n.t('audioEnabled'))
+      this.audio.speak(this.i18n.t('readLogEnabled'))
     } else if (!silent) {
       this.audio.clear()
     }
 
-    this.socketService.getSocket().emit('player:setAudioEnabled', {
+    this.socketService.getSocket().emit('player:setReadLogEnabled', {
       code,
       sessionToken: this.session.sessionToken(),
       enabled,

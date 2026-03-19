@@ -31,7 +31,7 @@ export type LobbyMinAggregateOutputType = {
   hostPlayerId: string | null
   predictionVisibility: $Enums.PredictionVisibility | null
   openPredictionRestriction: $Enums.OpenPredictionRestriction | null
-  audioEnabledByDefault: boolean | null
+  readLogEnabledByDefault: boolean | null
   languageDefault: string | null
   allowIncludedSpecialCards: boolean | null
   hostDisconnectedAt: Date | null
@@ -47,7 +47,7 @@ export type LobbyMaxAggregateOutputType = {
   hostPlayerId: string | null
   predictionVisibility: $Enums.PredictionVisibility | null
   openPredictionRestriction: $Enums.OpenPredictionRestriction | null
-  audioEnabledByDefault: boolean | null
+  readLogEnabledByDefault: boolean | null
   languageDefault: string | null
   allowIncludedSpecialCards: boolean | null
   hostDisconnectedAt: Date | null
@@ -63,7 +63,7 @@ export type LobbyCountAggregateOutputType = {
   hostPlayerId: number
   predictionVisibility: number
   openPredictionRestriction: number
-  audioEnabledByDefault: number
+  readLogEnabledByDefault: number
   languageDefault: number
   allowIncludedSpecialCards: number
   hostDisconnectedAt: number
@@ -81,7 +81,7 @@ export type LobbyMinAggregateInputType = {
   hostPlayerId?: true
   predictionVisibility?: true
   openPredictionRestriction?: true
-  audioEnabledByDefault?: true
+  readLogEnabledByDefault?: true
   languageDefault?: true
   allowIncludedSpecialCards?: true
   hostDisconnectedAt?: true
@@ -97,7 +97,7 @@ export type LobbyMaxAggregateInputType = {
   hostPlayerId?: true
   predictionVisibility?: true
   openPredictionRestriction?: true
-  audioEnabledByDefault?: true
+  readLogEnabledByDefault?: true
   languageDefault?: true
   allowIncludedSpecialCards?: true
   hostDisconnectedAt?: true
@@ -113,7 +113,7 @@ export type LobbyCountAggregateInputType = {
   hostPlayerId?: true
   predictionVisibility?: true
   openPredictionRestriction?: true
-  audioEnabledByDefault?: true
+  readLogEnabledByDefault?: true
   languageDefault?: true
   allowIncludedSpecialCards?: true
   hostDisconnectedAt?: true
@@ -202,7 +202,7 @@ export type LobbyGroupByOutputType = {
   hostPlayerId: string | null
   predictionVisibility: $Enums.PredictionVisibility
   openPredictionRestriction: $Enums.OpenPredictionRestriction
-  audioEnabledByDefault: boolean
+  readLogEnabledByDefault: boolean
   languageDefault: string
   allowIncludedSpecialCards: boolean
   hostDisconnectedAt: Date | null
@@ -239,7 +239,7 @@ export type LobbyWhereInput = {
   hostPlayerId?: Prisma.StringNullableFilter<"Lobby"> | string | null
   predictionVisibility?: Prisma.EnumPredictionVisibilityFilter<"Lobby"> | $Enums.PredictionVisibility
   openPredictionRestriction?: Prisma.EnumOpenPredictionRestrictionFilter<"Lobby"> | $Enums.OpenPredictionRestriction
-  audioEnabledByDefault?: Prisma.BoolFilter<"Lobby"> | boolean
+  readLogEnabledByDefault?: Prisma.BoolFilter<"Lobby"> | boolean
   languageDefault?: Prisma.StringFilter<"Lobby"> | string
   allowIncludedSpecialCards?: Prisma.BoolFilter<"Lobby"> | boolean
   hostDisconnectedAt?: Prisma.DateTimeNullableFilter<"Lobby"> | Date | string | null
@@ -257,7 +257,7 @@ export type LobbyOrderByWithRelationInput = {
   hostPlayerId?: Prisma.SortOrderInput | Prisma.SortOrder
   predictionVisibility?: Prisma.SortOrder
   openPredictionRestriction?: Prisma.SortOrder
-  audioEnabledByDefault?: Prisma.SortOrder
+  readLogEnabledByDefault?: Prisma.SortOrder
   languageDefault?: Prisma.SortOrder
   allowIncludedSpecialCards?: Prisma.SortOrder
   hostDisconnectedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -278,7 +278,7 @@ export type LobbyWhereUniqueInput = Prisma.AtLeast<{
   hostPlayerId?: Prisma.StringNullableFilter<"Lobby"> | string | null
   predictionVisibility?: Prisma.EnumPredictionVisibilityFilter<"Lobby"> | $Enums.PredictionVisibility
   openPredictionRestriction?: Prisma.EnumOpenPredictionRestrictionFilter<"Lobby"> | $Enums.OpenPredictionRestriction
-  audioEnabledByDefault?: Prisma.BoolFilter<"Lobby"> | boolean
+  readLogEnabledByDefault?: Prisma.BoolFilter<"Lobby"> | boolean
   languageDefault?: Prisma.StringFilter<"Lobby"> | string
   allowIncludedSpecialCards?: Prisma.BoolFilter<"Lobby"> | boolean
   hostDisconnectedAt?: Prisma.DateTimeNullableFilter<"Lobby"> | Date | string | null
@@ -296,7 +296,7 @@ export type LobbyOrderByWithAggregationInput = {
   hostPlayerId?: Prisma.SortOrderInput | Prisma.SortOrder
   predictionVisibility?: Prisma.SortOrder
   openPredictionRestriction?: Prisma.SortOrder
-  audioEnabledByDefault?: Prisma.SortOrder
+  readLogEnabledByDefault?: Prisma.SortOrder
   languageDefault?: Prisma.SortOrder
   allowIncludedSpecialCards?: Prisma.SortOrder
   hostDisconnectedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -318,7 +318,7 @@ export type LobbyScalarWhereWithAggregatesInput = {
   hostPlayerId?: Prisma.StringNullableWithAggregatesFilter<"Lobby"> | string | null
   predictionVisibility?: Prisma.EnumPredictionVisibilityWithAggregatesFilter<"Lobby"> | $Enums.PredictionVisibility
   openPredictionRestriction?: Prisma.EnumOpenPredictionRestrictionWithAggregatesFilter<"Lobby"> | $Enums.OpenPredictionRestriction
-  audioEnabledByDefault?: Prisma.BoolWithAggregatesFilter<"Lobby"> | boolean
+  readLogEnabledByDefault?: Prisma.BoolWithAggregatesFilter<"Lobby"> | boolean
   languageDefault?: Prisma.StringWithAggregatesFilter<"Lobby"> | string
   allowIncludedSpecialCards?: Prisma.BoolWithAggregatesFilter<"Lobby"> | boolean
   hostDisconnectedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Lobby"> | Date | string | null
@@ -334,7 +334,7 @@ export type LobbyCreateInput = {
   hostPlayerId?: string | null
   predictionVisibility?: $Enums.PredictionVisibility
   openPredictionRestriction?: $Enums.OpenPredictionRestriction
-  audioEnabledByDefault?: boolean
+  readLogEnabledByDefault?: boolean
   languageDefault?: string
   allowIncludedSpecialCards?: boolean
   hostDisconnectedAt?: Date | string | null
@@ -352,7 +352,7 @@ export type LobbyUncheckedCreateInput = {
   hostPlayerId?: string | null
   predictionVisibility?: $Enums.PredictionVisibility
   openPredictionRestriction?: $Enums.OpenPredictionRestriction
-  audioEnabledByDefault?: boolean
+  readLogEnabledByDefault?: boolean
   languageDefault?: string
   allowIncludedSpecialCards?: boolean
   hostDisconnectedAt?: Date | string | null
@@ -370,7 +370,7 @@ export type LobbyUpdateInput = {
   hostPlayerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   predictionVisibility?: Prisma.EnumPredictionVisibilityFieldUpdateOperationsInput | $Enums.PredictionVisibility
   openPredictionRestriction?: Prisma.EnumOpenPredictionRestrictionFieldUpdateOperationsInput | $Enums.OpenPredictionRestriction
-  audioEnabledByDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  readLogEnabledByDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   languageDefault?: Prisma.StringFieldUpdateOperationsInput | string
   allowIncludedSpecialCards?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hostDisconnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -388,7 +388,7 @@ export type LobbyUncheckedUpdateInput = {
   hostPlayerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   predictionVisibility?: Prisma.EnumPredictionVisibilityFieldUpdateOperationsInput | $Enums.PredictionVisibility
   openPredictionRestriction?: Prisma.EnumOpenPredictionRestrictionFieldUpdateOperationsInput | $Enums.OpenPredictionRestriction
-  audioEnabledByDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  readLogEnabledByDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   languageDefault?: Prisma.StringFieldUpdateOperationsInput | string
   allowIncludedSpecialCards?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hostDisconnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -406,7 +406,7 @@ export type LobbyCreateManyInput = {
   hostPlayerId?: string | null
   predictionVisibility?: $Enums.PredictionVisibility
   openPredictionRestriction?: $Enums.OpenPredictionRestriction
-  audioEnabledByDefault?: boolean
+  readLogEnabledByDefault?: boolean
   languageDefault?: string
   allowIncludedSpecialCards?: boolean
   hostDisconnectedAt?: Date | string | null
@@ -422,7 +422,7 @@ export type LobbyUpdateManyMutationInput = {
   hostPlayerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   predictionVisibility?: Prisma.EnumPredictionVisibilityFieldUpdateOperationsInput | $Enums.PredictionVisibility
   openPredictionRestriction?: Prisma.EnumOpenPredictionRestrictionFieldUpdateOperationsInput | $Enums.OpenPredictionRestriction
-  audioEnabledByDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  readLogEnabledByDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   languageDefault?: Prisma.StringFieldUpdateOperationsInput | string
   allowIncludedSpecialCards?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hostDisconnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -438,7 +438,7 @@ export type LobbyUncheckedUpdateManyInput = {
   hostPlayerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   predictionVisibility?: Prisma.EnumPredictionVisibilityFieldUpdateOperationsInput | $Enums.PredictionVisibility
   openPredictionRestriction?: Prisma.EnumOpenPredictionRestrictionFieldUpdateOperationsInput | $Enums.OpenPredictionRestriction
-  audioEnabledByDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  readLogEnabledByDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   languageDefault?: Prisma.StringFieldUpdateOperationsInput | string
   allowIncludedSpecialCards?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hostDisconnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -454,7 +454,7 @@ export type LobbyCountOrderByAggregateInput = {
   hostPlayerId?: Prisma.SortOrder
   predictionVisibility?: Prisma.SortOrder
   openPredictionRestriction?: Prisma.SortOrder
-  audioEnabledByDefault?: Prisma.SortOrder
+  readLogEnabledByDefault?: Prisma.SortOrder
   languageDefault?: Prisma.SortOrder
   allowIncludedSpecialCards?: Prisma.SortOrder
   hostDisconnectedAt?: Prisma.SortOrder
@@ -470,7 +470,7 @@ export type LobbyMaxOrderByAggregateInput = {
   hostPlayerId?: Prisma.SortOrder
   predictionVisibility?: Prisma.SortOrder
   openPredictionRestriction?: Prisma.SortOrder
-  audioEnabledByDefault?: Prisma.SortOrder
+  readLogEnabledByDefault?: Prisma.SortOrder
   languageDefault?: Prisma.SortOrder
   allowIncludedSpecialCards?: Prisma.SortOrder
   hostDisconnectedAt?: Prisma.SortOrder
@@ -486,7 +486,7 @@ export type LobbyMinOrderByAggregateInput = {
   hostPlayerId?: Prisma.SortOrder
   predictionVisibility?: Prisma.SortOrder
   openPredictionRestriction?: Prisma.SortOrder
-  audioEnabledByDefault?: Prisma.SortOrder
+  readLogEnabledByDefault?: Prisma.SortOrder
   languageDefault?: Prisma.SortOrder
   allowIncludedSpecialCards?: Prisma.SortOrder
   hostDisconnectedAt?: Prisma.SortOrder
@@ -567,7 +567,7 @@ export type LobbyCreateWithoutPlayersInput = {
   hostPlayerId?: string | null
   predictionVisibility?: $Enums.PredictionVisibility
   openPredictionRestriction?: $Enums.OpenPredictionRestriction
-  audioEnabledByDefault?: boolean
+  readLogEnabledByDefault?: boolean
   languageDefault?: string
   allowIncludedSpecialCards?: boolean
   hostDisconnectedAt?: Date | string | null
@@ -584,7 +584,7 @@ export type LobbyUncheckedCreateWithoutPlayersInput = {
   hostPlayerId?: string | null
   predictionVisibility?: $Enums.PredictionVisibility
   openPredictionRestriction?: $Enums.OpenPredictionRestriction
-  audioEnabledByDefault?: boolean
+  readLogEnabledByDefault?: boolean
   languageDefault?: string
   allowIncludedSpecialCards?: boolean
   hostDisconnectedAt?: Date | string | null
@@ -617,7 +617,7 @@ export type LobbyUpdateWithoutPlayersInput = {
   hostPlayerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   predictionVisibility?: Prisma.EnumPredictionVisibilityFieldUpdateOperationsInput | $Enums.PredictionVisibility
   openPredictionRestriction?: Prisma.EnumOpenPredictionRestrictionFieldUpdateOperationsInput | $Enums.OpenPredictionRestriction
-  audioEnabledByDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  readLogEnabledByDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   languageDefault?: Prisma.StringFieldUpdateOperationsInput | string
   allowIncludedSpecialCards?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hostDisconnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -634,7 +634,7 @@ export type LobbyUncheckedUpdateWithoutPlayersInput = {
   hostPlayerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   predictionVisibility?: Prisma.EnumPredictionVisibilityFieldUpdateOperationsInput | $Enums.PredictionVisibility
   openPredictionRestriction?: Prisma.EnumOpenPredictionRestrictionFieldUpdateOperationsInput | $Enums.OpenPredictionRestriction
-  audioEnabledByDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  readLogEnabledByDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   languageDefault?: Prisma.StringFieldUpdateOperationsInput | string
   allowIncludedSpecialCards?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hostDisconnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -651,7 +651,7 @@ export type LobbyCreateWithoutGameStateInput = {
   hostPlayerId?: string | null
   predictionVisibility?: $Enums.PredictionVisibility
   openPredictionRestriction?: $Enums.OpenPredictionRestriction
-  audioEnabledByDefault?: boolean
+  readLogEnabledByDefault?: boolean
   languageDefault?: string
   allowIncludedSpecialCards?: boolean
   hostDisconnectedAt?: Date | string | null
@@ -668,7 +668,7 @@ export type LobbyUncheckedCreateWithoutGameStateInput = {
   hostPlayerId?: string | null
   predictionVisibility?: $Enums.PredictionVisibility
   openPredictionRestriction?: $Enums.OpenPredictionRestriction
-  audioEnabledByDefault?: boolean
+  readLogEnabledByDefault?: boolean
   languageDefault?: string
   allowIncludedSpecialCards?: boolean
   hostDisconnectedAt?: Date | string | null
@@ -701,7 +701,7 @@ export type LobbyUpdateWithoutGameStateInput = {
   hostPlayerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   predictionVisibility?: Prisma.EnumPredictionVisibilityFieldUpdateOperationsInput | $Enums.PredictionVisibility
   openPredictionRestriction?: Prisma.EnumOpenPredictionRestrictionFieldUpdateOperationsInput | $Enums.OpenPredictionRestriction
-  audioEnabledByDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  readLogEnabledByDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   languageDefault?: Prisma.StringFieldUpdateOperationsInput | string
   allowIncludedSpecialCards?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hostDisconnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -718,7 +718,7 @@ export type LobbyUncheckedUpdateWithoutGameStateInput = {
   hostPlayerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   predictionVisibility?: Prisma.EnumPredictionVisibilityFieldUpdateOperationsInput | $Enums.PredictionVisibility
   openPredictionRestriction?: Prisma.EnumOpenPredictionRestrictionFieldUpdateOperationsInput | $Enums.OpenPredictionRestriction
-  audioEnabledByDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  readLogEnabledByDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   languageDefault?: Prisma.StringFieldUpdateOperationsInput | string
   allowIncludedSpecialCards?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hostDisconnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -766,7 +766,7 @@ export type LobbySelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   hostPlayerId?: boolean
   predictionVisibility?: boolean
   openPredictionRestriction?: boolean
-  audioEnabledByDefault?: boolean
+  readLogEnabledByDefault?: boolean
   languageDefault?: boolean
   allowIncludedSpecialCards?: boolean
   hostDisconnectedAt?: boolean
@@ -785,7 +785,7 @@ export type LobbySelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   hostPlayerId?: boolean
   predictionVisibility?: boolean
   openPredictionRestriction?: boolean
-  audioEnabledByDefault?: boolean
+  readLogEnabledByDefault?: boolean
   languageDefault?: boolean
   allowIncludedSpecialCards?: boolean
   hostDisconnectedAt?: boolean
@@ -801,7 +801,7 @@ export type LobbySelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   hostPlayerId?: boolean
   predictionVisibility?: boolean
   openPredictionRestriction?: boolean
-  audioEnabledByDefault?: boolean
+  readLogEnabledByDefault?: boolean
   languageDefault?: boolean
   allowIncludedSpecialCards?: boolean
   hostDisconnectedAt?: boolean
@@ -817,7 +817,7 @@ export type LobbySelectScalar = {
   hostPlayerId?: boolean
   predictionVisibility?: boolean
   openPredictionRestriction?: boolean
-  audioEnabledByDefault?: boolean
+  readLogEnabledByDefault?: boolean
   languageDefault?: boolean
   allowIncludedSpecialCards?: boolean
   hostDisconnectedAt?: boolean
@@ -826,7 +826,7 @@ export type LobbySelectScalar = {
   updatedAt?: boolean
 }
 
-export type LobbyOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "code" | "status" | "hostPlayerId" | "predictionVisibility" | "openPredictionRestriction" | "audioEnabledByDefault" | "languageDefault" | "allowIncludedSpecialCards" | "hostDisconnectedAt" | "hostDisconnectDeadline" | "createdAt" | "updatedAt", ExtArgs["result"]["lobby"]>
+export type LobbyOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "code" | "status" | "hostPlayerId" | "predictionVisibility" | "openPredictionRestriction" | "readLogEnabledByDefault" | "languageDefault" | "allowIncludedSpecialCards" | "hostDisconnectedAt" | "hostDisconnectDeadline" | "createdAt" | "updatedAt", ExtArgs["result"]["lobby"]>
 export type LobbyInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   players?: boolean | Prisma.Lobby$playersArgs<ExtArgs>
   gameState?: boolean | Prisma.Lobby$gameStateArgs<ExtArgs>
@@ -848,7 +848,7 @@ export type $LobbyPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     hostPlayerId: string | null
     predictionVisibility: $Enums.PredictionVisibility
     openPredictionRestriction: $Enums.OpenPredictionRestriction
-    audioEnabledByDefault: boolean
+    readLogEnabledByDefault: boolean
     languageDefault: string
     allowIncludedSpecialCards: boolean
     hostDisconnectedAt: Date | null
@@ -1286,7 +1286,7 @@ export interface LobbyFieldRefs {
   readonly hostPlayerId: Prisma.FieldRef<"Lobby", 'String'>
   readonly predictionVisibility: Prisma.FieldRef<"Lobby", 'PredictionVisibility'>
   readonly openPredictionRestriction: Prisma.FieldRef<"Lobby", 'OpenPredictionRestriction'>
-  readonly audioEnabledByDefault: Prisma.FieldRef<"Lobby", 'Boolean'>
+  readonly readLogEnabledByDefault: Prisma.FieldRef<"Lobby", 'Boolean'>
   readonly languageDefault: Prisma.FieldRef<"Lobby", 'String'>
   readonly allowIncludedSpecialCards: Prisma.FieldRef<"Lobby", 'Boolean'>
   readonly hostDisconnectedAt: Prisma.FieldRef<"Lobby", 'DateTime'>

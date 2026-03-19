@@ -15,7 +15,7 @@ export interface GamePlayerMeta {
   seatIndex: number
   connected: boolean
   isHost: boolean
-  audioEnabled: boolean
+  readLogEnabled: boolean
 }
 
 export interface GameLogEntry {

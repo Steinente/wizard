@@ -79,7 +79,7 @@ export const LobbyScalarFieldEnum = {
   hostPlayerId: 'hostPlayerId',
   predictionVisibility: 'predictionVisibility',
   openPredictionRestriction: 'openPredictionRestriction',
-  audioEnabledByDefault: 'audioEnabledByDefault',
+  readLogEnabledByDefault: 'readLogEnabledByDefault',
   languageDefault: 'languageDefault',
   allowIncludedSpecialCards: 'allowIncludedSpecialCards',
   hostDisconnectedAt: 'hostDisconnectedAt',
@@ -101,7 +101,7 @@ export const PlayerScalarFieldEnum = {
   inGame: 'inGame',
   joinedAt: 'joinedAt',
   disconnectedAt: 'disconnectedAt',
-  audioEnabled: 'audioEnabled',
+  readLogEnabled: 'readLogEnabled',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

@@ -1,9 +1,9 @@
 import { Injectable, computed, signal } from '@angular/core'
 import type { GameConfig } from '@wizard/shared'
 import {
-  AUDIO_ENABLED_KEY,
-  AUDIO_RATE_KEY,
-  AUDIO_VOLUME_KEY,
+  READ_LOG_ENABLED_KEY,
+  SPEECH_RATE_KEY,
+  SPEECH_VOLUME_KEY,
   BING_ENABLED_KEY,
   LAST_LOBBY_CODE_KEY,
   LOBBY_CONFIG_KEY,
@@ -13,10 +13,10 @@ import {
 import { LocalStorageService } from './local-storage.service'
 
 const createSessionToken = () => crypto.randomUUID()
-const MIN_AUDIO_VOLUME = 0
-const MAX_AUDIO_VOLUME = 1
-const MIN_AUDIO_RATE = 0.6
-const MAX_AUDIO_RATE = 3.0
+const MIN_SPEECH_VOLUME = 0
+const MAX_SPEECH_VOLUME = 1
+const MIN_SPEECH_RATE = 0.6
+const MAX_SPEECH_RATE = 3.0
 
 const clamp = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value))
@@ -45,21 +45,21 @@ export class SessionService {
   private readonly sessionTokenSignal = signal('')
   private readonly playerNameSignal = signal('')
   private readonly lastLobbyCodeSignal = signal('')
-  private readonly audioEnabledSignal = signal(false)
-  private readonly audioVolumeSignal = signal(1)
-  private readonly audioRateSignal = signal(1)
+  private readonly readLogEnabledSignal = signal(false)
+  private readonly speechVolumeSignal = signal(1)
+  private readonly speechRateSignal = signal(1)
   private readonly bingEnabledSignal = signal(true)
-  private readonly hasAudioPreferenceSignal = signal(false)
+  private readonly hasReadLogPreferenceSignal = signal(false)
   private readonly lobbyConfigSignal = signal<GameConfig | null>(null)
 
   readonly sessionToken = computed(() => this.sessionTokenSignal())
   readonly playerName = computed(() => this.playerNameSignal())
   readonly lastLobbyCode = computed(() => this.lastLobbyCodeSignal())
-  readonly audioEnabled = computed(() => this.audioEnabledSignal())
-  readonly audioVolume = computed(() => this.audioVolumeSignal())
-  readonly audioRate = computed(() => this.audioRateSignal())
+  readonly readLogEnabled = computed(() => this.readLogEnabledSignal())
+  readonly speechVolume = computed(() => this.speechVolumeSignal())
+  readonly speechRate = computed(() => this.speechRateSignal())
   readonly bingEnabled = computed(() => this.bingEnabledSignal())
-  readonly hasAudioPreference = computed(() => this.hasAudioPreferenceSignal())
+  readonly hasReadLogPreference = computed(() => this.hasReadLogPreferenceSignal())
   readonly lobbyConfig = computed(() => this.lobbyConfigSignal())
 
   constructor(private readonly storage: LocalStorageService) {
@@ -80,23 +80,23 @@ export class SessionService {
       }
     }
 
-    const storedAudioEnabled = this.storage.get(AUDIO_ENABLED_KEY)
-    this.hasAudioPreferenceSignal.set(storedAudioEnabled !== null)
-    this.audioEnabledSignal.set(storedAudioEnabled === 'true')
+    const storedReadLogEnabled = this.storage.get(READ_LOG_ENABLED_KEY)
+    this.hasReadLogPreferenceSignal.set(storedReadLogEnabled !== null)
+    this.readLogEnabledSignal.set(storedReadLogEnabled === 'true')
 
-    const storedAudioVolume = this.storage.get(AUDIO_VOLUME_KEY)
-    this.audioVolumeSignal.set(
+    const storedSpeechVolume = this.storage.get(SPEECH_VOLUME_KEY)
+    this.speechVolumeSignal.set(
       parseStoredNumber(
-        storedAudioVolume,
+        storedSpeechVolume,
         1,
-        MIN_AUDIO_VOLUME,
-        MAX_AUDIO_VOLUME,
+        MIN_SPEECH_VOLUME,
+        MAX_SPEECH_VOLUME,
       ),
     )
 
-    const storedAudioRate = this.storage.get(AUDIO_RATE_KEY)
-    this.audioRateSignal.set(
-      parseStoredNumber(storedAudioRate, 1, MIN_AUDIO_RATE, MAX_AUDIO_RATE),
+    const storedSpeechRate = this.storage.get(SPEECH_RATE_KEY)
+    this.speechRateSignal.set(
+      parseStoredNumber(storedSpeechRate, 1, MIN_SPEECH_RATE, MAX_SPEECH_RATE),
     )
 
     const storedBingEnabled = this.storage.get(BING_ENABLED_KEY)
@@ -118,22 +118,22 @@ export class SessionService {
     this.storage.remove(LAST_LOBBY_CODE_KEY)
   }
 
-  setAudioEnabled(enabled: boolean) {
-    this.audioEnabledSignal.set(enabled)
-    this.hasAudioPreferenceSignal.set(true)
-    this.storage.set(AUDIO_ENABLED_KEY, String(enabled))
+  setReadLogEnabled(enabled: boolean) {
+    this.readLogEnabledSignal.set(enabled)
+    this.hasReadLogPreferenceSignal.set(true)
+    this.storage.set(READ_LOG_ENABLED_KEY, String(enabled))
   }
 
-  setAudioVolume(volume: number) {
-    const normalized = clamp(volume, MIN_AUDIO_VOLUME, MAX_AUDIO_VOLUME)
-    this.audioVolumeSignal.set(normalized)
-    this.storage.set(AUDIO_VOLUME_KEY, String(normalized))
+  setSpeechVolume(volume: number) {
+    const normalized = clamp(volume, MIN_SPEECH_VOLUME, MAX_SPEECH_VOLUME)
+    this.speechVolumeSignal.set(normalized)
+    this.storage.set(SPEECH_VOLUME_KEY, String(normalized))
   }
 
-  setAudioRate(rate: number) {
-    const normalized = clamp(rate, MIN_AUDIO_RATE, MAX_AUDIO_RATE)
-    this.audioRateSignal.set(normalized)
-    this.storage.set(AUDIO_RATE_KEY, String(normalized))
+  setSpeechRate(rate: number) {
+    const normalized = clamp(rate, MIN_SPEECH_RATE, MAX_SPEECH_RATE)
+    this.speechRateSignal.set(normalized)
+    this.storage.set(SPEECH_RATE_KEY, String(normalized))
   }
 
   setBingEnabled(enabled: boolean) {

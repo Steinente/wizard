@@ -36,7 +36,7 @@ const findPlayerBySessionToken = <T extends { sessionToken: string }>(
   sessionToken: string,
 ) => players.find((entry) => entry.sessionToken === sessionToken)
 
-const getLastKnownAudioEnabled = async (
+const getLastKnownReadLogEnabled = async (
   sessionToken: string,
 ): Promise<boolean> => {
   const previousPlayer = await prisma.player.findFirst({
@@ -44,7 +44,7 @@ const getLastKnownAudioEnabled = async (
     orderBy: { updatedAt: 'desc' },
   })
 
-  return previousPlayer?.audioEnabled ?? false
+  return previousPlayer?.readLogEnabled ?? false
 }
 
 const getLastKnownHostedConfig = async (
@@ -83,7 +83,7 @@ const getLastKnownHostedConfig = async (
             OpenPredictionRestriction.MUST_NOT_EQUAL_TRICKS
           ? 'mustNotEqualTricks'
           : 'none',
-    audioEnabledByDefault: previousLobby.audioEnabledByDefault,
+    readLogEnabledByDefault: previousLobby.readLogEnabledByDefault,
     languageDefault: previousLobby.languageDefault === 'de' ? 'de' : 'en',
     allowIncludedSpecialCards: previousLobby.allowIncludedSpecialCards,
   }
@@ -220,7 +220,7 @@ export class LobbyService {
     const code = await generateLobbyCode()
     const password = normalizePassword(input.password)
 
-    const audioEnabledFromPrevious = await getLastKnownAudioEnabled(
+    const readLogEnabledFromPrevious = await getLastKnownReadLogEnabled(
       input.sessionToken,
     )
 
@@ -234,7 +234,7 @@ export class LobbyService {
         openPredictionRestriction: toOpenPredictionRestriction(
           mergedConfig.openPredictionRestriction,
         ),
-        audioEnabledByDefault: mergedConfig.audioEnabledByDefault,
+        readLogEnabledByDefault: mergedConfig.readLogEnabledByDefault,
         languageDefault: mergedConfig.languageDefault,
         allowIncludedSpecialCards: mergedConfig.allowIncludedSpecialCards,
         players: {
@@ -244,7 +244,7 @@ export class LobbyService {
             role: PlayerRole.HOST,
             connected: true,
             inGame: false,
-            audioEnabled: audioEnabledFromPrevious,
+            readLogEnabled: readLogEnabledFromPrevious,
           },
         },
       },
@@ -331,7 +331,7 @@ export class LobbyService {
       }
     }
 
-    const audioEnabledFromPrevious = await getLastKnownAudioEnabled(
+    const readLogEnabledFromPrevious = await getLastKnownReadLogEnabled(
       input.sessionToken,
     )
 
@@ -343,7 +343,7 @@ export class LobbyService {
         role: PlayerRole.PLAYER,
         connected: true,
         inGame: false,
-        audioEnabled: audioEnabledFromPrevious,
+        readLogEnabled: readLogEnabledFromPrevious,
       },
     })
 
@@ -405,7 +405,7 @@ export class LobbyService {
       return { lobby: withPasswordFlag(mapLobbyToSummary(refreshed)), playerId: updated.id }
     }
 
-    const audioEnabledFromPrevious = await getLastKnownAudioEnabled(input.sessionToken)
+    const readLogEnabledFromPrevious = await getLastKnownReadLogEnabled(input.sessionToken)
 
     const created = await prisma.player.create({
       data: {
@@ -415,7 +415,7 @@ export class LobbyService {
         role: PlayerRole.SPECTATOR,
         connected: true,
         inGame: true,
-        audioEnabled: audioEnabledFromPrevious,
+        readLogEnabled: readLogEnabledFromPrevious,
       },
     })
 
@@ -532,7 +532,7 @@ export class LobbyService {
         openPredictionRestriction: input.config.openPredictionRestriction
           ? toOpenPredictionRestriction(input.config.openPredictionRestriction)
           : undefined,
-        audioEnabledByDefault: input.config.audioEnabledByDefault,
+        readLogEnabledByDefault: input.config.readLogEnabledByDefault,
         languageDefault: input.config.languageDefault,
         allowIncludedSpecialCards: input.config.allowIncludedSpecialCards,
       },

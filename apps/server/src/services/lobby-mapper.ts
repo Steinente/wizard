@@ -33,7 +33,7 @@ export const mapLobbyToSummary = (lobby: LobbyWithPlayers): LobbySummary => {
     openPredictionRestriction: mapOpenPredictionRestriction(
       lobby.openPredictionRestriction,
     ),
-    audioEnabledByDefault: lobby.audioEnabledByDefault,
+    readLogEnabledByDefault: lobby.readLogEnabledByDefault,
     languageDefault: lobby.languageDefault === 'de' ? 'de' : 'en',
     allowIncludedSpecialCards: lobby.allowIncludedSpecialCards,
   }

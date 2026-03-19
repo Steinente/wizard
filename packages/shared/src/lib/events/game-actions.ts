@@ -18,8 +18,8 @@ export interface SelectTrumpSuitAction {
   suit: Suit
 }
 
-export interface ToggleAudioAction {
-  type: 'toggleAudio'
+export interface ToggleReadLogAction {
+  type: 'toggleReadLog'
   playerId: string
   enabled: boolean
 }
@@ -48,7 +48,7 @@ export type GameAction =
   | MakePredictionAction
   | PlayCardAction
   | SelectTrumpSuitAction
-  | ToggleAudioAction
+  | ToggleReadLogAction
   | ResolveShapeShifterAction
   | ResolveCloudAction
   | ResolveJugglerAction

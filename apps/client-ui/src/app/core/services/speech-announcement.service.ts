@@ -4,7 +4,7 @@ const clamp = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value))
 
 @Injectable({ providedIn: 'root' })
-export class AudioAnnouncementService {
+export class SpeechAnnouncementService {
   private queue: string[] = []
   private speaking = false
   private speechVolume = 1
