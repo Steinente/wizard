@@ -94,6 +94,7 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
                 <wiz-pending-decision-panel
                   class="active-turn"
                   [decision]="myPendingDecision()"
+                  [cloudAdjustmentWonTricks]="myTricksWon()"
                   [onSelectTrump]="selectTrumpFn"
                   [onResolveWerewolfTrumpSwap]="resolveWerewolfTrumpSwapFn"
                   [onResolveShapeShifter]="resolveShapeShifterFn"
@@ -246,6 +247,16 @@ export class GamePageComponent {
     )
   }
 
+  myTricksWon() {
+    const state = this.store.gameState()
+    const selfId = state?.selfPlayerId
+
+    return (
+      state?.currentRound?.players.find((player) => player.playerId === selfId)
+        ?.tricksWon ?? 0
+    )
+  }
+
   displayHand() {
     const hand = this.myHand()
     const manualOrder = this.manualHandOrder()
@@ -282,7 +293,9 @@ export class GamePageComponent {
     }
 
     if (state.pendingDecision.type === 'jugglerPassCard') {
-      return state.pendingDecision.remainingPlayerIds.includes(state.selfPlayerId)
+      return state.pendingDecision.remainingPlayerIds.includes(
+        state.selfPlayerId,
+      )
         ? state.pendingDecision
         : null
     }
@@ -306,7 +319,9 @@ export class GamePageComponent {
 
     if (pendingDecision.type === 'jugglerPassCard') {
       const pendingPlayerNames = state.players
-        .filter((player) => pendingDecision.remainingPlayerIds.includes(player.playerId))
+        .filter((player) =>
+          pendingDecision.remainingPlayerIds.includes(player.playerId),
+        )
         .map((player) => player.name)
 
       if (!pendingPlayerNames.length) {

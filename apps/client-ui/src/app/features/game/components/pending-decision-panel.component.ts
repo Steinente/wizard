@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core'
-import type { PendingDecision, Suit } from '@wizard/shared'
+import { calculateRoundScore, type PendingDecision, type Suit } from '@wizard/shared'
 import type { TranslationKey } from '../../../core/i18n/translations'
 import { TPipe } from '../../../shared/pipes/t.pipe'
 import {
@@ -85,10 +85,10 @@ const NO_TRUMP_SPECIALS = new Set([
             <p class="muted">{{ 'chooseCloudAdjustment' | t }}</p>
             <div class="row">
               <button class="btn" (click)="pickCloudAdjustment(-1)">
-                {{ 'minusOne' | t }}
+                {{ cloudAdjustmentButtonLabel(-1) }}
               </button>
               <button class="btn btn-primary" (click)="pickCloudAdjustment(1)">
-                {{ 'plusOne' | t }}
+                {{ cloudAdjustmentButtonLabel(1) }}
               </button>
             </div>
             }
@@ -110,6 +110,7 @@ export class PendingDecisionPanelComponent {
   readonly suits = ALL_SUITS
 
   @Input() decision: PendingDecision | null = null
+  @Input() cloudAdjustmentWonTricks = 0
   @Input({ required: true }) onSelectTrump!: (suit: Suit | null) => void
   @Input({ required: true }) onResolveWerewolfTrumpSwap!: (
     suit: Suit | null,
@@ -139,6 +140,19 @@ export class PendingDecisionPanelComponent {
 
   pickCloudAdjustment(delta: 1 | -1) {
     this.onResolveCloudAdjustment(delta)
+  }
+
+  cloudAdjustmentButtonLabel(delta: 1 | -1) {
+    if (this.decision?.type !== 'cloudPredictionAdjustment') {
+      return delta > 0 ? '+1' : '-1'
+    }
+
+    const projectedScore = calculateRoundScore(
+      this.decision.currentPrediction + delta,
+      this.cloudAdjustmentWonTricks,
+    )
+
+    return `${delta > 0 ? '+1' : '-1'} (${projectedScore})`
   }
 
   pickJugglerSuit(suit: Suit) {
