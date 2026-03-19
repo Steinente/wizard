@@ -32,6 +32,7 @@ type InteractionEvent = (typeof INTERACTION_EVENTS)[number]
 @Injectable({ providedIn: 'root' })
 export class GameFacadeService {
   private lastAnnouncedLogId: string | null = null
+  private lastLogCursorLobbyCode: string | null = null
   private lastInteractionPromptKey: string | null = null
   private suppressNextSelfInteractionBing = false
   private wasConnected = false
@@ -347,6 +348,16 @@ export class GameFacadeService {
 
   private announceNewLogs(state: WizardGameViewState) {
     if (!this.session.readLogEnabled() || !state.logs.length) {
+      return
+    }
+
+    const isFirstStateForLobby = this.lastLogCursorLobbyCode !== state.lobbyCode
+
+    if (isFirstStateForLobby) {
+      // Baseline existing entries on first load/reload for this lobby.
+      // Only logs arriving after this point should be announced.
+      this.lastLogCursorLobbyCode = state.lobbyCode
+      this.lastAnnouncedLogId = state.logs.at(-1)?.id ?? null
       return
     }
 
