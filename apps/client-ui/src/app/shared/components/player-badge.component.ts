@@ -17,12 +17,14 @@ import { TPipe } from '../pipes/t.pipe'
           @if (showPredictionStartIndicator) {
             <span
               class="prediction-start-indicator"
-              title="Starts prediction order"
+              [attr.title]="'tooltipPredictionStartOrder' | t"
               >①</span
             >
           }
           @if (showCloudIndicator) {
-            <span class="cloud-indicator" title="Cloud adjustment pending"
+            <span
+              class="cloud-indicator"
+              [attr.title]="'tooltipCloudAdjustmentPending' | t"
               >☁</span
             >
           }
