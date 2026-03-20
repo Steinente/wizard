@@ -6,8 +6,10 @@
   "scripts": {
     "build": "pnpm -r build",
     "build:client-ui": "ng build client-ui",
+    "build:server": "pnpm --filter @wizard/server build",
     "dev": "pnpm --parallel --filter @wizard/server --filter @wizard/client-ui dev",
     "dev:client-ui": "ng serve client-ui --port 4200",
+    "dev:server": "pnpm --filter @wizard/server dev",
     "lint": "pnpm -r lint",
     "test": "pnpm -r test",
     "format": "pnpm -r format"
