@@ -16,7 +16,13 @@
             "index": "apps/client-ui/src/index.html",
             "tsConfig": "apps/client-ui/tsconfig.app.json",
             "polyfills": ["zone.js"],
-            "assets": [],
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "apps/client-ui/public"
+              }
+            ],
+            "serviceWorker": "apps/client-ui/ngsw-config.json",
             "styles": ["apps/client-ui/src/styles.css"]
           }
         },
