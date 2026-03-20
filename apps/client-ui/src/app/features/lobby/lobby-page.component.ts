@@ -1,4 +1,10 @@
-import { ChangeDetectorRef, Component, NgZone, inject } from '@angular/core'
+import {
+  ChangeDetectorRef,
+  Component,
+  NgZone,
+  inject,
+  signal,
+} from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { ActivatedRoute, RouterLink } from '@angular/router'
 import type { SpecialCard, SpecialCardKey } from '@wizard/shared'
@@ -144,12 +150,20 @@ import { TPipe } from '../../shared/pipes/t.pipe'
               <div [style.opacity]="isHost() ? 1 : 0.55">
                 <label class="label">
                   {{ 'predictionVisibilityLabel' | t }}
-                  <span
+                  <button
+                    type="button"
                     class="info-icon"
-                    [title]="i18n.t('predictionVisibilityInfo')"
-                    >?</span
+                    [attr.aria-label]="i18n.t('predictionVisibilityInfo')"
+                    (click)="toggleRuleInfo('predictionVisibility')"
                   >
+                    ?
+                  </button>
                 </label>
+                @if (activeRuleInfo() === 'predictionVisibility') {
+                  <div class="rule-info-box">
+                    {{ i18n.t('predictionVisibilityInfo') }}
+                  </div>
+                }
 
                 <select
                   class="select"
@@ -174,12 +188,20 @@ import { TPipe } from '../../shared/pipes/t.pipe'
                   "
                 >
                   {{ 'openRestrictionLabel' | t }}
-                  <span
+                  <button
+                    type="button"
                     class="info-icon"
-                    [title]="i18n.t('openRestrictionInfo')"
-                    >?</span
+                    [attr.aria-label]="i18n.t('openRestrictionInfo')"
+                    (click)="toggleRuleInfo('openRestriction')"
                   >
+                    ?
+                  </button>
                 </label>
+                @if (activeRuleInfo() === 'openRestriction') {
+                  <div class="rule-info-box">
+                    {{ i18n.t('openRestrictionInfo') }}
+                  </div>
+                }
 
                 <select
                   class="select"
@@ -213,10 +235,20 @@ import { TPipe } from '../../shared/pipes/t.pipe'
             <div class="panel">
               <h3 style="margin-top: 0; margin-bottom: 4px;">
                 {{ 'specialCardsLabel' | t }}
-                <span class="info-icon" [title]="i18n.t('specialCardsInfo')"
-                  >?</span
+                <button
+                  type="button"
+                  class="info-icon"
+                  [attr.aria-label]="i18n.t('specialCardsInfo')"
+                  (click)="toggleRuleInfo('specialCards')"
                 >
+                  ?
+                </button>
               </h3>
+              @if (activeRuleInfo() === 'specialCards') {
+                <div class="rule-info-box" style="margin-bottom: 10px;">
+                  {{ i18n.t('specialCardsInfo') }}
+                </div>
+              }
 
               <div
                 style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px;"
@@ -250,6 +282,24 @@ import { TPipe } from '../../shared/pipes/t.pipe'
         grid-template-columns: 360px 1fr;
       }
 
+      .rule-info-box {
+        margin-bottom: 10px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: rgb(15 23 42 / 0.72);
+        color: var(--muted);
+        padding: 8px 10px;
+        font-size: 13px;
+        line-height: 1.3;
+        white-space: pre-line;
+      }
+
+      .info-icon {
+        appearance: none;
+        background: transparent;
+        padding: 0;
+      }
+
       @media (max-width: 1100px) {
         .lobby-main-grid {
           grid-template-columns: 1fr;
@@ -263,6 +313,9 @@ export class LobbyPageComponent {
   protected readonly i18n = inject(I18nService)
 
   protected readonly store = this.appStore
+  private readonly activeRuleInfoState = signal<
+    'predictionVisibility' | 'openRestriction' | 'specialCards' | null
+  >(null)
   copied = false
   private copiedTimeoutId: ReturnType<typeof setTimeout> | null = null
 
@@ -278,6 +331,8 @@ export class LobbyPageComponent {
 
   readonly noopPlay = () => {}
 
+  readonly activeRuleInfo = this.activeRuleInfoState.asReadonly()
+
   constructor(
     private readonly appStore: AppStore,
     private readonly facade: GameFacadeService,
@@ -292,6 +347,12 @@ export class LobbyPageComponent {
 
   roleKey(role: string): TranslationKey {
     return `role_${role.toLowerCase()}` as TranslationKey
+  }
+
+  toggleRuleInfo(
+    key: 'predictionVisibility' | 'openRestriction' | 'specialCards',
+  ) {
+    this.activeRuleInfoState.update((current) => (current === key ? null : key))
   }
 
   isHost() {

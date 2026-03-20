@@ -18,6 +18,7 @@ import { SUIT_BACKGROUNDS } from '../utils/suit-colors.util'
   template: `
     <button
       class="wiz-card"
+      [class.wiz-card-showing-info]="cardInfoVisible"
       type="button"
       [disabled]="disabled"
       [style.border-color]="accent"
@@ -26,10 +27,19 @@ import { SUIT_BACKGROUNDS } from '../utils/suit-colors.util'
       [style.opacity]="disabled ? '0.45' : '1'"
       [style.filter]="disabled ? 'grayscale(0.4)' : 'none'"
       [style.box-shadow]="playable ? '0 0 0 2px rgba(212,167,44,0.4)' : 'none'"
-      (click)="handlePlay()"
+      (pointerdown)="onCardPointerDown($event)"
+      (pointerup)="onCardPointerRelease()"
+      (pointercancel)="onCardPointerRelease()"
+      (pointerleave)="onCardPointerRelease()"
+      (click)="handlePlay($event)"
     >
       @if (showSpecialInfo && specialInfoText) {
         <span class="info-icon wiz-card-info" [title]="specialInfoText">?</span>
+      }
+      @if (cardInfoVisible && showSpecialInfo && specialInfoText) {
+        <div class="wiz-card-info-popover">
+          {{ specialInfoText }}
+        </div>
       }
       <div class="wiz-card-value">{{ primaryText }}</div>
       @if (middleLabel) {
@@ -61,6 +71,7 @@ import { SUIT_BACKGROUNDS } from '../utils/suit-colors.util'
         width: 110px;
         min-height: 150px;
         position: relative;
+        overflow: visible;
         border: 2px solid var(--border);
         border-radius: 14px;
         padding: 10px;
@@ -69,6 +80,11 @@ import { SUIT_BACKGROUNDS } from '../utils/suit-colors.util'
         justify-content: space-between;
         text-align: left;
         transition: opacity 0.15s ease;
+        touch-action: manipulation;
+      }
+
+      .wiz-card-showing-info {
+        z-index: 20;
       }
 
       .wiz-card-value {
@@ -85,6 +101,26 @@ import { SUIT_BACKGROUNDS } from '../utils/suit-colors.util'
         height: 16px;
         margin-left: 0;
         font-size: 11px;
+      }
+
+      .wiz-card-info-popover {
+        position: absolute;
+        left: 50%;
+        right: auto;
+        bottom: 8px;
+        transform: translateX(-50%);
+        width: min(260px, calc(100vw - 24px));
+        max-width: 260px;
+        min-width: 170px;
+        z-index: 2;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: rgb(15 23 42 / 0.9);
+        color: var(--text);
+        padding: 7px 8px;
+        font-size: 11px;
+        line-height: 1.25;
+        text-align: left;
       }
 
       .wiz-card-title {
@@ -186,12 +222,23 @@ import { SUIT_BACKGROUNDS } from '../utils/suit-colors.util'
           height: 14px;
           font-size: 10px;
         }
+
+        .wiz-card-info-popover {
+          width: min(230px, calc(100vw - 20px));
+          max-width: 230px;
+          min-width: 150px;
+          font-size: 10px;
+        }
       }
     `,
   ],
 })
 export class CardComponent {
   private readonly i18n = inject(I18nService)
+  private longPressTimerId: ReturnType<typeof setTimeout> | null = null
+  private hideInfoTimerId: ReturnType<typeof setTimeout> | null = null
+  private longPressHandled = false
+  cardInfoVisible = false
 
   @Input({ required: true }) card!: Card
   @Input() middleLabel: string | null = null
@@ -299,9 +346,65 @@ export class CardComponent {
     return '#0f172a'
   }
 
-  handlePlay() {
+  ngOnDestroy() {
+    this.clearLongPressTimer()
+    this.clearHideInfoTimer()
+  }
+
+  onCardPointerDown(event: PointerEvent) {
+    if (!this.showSpecialInfo || !this.specialInfoText || this.disabled) {
+      return
+    }
+
+    if (event.pointerType !== 'touch') {
+      return
+    }
+
+    this.longPressHandled = false
+    this.clearLongPressTimer()
+    this.longPressTimerId = setTimeout(() => {
+      this.longPressHandled = true
+      this.showInfoTemporarily()
+    }, 500)
+  }
+
+  onCardPointerRelease() {
+    this.clearLongPressTimer()
+  }
+
+  handlePlay(event: MouseEvent) {
+    if (this.longPressHandled) {
+      event.preventDefault()
+      event.stopPropagation()
+      this.longPressHandled = false
+      return
+    }
+
     if (!this.disabled) {
       this.play(this.card)
+    }
+  }
+
+  private showInfoTemporarily() {
+    this.cardInfoVisible = true
+    this.clearHideInfoTimer()
+    this.hideInfoTimerId = setTimeout(() => {
+      this.cardInfoVisible = false
+      this.hideInfoTimerId = null
+    }, 2600)
+  }
+
+  private clearLongPressTimer() {
+    if (this.longPressTimerId) {
+      clearTimeout(this.longPressTimerId)
+      this.longPressTimerId = null
+    }
+  }
+
+  private clearHideInfoTimer() {
+    if (this.hideInfoTimerId) {
+      clearTimeout(this.hideInfoTimerId)
+      this.hideInfoTimerId = null
     }
   }
 }

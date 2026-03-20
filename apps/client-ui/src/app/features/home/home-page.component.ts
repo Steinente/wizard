@@ -133,11 +133,10 @@ import { TPipe } from '../../shared/pipes/t.pipe'
                     <div class="row" style="align-items: center; gap: 8px;">
                       @if (lobby.hasPassword) {
                         <input
-                          class="input"
+                          class="input open-lobbies-password-input"
                           [(ngModel)]="lobbyPasswords[lobby.code]"
                           type="password"
                           [placeholder]="'lobbyPasswordShort' | t"
-                          style="width: 150px;"
                         />
                       }
                       @if (isLobbyRunning(lobby.status)) {
@@ -187,6 +186,10 @@ import { TPipe } from '../../shared/pipes/t.pipe'
         grid-template-columns: 1fr 1fr;
       }
 
+      .open-lobbies-password-input {
+        width: 150px;
+      }
+
       @media (max-width: 900px) {
         .home-top-spread {
           flex-direction: column;
@@ -200,6 +203,11 @@ import { TPipe } from '../../shared/pipes/t.pipe'
 
         .home-actions-grid {
           grid-template-columns: 1fr;
+        }
+
+        .open-lobbies-password-input {
+          width: 100% !important;
+          flex: 1 1 100%;
         }
       }
     `,

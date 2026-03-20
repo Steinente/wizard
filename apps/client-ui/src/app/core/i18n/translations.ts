@@ -100,7 +100,7 @@ export const translations = {
     predictionRestrictionMustNotEqual: 'Sum must not equal tricks',
     predictionVisibilityLabel: 'Prediction visibility',
     predictionVisibilityInfo:
-      'Open: everyone sees bids immediately. Hidden: bids are revealed after all bids are made. Secret: bids stay hidden during the round.',
+      'Open: everyone sees bids immediately.\nHidden: bids are revealed after all bids are made.\nSecret: bids stay hidden during the round.',
     openRestrictionLabel: 'Open restriction',
     openRestrictionInfo:
       'This setting is only available when Prediction visibility is set to Open predictions.',
@@ -348,7 +348,7 @@ export const translations = {
     predictionRestrictionMustNotEqual: 'Summe darf Stichzahl nicht entsprechen',
     predictionVisibilityLabel: 'Ansagemodus',
     predictionVisibilityInfo:
-      'Offen: Ansagen sind sofort sichtbar. Verdeckt: Ansagen werden erst nach allen Ansagen aufgedeckt. Geheim: Ansagen bleiben während der Runde verborgen.',
+      'Offen: Ansagen sind sofort sichtbar.\nVerdeckt: Ansagen werden erst nach allen Ansagen aufgedeckt.\nGeheim: Ansagen bleiben während der Runde verborgen.',
     openRestrictionLabel: 'Einschränkung bei offenen Ansagen',
     openRestrictionInfo:
       'Diese Einstellung ist nur erlaubt, wenn der Ansagemodus auf Offene Ansagen steht.',
