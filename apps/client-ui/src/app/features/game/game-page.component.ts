@@ -79,9 +79,7 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
           </div>
         } @else {
           <div class="game-layout">
-            <div class="game-column">
-              <wiz-player-list-panel [state]="store.gameState()!" />
-
+            <div class="game-block game-controls-block">
               <wiz-game-controls-panel
                 [state]="store.gameState()!"
                 [audioEnabled]="readLogEnabledSignal()"
@@ -97,13 +95,23 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
               />
             </div>
 
-            <div class="game-column">
+            <div class="game-block game-players-block">
+              <wiz-player-list-panel [state]="store.gameState()!" />
+            </div>
+
+            <div class="game-block game-scoreboard-block">
+              <wiz-scoreboard-panel [state]="store.gameState()!" />
+            </div>
+
+            <div class="game-block game-trick-block">
               <wiz-trick-area
                 [trick]="store.gameState()!.currentRound?.currentTrick ?? null"
                 [players]="store.gameState()!.players"
                 [resolvedCardEffects]="store.gameState()!.resolvedCardEffects"
               />
+            </div>
 
+            <div class="game-block game-interaction-block">
               @if (!isSpectator()) {
                 @if (myPendingDecision()) {
                   <wiz-pending-decision-panel
@@ -132,7 +140,15 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
                     [submit]="predictFn"
                   />
                 }
+              } @else {
+                <div class="panel">
+                  <span class="muted">{{ 'spectatorMode' | t }}</span>
+                </div>
+              }
+            </div>
 
+            @if (!isSpectator()) {
+              <div class="game-block game-hand-block">
                 <wiz-hand-area
                   [class.active-turn]="isMyTurnToPlay()"
                   [cards]="displayHand()"
@@ -141,15 +157,10 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
                   [onSort]="sortHandFn"
                   [onReorder]="reorderHandFn"
                 />
-              } @else {
-                <div class="panel">
-                  <span class="muted">{{ 'spectatorMode' | t }}</span>
-                </div>
-              }
-            </div>
+              </div>
+            }
 
-            <div class="game-column">
-              <wiz-scoreboard-panel [state]="store.gameState()!" />
+            <div class="game-block game-log-block">
               <wiz-log-panel
                 [logs]="store.gameState()!.logs"
                 [players]="store.gameState()!.players"
@@ -170,9 +181,63 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
         margin-top: 16px;
       }
 
+      .game-block {
+        min-width: 0;
+      }
+
+      .game-controls-block {
+        grid-area: controls;
+      }
+
+      .game-players-block {
+        grid-area: players;
+      }
+
+      .game-scoreboard-block {
+        grid-area: scoreboard;
+      }
+
+      .game-trick-block {
+        grid-area: trick;
+      }
+
+      .game-interaction-block {
+        grid-area: interaction;
+        display: grid;
+        gap: 16px;
+      }
+
+      .game-hand-block {
+        grid-area: hand;
+      }
+
+      .game-log-block {
+        grid-area: log;
+      }
+
+      .game-layout {
+        grid-template-columns: 320px minmax(0, 1fr) 320px;
+        grid-template-areas:
+          'controls trick scoreboard'
+          'players interaction log'
+          'players hand log';
+      }
+
       @media (max-width: 1100px) {
         .game-finished-layout {
           grid-template-columns: 1fr;
+        }
+
+        .game-layout {
+          grid-template-columns: 1fr;
+          grid-template-areas:
+            'controls'
+            'players'
+            'scoreboard'
+            'trick'
+            'interaction'
+            'hand'
+            'log';
         }
       }
     `,

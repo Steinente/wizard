@@ -1,8 +1,8 @@
 import { ChangeDetectorRef, Component, NgZone, inject } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { ActivatedRoute, RouterLink } from '@angular/router'
-import { SPECIAL_CARD_KEYS } from '@wizard/shared'
 import type { SpecialCard, SpecialCardKey } from '@wizard/shared'
+import { SPECIAL_CARD_KEYS } from '@wizard/shared'
 import { I18nService } from '../../core/i18n/i18n.service'
 import type { TranslationKey } from '../../core/i18n/translations'
 import { GameFacadeService } from '../../core/services/game-facade.service'
@@ -42,7 +42,7 @@ import { TPipe } from '../../shared/pipes/t.pipe'
           </div>
         </div>
       } @else {
-        <div class="grid" style="grid-template-columns: 360px 1fr;">
+        <div class="grid lobby-main-grid">
           <div class="panel">
             <div class="spread">
               <div>
@@ -174,7 +174,9 @@ import { TPipe } from '../../shared/pipes/t.pipe'
                   "
                 >
                   {{ 'openRestrictionLabel' | t }}
-                  <span class="info-icon" [title]="i18n.t('openRestrictionInfo')"
+                  <span
+                    class="info-icon"
+                    [title]="i18n.t('openRestrictionInfo')"
                     >?</span
                   >
                 </label>
@@ -211,7 +213,9 @@ import { TPipe } from '../../shared/pipes/t.pipe'
             <div class="panel">
               <h3 style="margin-top: 0; margin-bottom: 4px;">
                 {{ 'specialCardsLabel' | t }}
-                <span class="info-icon" [title]="i18n.t('specialCardsInfo')">?</span>
+                <span class="info-icon" [title]="i18n.t('specialCardsInfo')"
+                  >?</span
+                >
               </h3>
 
               <div
@@ -240,6 +244,19 @@ import { TPipe } from '../../shared/pipes/t.pipe'
       }
     </div>
   `,
+  styles: [
+    `
+      .lobby-main-grid {
+        grid-template-columns: 360px 1fr;
+      }
+
+      @media (max-width: 1100px) {
+        .lobby-main-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    `,
+  ],
 })
 export class LobbyPageComponent {
   private readonly route = inject(ActivatedRoute)

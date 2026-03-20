@@ -14,13 +14,13 @@ import { TPipe } from '../../shared/pipes/t.pipe'
   template: `
     <div class="page-shell">
       <div class="panel grid">
-        <div class="spread">
+        <div class="spread home-top-spread">
           <div>
             <h1 class="title">{{ 'homeTitle' | t }}</h1>
             <p class="subtitle">{{ 'homeSubtitle' | t }}</p>
           </div>
 
-          <div style="min-width: 180px;">
+          <div class="home-language-box" style="min-width: 180px;">
             <label class="label">{{ 'language' | t }}</label>
             <select
               class="select"
@@ -42,7 +42,7 @@ import { TPipe } from '../../shared/pipes/t.pipe'
           <input class="input" [(ngModel)]="playerName" />
         </div>
 
-        <div class="grid" style="grid-template-columns: 1fr 1fr;">
+        <div class="grid home-actions-grid">
           <div class="panel">
             <h3 style="margin-top: 0;">{{ 'createLobby' | t }}</h3>
 
@@ -181,6 +181,29 @@ import { TPipe } from '../../shared/pipes/t.pipe'
       </div>
     </div>
   `,
+  styles: [
+    `
+      .home-actions-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      @media (max-width: 900px) {
+        .home-top-spread {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .home-language-box {
+          width: 100%;
+          min-width: 0 !important;
+        }
+
+        .home-actions-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    `,
+  ],
 })
 export class HomePageComponent implements OnInit, OnDestroy {
   playerName = this.session.playerName()

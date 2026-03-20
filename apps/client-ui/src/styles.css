@@ -236,3 +236,40 @@ button {
     padding: 10px;
   }
 }
+
+@media (max-width: 480px) {
+  .page-shell {
+    padding: 8px;
+  }
+
+  .panel {
+    padding: 12px;
+    border-radius: 12px;
+  }
+
+  .grid {
+    gap: 12px;
+  }
+
+  .row {
+    flex-wrap: wrap;
+    align-items: stretch;
+  }
+
+  .row > .btn,
+  .row > a.btn {
+    flex: 1 1 100%;
+    width: 100%;
+    text-align: center;
+  }
+
+  .spread {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .card-grid {
+    gap: 8px;
+    justify-content: center;
+  }
+}

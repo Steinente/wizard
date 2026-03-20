@@ -126,6 +126,67 @@ import { SUIT_BACKGROUNDS } from '../utils/suit-colors.util'
         pointer-events: none;
         text-shadow: 0 1px 2px rgb(0 0 0 / 0.25);
       }
+
+      @media (max-width: 700px) {
+        .wiz-card {
+          width: 92px;
+          min-height: 126px;
+          padding: 8px;
+          border-radius: 12px;
+        }
+
+        .wiz-card-value {
+          font-size: 23px;
+        }
+
+        .wiz-card-title {
+          font-size: 12px;
+        }
+
+        .wiz-card-subtitle {
+          font-size: 10px;
+        }
+
+        .wiz-card-middle-label {
+          font-size: 10px;
+        }
+      }
+
+      @media (max-width: 460px) {
+        .wiz-card {
+          width: 78px;
+          min-height: 110px;
+          padding: 7px;
+        }
+
+        .wiz-card-value {
+          font-size: 19px;
+        }
+
+        .wiz-card-title {
+          font-size: 11px;
+        }
+
+        .wiz-card-subtitle {
+          font-size: 9px;
+        }
+
+        .wiz-card-middle-label {
+          font-size: 9px;
+        }
+
+        .wiz-card-title-top {
+          top: 8px;
+          left: 8px;
+          right: 8px;
+        }
+
+        .wiz-card-info {
+          width: 14px;
+          height: 14px;
+          font-size: 10px;
+        }
+      }
     `,
   ],
 })
