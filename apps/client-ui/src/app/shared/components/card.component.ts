@@ -1,4 +1,4 @@
-import { Component, Input, inject } from '@angular/core'
+import { Component, ElementRef, Input, inject } from '@angular/core'
 import type { Card, ResolvedCardRuntimeEffect } from '@wizard/shared'
 import { I18nService } from '../../core/i18n/i18n.service'
 import type { TranslationKey } from '../../core/i18n/translations'
@@ -37,7 +37,11 @@ import { SUIT_BACKGROUNDS } from '../utils/suit-colors.util'
         <span class="info-icon wiz-card-info" [title]="specialInfoText">?</span>
       }
       @if (cardInfoVisible && showSpecialInfo && specialInfoText) {
-        <div class="wiz-card-info-popover">
+        <div
+          class="wiz-card-info-popover"
+          [style.left.px]="cardInfoLeftPx"
+          [style.width.px]="cardInfoWidthPx"
+        >
           {{ specialInfoText }}
         </div>
       }
@@ -105,11 +109,9 @@ import { SUIT_BACKGROUNDS } from '../utils/suit-colors.util'
 
       .wiz-card-info-popover {
         position: absolute;
-        left: 50%;
-        right: auto;
+        left: 0;
         bottom: 8px;
-        transform: translateX(-50%);
-        width: min(260px, calc(100vw - 24px));
+        transform: none;
         max-width: 260px;
         min-width: 170px;
         z-index: 2;
@@ -224,7 +226,6 @@ import { SUIT_BACKGROUNDS } from '../utils/suit-colors.util'
         }
 
         .wiz-card-info-popover {
-          width: min(230px, calc(100vw - 20px));
           max-width: 230px;
           min-width: 150px;
           font-size: 10px;
@@ -235,10 +236,13 @@ import { SUIT_BACKGROUNDS } from '../utils/suit-colors.util'
 })
 export class CardComponent {
   private readonly i18n = inject(I18nService)
+  private readonly hostElement = inject<ElementRef<HTMLButtonElement>>(ElementRef)
   private longPressTimerId: ReturnType<typeof setTimeout> | null = null
   private hideInfoTimerId: ReturnType<typeof setTimeout> | null = null
   private longPressHandled = false
   cardInfoVisible = false
+  cardInfoLeftPx = 0
+  cardInfoWidthPx = 260
 
   @Input({ required: true }) card!: Card
   @Input() middleLabel: string | null = null
@@ -386,6 +390,7 @@ export class CardComponent {
   }
 
   private showInfoTemporarily() {
+    this.updateCardInfoLayout()
     this.cardInfoVisible = true
     this.clearHideInfoTimer()
     this.hideInfoTimerId = setTimeout(() => {
@@ -406,5 +411,24 @@ export class CardComponent {
       clearTimeout(this.hideInfoTimerId)
       this.hideInfoTimerId = null
     }
+  }
+
+  private updateCardInfoLayout() {
+    const viewportWidth = window.innerWidth
+    const viewportMargin = viewportWidth <= 460 ? 10 : 12
+    const preferredWidth = viewportWidth <= 460 ? 230 : 260
+    const minWidth = viewportWidth <= 460 ? 150 : 170
+    const maxAllowedWidth = Math.max(
+      minWidth,
+      viewportWidth - viewportMargin * 2,
+    )
+    const tooltipWidth = Math.min(preferredWidth, maxAllowedWidth)
+    const cardRect = this.hostElement.nativeElement.getBoundingClientRect()
+    const centeredLeft = cardRect.width / 2 - tooltipWidth / 2
+    const minLeft = viewportMargin - cardRect.left
+    const maxLeft = viewportWidth - viewportMargin - cardRect.left - tooltipWidth
+
+    this.cardInfoWidthPx = tooltipWidth
+    this.cardInfoLeftPx = Math.min(Math.max(centeredLeft, minLeft), maxLeft)
   }
 }
