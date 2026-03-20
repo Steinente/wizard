@@ -5,7 +5,9 @@ import type {
   PlayerIdentity,
   PlayerLobbyState,
   PredictionVisibility,
+  SpecialCardKey,
 } from '@wizard/shared'
+import { SPECIAL_CARD_KEYS } from '@wizard/shared'
 import type { Lobby, Player, PlayerRole } from '../generated/prisma/client.js'
 
 type LobbyWithPlayers = Lobby & {
@@ -27,6 +29,17 @@ const mapOpenPredictionRestriction = (
       ? 'mustNotEqualTricks'
       : 'none'
 
+const parseIncludedSpecialCards = (value: string | null): SpecialCardKey[] => {
+  if (value === null) return [...SPECIAL_CARD_KEYS]
+  try {
+    const parsed = JSON.parse(value)
+    if (Array.isArray(parsed)) return parsed as SpecialCardKey[]
+    return [...SPECIAL_CARD_KEYS]
+  } catch {
+    return [...SPECIAL_CARD_KEYS]
+  }
+}
+
 export const mapLobbyToSummary = (lobby: LobbyWithPlayers): LobbySummary => {
   const config: GameConfig = {
     predictionVisibility: mapPredictionVisibility(lobby.predictionVisibility),
@@ -35,7 +48,7 @@ export const mapLobbyToSummary = (lobby: LobbyWithPlayers): LobbySummary => {
     ),
     readLogEnabledByDefault: lobby.readLogEnabledByDefault,
     languageDefault: lobby.languageDefault === 'de' ? 'de' : 'en',
-    allowIncludedSpecialCards: lobby.allowIncludedSpecialCards,
+    includedSpecialCards: parseIncludedSpecialCards(lobby.includedSpecialCards),
   }
 
   const players = lobby.players.map((player) => {

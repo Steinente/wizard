@@ -1,16 +1,19 @@
 import { ChangeDetectorRef, Component, NgZone, inject } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { ActivatedRoute, RouterLink } from '@angular/router'
+import { SPECIAL_CARD_KEYS } from '@wizard/shared'
+import type { SpecialCard, SpecialCardKey } from '@wizard/shared'
 import { I18nService } from '../../core/i18n/i18n.service'
 import type { TranslationKey } from '../../core/i18n/translations'
 import { GameFacadeService } from '../../core/services/game-facade.service'
 import { SessionService } from '../../core/services/session.service'
 import { AppStore } from '../../core/state/app.store'
+import { CardComponent } from '../../shared/components/card.component'
 import { TPipe } from '../../shared/pipes/t.pipe'
 
 @Component({
   standalone: true,
-  imports: [FormsModule, TPipe, RouterLink],
+  imports: [FormsModule, TPipe, RouterLink, CardComponent],
   template: `
     <div class="page-shell">
       @if (!store.lobby()) {
@@ -134,73 +137,103 @@ import { TPipe } from '../../shared/pipes/t.pipe'
             </div>
           </div>
 
-          <div class="panel">
-            <h3>{{ 'rules' | t }}</h3>
+          <div style="display: flex; flex-direction: column; gap: 16px;">
+            <div class="panel">
+              <h3>{{ 'rules' | t }}</h3>
 
-            <div [style.opacity]="isHost() ? 1 : 0.55">
-              <label class="label">
-                {{ 'predictionVisibilityLabel' | t }}
-                <span
-                  class="info-icon"
-                  [title]="i18n.t('predictionVisibilityInfo')"
-                  >?</span
+              <div [style.opacity]="isHost() ? 1 : 0.55">
+                <label class="label">
+                  {{ 'predictionVisibilityLabel' | t }}
+                  <span
+                    class="info-icon"
+                    [title]="i18n.t('predictionVisibilityInfo')"
+                    >?</span
+                  >
+                </label>
+
+                <select
+                  class="select"
+                  [disabled]="!isHost()"
+                  [ngModel]="store.lobby()!.config.predictionVisibility"
+                  (ngModelChange)="setPredictionVisibility($event)"
                 >
-              </label>
+                  <option value="open">{{ 'predictionOpen' | t }}</option>
+                  <option value="hidden">{{ 'predictionHidden' | t }}</option>
+                  <option value="secret">{{ 'predictionSecret' | t }}</option>
+                </select>
 
-              <select
-                class="select"
-                [disabled]="!isHost()"
-                [ngModel]="store.lobby()!.config.predictionVisibility"
-                (ngModelChange)="setPredictionVisibility($event)"
-              >
-                <option value="open">{{ 'predictionOpen' | t }}</option>
-                <option value="hidden">{{ 'predictionHidden' | t }}</option>
-                <option value="secret">{{ 'predictionSecret' | t }}</option>
-              </select>
-
-              <label
-                class="label"
-                style="margin-top: 14px;"
-                [style.opacity]="
-                  !isHost()
-                    ? 1
-                    : store.lobby()!.config.predictionVisibility !== 'open'
-                      ? 0.55
-                      : 1
-                "
-              >
-                {{ 'openRestrictionLabel' | t }}
-                <span class="info-icon" [title]="i18n.t('openRestrictionInfo')"
-                  >?</span
+                <label
+                  class="label"
+                  style="margin-top: 14px;"
+                  [style.opacity]="
+                    !isHost()
+                      ? 1
+                      : store.lobby()!.config.predictionVisibility !== 'open'
+                        ? 0.55
+                        : 1
+                  "
                 >
-              </label>
+                  {{ 'openRestrictionLabel' | t }}
+                  <span class="info-icon" [title]="i18n.t('openRestrictionInfo')"
+                    >?</span
+                  >
+                </label>
 
-              <select
-                class="select"
-                [style.opacity]="
-                  !isHost()
-                    ? 1
-                    : store.lobby()!.config.predictionVisibility !== 'open'
-                      ? 0.55
-                      : 1
-                "
-                [disabled]="
-                  !isHost() ||
-                  store.lobby()!.config.predictionVisibility !== 'open'
-                "
-                [ngModel]="store.lobby()!.config.openPredictionRestriction"
-                (ngModelChange)="setPredictionRestriction($event)"
+                <select
+                  class="select"
+                  [style.opacity]="
+                    !isHost()
+                      ? 1
+                      : store.lobby()!.config.predictionVisibility !== 'open'
+                        ? 0.55
+                        : 1
+                  "
+                  [disabled]="
+                    !isHost() ||
+                    store.lobby()!.config.predictionVisibility !== 'open'
+                  "
+                  [ngModel]="store.lobby()!.config.openPredictionRestriction"
+                  (ngModelChange)="setPredictionRestriction($event)"
+                >
+                  <option value="none">
+                    {{ 'predictionRestrictionNone' | t }}
+                  </option>
+                  <option value="mustEqualTricks">
+                    {{ 'predictionRestrictionMustEqual' | t }}
+                  </option>
+                  <option value="mustNotEqualTricks">
+                    {{ 'predictionRestrictionMustNotEqual' | t }}
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <div class="panel">
+              <h3 style="margin-top: 0; margin-bottom: 4px;">
+                {{ 'specialCardsLabel' | t }}
+                <span class="info-icon" [title]="i18n.t('specialCardsInfo')">?</span>
+              </h3>
+
+              <div
+                style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px;"
               >
-                <option value="none">
-                  {{ 'predictionRestrictionNone' | t }}
-                </option>
-                <option value="mustEqualTricks">
-                  {{ 'predictionRestrictionMustEqual' | t }}
-                </option>
-                <option value="mustNotEqualTricks">
-                  {{ 'predictionRestrictionMustNotEqual' | t }}
-                </option>
-              </select>
+                @for (card of specialCards; track card.id) {
+                  @let isEnabled = isSpecialCardEnabled(card.special);
+                  <div
+                    [style.cursor]="isHost() ? 'pointer' : 'default'"
+                    [style.opacity]="isEnabled ? '1' : '0.45'"
+                    [style.filter]="isEnabled ? 'none' : 'grayscale(0.4)'"
+                    (click)="toggleSpecialCard(card.special)"
+                  >
+                    <wiz-card
+                      [card]="card"
+                      [disabled]="false"
+                      [showSpecialInfo]="true"
+                      [play]="noopPlay"
+                    />
+                  </div>
+                }
+              </div>
             </div>
           </div>
         </div>
@@ -218,6 +251,15 @@ export class LobbyPageComponent {
 
   routeCode = this.route.snapshot.paramMap.get('code')?.toUpperCase() ?? ''
   playerName = this.session.playerName()
+
+  readonly specialCards: SpecialCard[] = SPECIAL_CARD_KEYS.map((key) => ({
+    id: `special-${key}`,
+    type: 'special' as const,
+    special: key,
+    labelKey: `card.special.${key}` as `card.special.${SpecialCardKey}`,
+  }))
+
+  readonly noopPlay = () => {}
 
   constructor(
     private readonly appStore: AppStore,
@@ -352,5 +394,26 @@ export class LobbyPageComponent {
     }
 
     this.facade.updateConfig(lobby.code, { openPredictionRestriction })
+  }
+
+  isSpecialCardEnabled(key: SpecialCardKey): boolean {
+    return (
+      this.store.lobby()?.config.includedSpecialCards?.includes(key) ?? true
+    )
+  }
+
+  toggleSpecialCard(key: SpecialCardKey) {
+    const lobby = this.store.lobby()
+
+    if (!lobby || !this.isHost()) {
+      return
+    }
+
+    const current = lobby.config.includedSpecialCards ?? [...SPECIAL_CARD_KEYS]
+    const next = current.includes(key)
+      ? current.filter((k) => k !== key)
+      : [...current, key]
+
+    this.facade.updateConfig(lobby.code, { includedSpecialCards: next })
   }
 }

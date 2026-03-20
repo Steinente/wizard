@@ -41,7 +41,7 @@ model Lobby {
   openPredictionRestriction OpenPredictionRestriction @default(NONE)
   readLogEnabledByDefault     Boolean                   @default(false)
   languageDefault           String                    @default("en")
-  allowIncludedSpecialCards Boolean                   @default(true)
+  includedSpecialCards      String?
   hostDisconnectedAt        DateTime?
   hostDisconnectDeadline    DateTime?
   createdAt                 DateTime                  @default(now())

@@ -20,7 +20,7 @@ CREATE TABLE "Lobby" (
     "openPredictionRestriction" "OpenPredictionRestriction" NOT NULL DEFAULT 'NONE',
     "readLogEnabledByDefault" BOOLEAN NOT NULL DEFAULT false,
     "languageDefault" TEXT NOT NULL DEFAULT 'en',
-    "allowIncludedSpecialCards" BOOLEAN NOT NULL DEFAULT true,
+    "includedSpecialCards" TEXT,
     "hostDisconnectedAt" TIMESTAMP(3),
     "hostDisconnectDeadline" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,

@@ -164,7 +164,7 @@ export function buildInitialState(
     currentRoundNumber: 1,
     // Start with seatIndex 0 by placing the dealer one seat before the top seat.
     dealerIndex: players.length - 1,
-    includeSpecialCards: config.allowIncludedSpecialCards,
+    includedSpecialCards: config.includedSpecialCards,
   })
 
   state.currentRound = round
@@ -264,7 +264,7 @@ export async function finishRoundAndAdvance(
     players: state.players,
     currentRoundNumber: nextRoundNumber,
     dealerIndex: nextDealerIndex,
-    includeSpecialCards: state.config.allowIncludedSpecialCards,
+    includedSpecialCards: state.config.includedSpecialCards,
   })
 
   state.currentRound = nextRound

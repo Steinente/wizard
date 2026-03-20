@@ -6,7 +6,6 @@ import {
 } from '../cards.js'
 
 export interface DeckBuildOptions {
-  includeSpecialCards?: boolean
   includedSpecials?: ReadonlyArray<SpecialCardKey>
 }
 
@@ -44,10 +43,7 @@ const createSpecialCards = (specials: ReadonlyArray<SpecialCardKey>): Card[] =>
   }))
 
 export const createDeck = (options: DeckBuildOptions = {}): Card[] => {
-  const {
-    includeSpecialCards = true,
-    includedSpecials = ANNIVERSARY_SPECIALS_ENABLED_BY_DEFAULT,
-  } = options
+  const { includedSpecials = ANNIVERSARY_SPECIALS_ENABLED_BY_DEFAULT } = options
 
   const baseDeck = [
     ...createNumberCards(),
@@ -55,7 +51,7 @@ export const createDeck = (options: DeckBuildOptions = {}): Card[] => {
     ...createJesterCards(),
   ]
 
-  if (!includeSpecialCards) {
+  if (!includedSpecials.length) {
     return baseDeck
   }
 

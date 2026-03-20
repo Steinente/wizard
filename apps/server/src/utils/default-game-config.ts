@@ -1,3 +1,4 @@
+import { SPECIAL_CARD_KEYS } from '@wizard/shared'
 import type { GameConfig } from '@wizard/shared'
 
 export const defaultGameConfig: GameConfig = {
@@ -5,5 +6,5 @@ export const defaultGameConfig: GameConfig = {
   openPredictionRestriction: 'none',
   readLogEnabledByDefault: false,
   languageDefault: 'en',
-  allowIncludedSpecialCards: true,
+  includedSpecialCards: [...SPECIAL_CARD_KEYS],
 }

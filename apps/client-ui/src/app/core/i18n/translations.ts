@@ -104,6 +104,8 @@ export const translations = {
     openRestrictionLabel: 'Open restriction',
     openRestrictionInfo:
       'This setting is only available when Prediction visibility is set to Open predictions.',
+    specialCardsLabel: 'Special cards',
+    specialCardsInfo: 'Click cards to enable or disable them for the game. Grayed-out cards are excluded.',
     loading: 'Loading',
     self: 'You',
     host: 'Host',
@@ -350,6 +352,8 @@ export const translations = {
     openRestrictionLabel: 'Einschränkung bei offenen Ansagen',
     openRestrictionInfo:
       'Diese Einstellung ist nur erlaubt, wenn der Ansagemodus auf Offene Ansagen steht.',
+    specialCardsLabel: 'Sonderkarten',
+    specialCardsInfo: 'Karten anklicken, um sie für das Spiel zu aktivieren oder deaktivieren. Ausgegraute Karten sind ausgeschlossen.',
     loading: 'Lädt',
     self: 'Du',
     host: 'Host',

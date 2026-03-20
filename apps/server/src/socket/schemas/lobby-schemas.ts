@@ -1,5 +1,15 @@
 import { z } from 'zod'
 
+const specialCardKeySchema = z.enum([
+  'shapeShifter',
+  'bomb',
+  'werewolf',
+  'cloud',
+  'juggler',
+  'dragon',
+  'fairy',
+])
+
 export const createLobbySchema = z.object({
   playerName: z.string().trim().min(1).max(24),
   sessionToken: z.string().trim().min(1).max(200),
@@ -11,7 +21,7 @@ export const createLobbySchema = z.object({
         .enum(['none', 'mustEqualTricks', 'mustNotEqualTricks'])
         .optional(),
       languageDefault: z.enum(['en', 'de']).optional(),
-      allowIncludedSpecialCards: z.boolean().optional(),
+      includedSpecialCards: z.array(specialCardKeySchema).optional(),
     })
     .optional(),
 })
@@ -46,7 +56,7 @@ export const updateConfigSchema = z.object({
       .enum(['none', 'mustEqualTricks', 'mustNotEqualTricks'])
       .optional(),
     languageDefault: z.enum(['en', 'de']).optional(),
-    allowIncludedSpecialCards: z.boolean().optional(),
+    includedSpecialCards: z.array(specialCardKeySchema).optional(),
   }),
 })
 

@@ -458,6 +458,7 @@ export class GameFacadeService {
 
   updateConfig(code: string, config: Partial<GameConfig>) {
     this.session.mergeLobbyConfig(config)
+    this.store.mergeLobbyConfig(config)
 
     this.emitCodeScoped('lobby:updateConfig', code, {
       config,

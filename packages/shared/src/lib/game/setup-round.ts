@@ -1,4 +1,4 @@
-import type { Card, Suit } from '../cards.js'
+import type { Card, SpecialCardKey, Suit } from '../cards.js'
 import { isNumberCard } from '../cards.js'
 import { dealCards } from './deal.js'
 import { createDeck } from './deck.js'
@@ -18,7 +18,7 @@ export interface SetupRoundInput {
   }>
   currentRoundNumber: number
   dealerIndex: number
-  includeSpecialCards: boolean
+  includedSpecialCards: ReadonlyArray<SpecialCardKey>
   random?: () => number
 }
 
@@ -43,7 +43,7 @@ export const setupRound = (input: SetupRoundInput): RoundState => {
 
   const deck = shuffleArray(
     createDeck({
-      includeSpecialCards: input.includeSpecialCards,
+      includedSpecials: input.includedSpecialCards,
     }),
     input.random,
   )

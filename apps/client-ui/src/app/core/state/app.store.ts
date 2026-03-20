@@ -1,5 +1,5 @@
 import { Injectable, computed, signal } from '@angular/core'
-import type { LobbySummary, WizardGameViewState } from '@wizard/shared'
+import type { GameConfig, LobbySummary, WizardGameViewState } from '@wizard/shared'
 
 @Injectable({ providedIn: 'root' })
 export class AppStore {
@@ -19,6 +19,22 @@ export class AppStore {
 
   setLobby(lobby: LobbySummary | null) {
     this.lobbySignal.set(lobby)
+  }
+
+  mergeLobbyConfig(config: Partial<GameConfig>) {
+    const lobby = this.lobbySignal()
+
+    if (!lobby) {
+      return
+    }
+
+    this.lobbySignal.set({
+      ...lobby,
+      config: {
+        ...lobby.config,
+        ...config,
+      },
+    })
   }
 
   setLobbyList(lobbies: LobbySummary[]) {

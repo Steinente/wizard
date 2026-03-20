@@ -1,3 +1,5 @@
+import type { SpecialCardKey } from './cards.js'
+
 export const PREDICTION_VISIBILITIES = ['open', 'hidden', 'secret'] as const
 
 export type PredictionVisibility = (typeof PREDICTION_VISIBILITIES)[number]
@@ -16,5 +18,5 @@ export interface GameConfig {
   openPredictionRestriction: OpenPredictionRestriction
   readLogEnabledByDefault: boolean
   languageDefault: 'en' | 'de'
-  allowIncludedSpecialCards: boolean
+  includedSpecialCards: SpecialCardKey[]
 }

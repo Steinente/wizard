@@ -33,7 +33,7 @@ export type LobbyMinAggregateOutputType = {
   openPredictionRestriction: $Enums.OpenPredictionRestriction | null
   readLogEnabledByDefault: boolean | null
   languageDefault: string | null
-  allowIncludedSpecialCards: boolean | null
+  includedSpecialCards: string | null
   hostDisconnectedAt: Date | null
   hostDisconnectDeadline: Date | null
   createdAt: Date | null
@@ -49,7 +49,7 @@ export type LobbyMaxAggregateOutputType = {
   openPredictionRestriction: $Enums.OpenPredictionRestriction | null
   readLogEnabledByDefault: boolean | null
   languageDefault: string | null
-  allowIncludedSpecialCards: boolean | null
+  includedSpecialCards: string | null
   hostDisconnectedAt: Date | null
   hostDisconnectDeadline: Date | null
   createdAt: Date | null
@@ -65,7 +65,7 @@ export type LobbyCountAggregateOutputType = {
   openPredictionRestriction: number
   readLogEnabledByDefault: number
   languageDefault: number
-  allowIncludedSpecialCards: number
+  includedSpecialCards: number
   hostDisconnectedAt: number
   hostDisconnectDeadline: number
   createdAt: number
@@ -83,7 +83,7 @@ export type LobbyMinAggregateInputType = {
   openPredictionRestriction?: true
   readLogEnabledByDefault?: true
   languageDefault?: true
-  allowIncludedSpecialCards?: true
+  includedSpecialCards?: true
   hostDisconnectedAt?: true
   hostDisconnectDeadline?: true
   createdAt?: true
@@ -99,7 +99,7 @@ export type LobbyMaxAggregateInputType = {
   openPredictionRestriction?: true
   readLogEnabledByDefault?: true
   languageDefault?: true
-  allowIncludedSpecialCards?: true
+  includedSpecialCards?: true
   hostDisconnectedAt?: true
   hostDisconnectDeadline?: true
   createdAt?: true
@@ -115,7 +115,7 @@ export type LobbyCountAggregateInputType = {
   openPredictionRestriction?: true
   readLogEnabledByDefault?: true
   languageDefault?: true
-  allowIncludedSpecialCards?: true
+  includedSpecialCards?: true
   hostDisconnectedAt?: true
   hostDisconnectDeadline?: true
   createdAt?: true
@@ -204,7 +204,7 @@ export type LobbyGroupByOutputType = {
   openPredictionRestriction: $Enums.OpenPredictionRestriction
   readLogEnabledByDefault: boolean
   languageDefault: string
-  allowIncludedSpecialCards: boolean
+  includedSpecialCards: string | null
   hostDisconnectedAt: Date | null
   hostDisconnectDeadline: Date | null
   createdAt: Date
@@ -241,7 +241,7 @@ export type LobbyWhereInput = {
   openPredictionRestriction?: Prisma.EnumOpenPredictionRestrictionFilter<"Lobby"> | $Enums.OpenPredictionRestriction
   readLogEnabledByDefault?: Prisma.BoolFilter<"Lobby"> | boolean
   languageDefault?: Prisma.StringFilter<"Lobby"> | string
-  allowIncludedSpecialCards?: Prisma.BoolFilter<"Lobby"> | boolean
+  includedSpecialCards?: Prisma.StringNullableFilter<"Lobby"> | string | null
   hostDisconnectedAt?: Prisma.DateTimeNullableFilter<"Lobby"> | Date | string | null
   hostDisconnectDeadline?: Prisma.DateTimeNullableFilter<"Lobby"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Lobby"> | Date | string
@@ -259,7 +259,7 @@ export type LobbyOrderByWithRelationInput = {
   openPredictionRestriction?: Prisma.SortOrder
   readLogEnabledByDefault?: Prisma.SortOrder
   languageDefault?: Prisma.SortOrder
-  allowIncludedSpecialCards?: Prisma.SortOrder
+  includedSpecialCards?: Prisma.SortOrderInput | Prisma.SortOrder
   hostDisconnectedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   hostDisconnectDeadline?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -280,7 +280,7 @@ export type LobbyWhereUniqueInput = Prisma.AtLeast<{
   openPredictionRestriction?: Prisma.EnumOpenPredictionRestrictionFilter<"Lobby"> | $Enums.OpenPredictionRestriction
   readLogEnabledByDefault?: Prisma.BoolFilter<"Lobby"> | boolean
   languageDefault?: Prisma.StringFilter<"Lobby"> | string
-  allowIncludedSpecialCards?: Prisma.BoolFilter<"Lobby"> | boolean
+  includedSpecialCards?: Prisma.StringNullableFilter<"Lobby"> | string | null
   hostDisconnectedAt?: Prisma.DateTimeNullableFilter<"Lobby"> | Date | string | null
   hostDisconnectDeadline?: Prisma.DateTimeNullableFilter<"Lobby"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Lobby"> | Date | string
@@ -298,7 +298,7 @@ export type LobbyOrderByWithAggregationInput = {
   openPredictionRestriction?: Prisma.SortOrder
   readLogEnabledByDefault?: Prisma.SortOrder
   languageDefault?: Prisma.SortOrder
-  allowIncludedSpecialCards?: Prisma.SortOrder
+  includedSpecialCards?: Prisma.SortOrderInput | Prisma.SortOrder
   hostDisconnectedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   hostDisconnectDeadline?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -320,7 +320,7 @@ export type LobbyScalarWhereWithAggregatesInput = {
   openPredictionRestriction?: Prisma.EnumOpenPredictionRestrictionWithAggregatesFilter<"Lobby"> | $Enums.OpenPredictionRestriction
   readLogEnabledByDefault?: Prisma.BoolWithAggregatesFilter<"Lobby"> | boolean
   languageDefault?: Prisma.StringWithAggregatesFilter<"Lobby"> | string
-  allowIncludedSpecialCards?: Prisma.BoolWithAggregatesFilter<"Lobby"> | boolean
+  includedSpecialCards?: Prisma.StringNullableWithAggregatesFilter<"Lobby"> | string | null
   hostDisconnectedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Lobby"> | Date | string | null
   hostDisconnectDeadline?: Prisma.DateTimeNullableWithAggregatesFilter<"Lobby"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Lobby"> | Date | string
@@ -336,7 +336,7 @@ export type LobbyCreateInput = {
   openPredictionRestriction?: $Enums.OpenPredictionRestriction
   readLogEnabledByDefault?: boolean
   languageDefault?: string
-  allowIncludedSpecialCards?: boolean
+  includedSpecialCards?: string | null
   hostDisconnectedAt?: Date | string | null
   hostDisconnectDeadline?: Date | string | null
   createdAt?: Date | string
@@ -354,7 +354,7 @@ export type LobbyUncheckedCreateInput = {
   openPredictionRestriction?: $Enums.OpenPredictionRestriction
   readLogEnabledByDefault?: boolean
   languageDefault?: string
-  allowIncludedSpecialCards?: boolean
+  includedSpecialCards?: string | null
   hostDisconnectedAt?: Date | string | null
   hostDisconnectDeadline?: Date | string | null
   createdAt?: Date | string
@@ -372,7 +372,7 @@ export type LobbyUpdateInput = {
   openPredictionRestriction?: Prisma.EnumOpenPredictionRestrictionFieldUpdateOperationsInput | $Enums.OpenPredictionRestriction
   readLogEnabledByDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   languageDefault?: Prisma.StringFieldUpdateOperationsInput | string
-  allowIncludedSpecialCards?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  includedSpecialCards?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hostDisconnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   hostDisconnectDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -390,7 +390,7 @@ export type LobbyUncheckedUpdateInput = {
   openPredictionRestriction?: Prisma.EnumOpenPredictionRestrictionFieldUpdateOperationsInput | $Enums.OpenPredictionRestriction
   readLogEnabledByDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   languageDefault?: Prisma.StringFieldUpdateOperationsInput | string
-  allowIncludedSpecialCards?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  includedSpecialCards?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hostDisconnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   hostDisconnectDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -408,7 +408,7 @@ export type LobbyCreateManyInput = {
   openPredictionRestriction?: $Enums.OpenPredictionRestriction
   readLogEnabledByDefault?: boolean
   languageDefault?: string
-  allowIncludedSpecialCards?: boolean
+  includedSpecialCards?: string | null
   hostDisconnectedAt?: Date | string | null
   hostDisconnectDeadline?: Date | string | null
   createdAt?: Date | string
@@ -424,7 +424,7 @@ export type LobbyUpdateManyMutationInput = {
   openPredictionRestriction?: Prisma.EnumOpenPredictionRestrictionFieldUpdateOperationsInput | $Enums.OpenPredictionRestriction
   readLogEnabledByDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   languageDefault?: Prisma.StringFieldUpdateOperationsInput | string
-  allowIncludedSpecialCards?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  includedSpecialCards?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hostDisconnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   hostDisconnectDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -440,7 +440,7 @@ export type LobbyUncheckedUpdateManyInput = {
   openPredictionRestriction?: Prisma.EnumOpenPredictionRestrictionFieldUpdateOperationsInput | $Enums.OpenPredictionRestriction
   readLogEnabledByDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   languageDefault?: Prisma.StringFieldUpdateOperationsInput | string
-  allowIncludedSpecialCards?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  includedSpecialCards?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hostDisconnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   hostDisconnectDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -456,7 +456,7 @@ export type LobbyCountOrderByAggregateInput = {
   openPredictionRestriction?: Prisma.SortOrder
   readLogEnabledByDefault?: Prisma.SortOrder
   languageDefault?: Prisma.SortOrder
-  allowIncludedSpecialCards?: Prisma.SortOrder
+  includedSpecialCards?: Prisma.SortOrder
   hostDisconnectedAt?: Prisma.SortOrder
   hostDisconnectDeadline?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -472,7 +472,7 @@ export type LobbyMaxOrderByAggregateInput = {
   openPredictionRestriction?: Prisma.SortOrder
   readLogEnabledByDefault?: Prisma.SortOrder
   languageDefault?: Prisma.SortOrder
-  allowIncludedSpecialCards?: Prisma.SortOrder
+  includedSpecialCards?: Prisma.SortOrder
   hostDisconnectedAt?: Prisma.SortOrder
   hostDisconnectDeadline?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -488,7 +488,7 @@ export type LobbyMinOrderByAggregateInput = {
   openPredictionRestriction?: Prisma.SortOrder
   readLogEnabledByDefault?: Prisma.SortOrder
   languageDefault?: Prisma.SortOrder
-  allowIncludedSpecialCards?: Prisma.SortOrder
+  includedSpecialCards?: Prisma.SortOrder
   hostDisconnectedAt?: Prisma.SortOrder
   hostDisconnectDeadline?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -569,7 +569,7 @@ export type LobbyCreateWithoutPlayersInput = {
   openPredictionRestriction?: $Enums.OpenPredictionRestriction
   readLogEnabledByDefault?: boolean
   languageDefault?: string
-  allowIncludedSpecialCards?: boolean
+  includedSpecialCards?: string | null
   hostDisconnectedAt?: Date | string | null
   hostDisconnectDeadline?: Date | string | null
   createdAt?: Date | string
@@ -586,7 +586,7 @@ export type LobbyUncheckedCreateWithoutPlayersInput = {
   openPredictionRestriction?: $Enums.OpenPredictionRestriction
   readLogEnabledByDefault?: boolean
   languageDefault?: string
-  allowIncludedSpecialCards?: boolean
+  includedSpecialCards?: string | null
   hostDisconnectedAt?: Date | string | null
   hostDisconnectDeadline?: Date | string | null
   createdAt?: Date | string
@@ -619,7 +619,7 @@ export type LobbyUpdateWithoutPlayersInput = {
   openPredictionRestriction?: Prisma.EnumOpenPredictionRestrictionFieldUpdateOperationsInput | $Enums.OpenPredictionRestriction
   readLogEnabledByDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   languageDefault?: Prisma.StringFieldUpdateOperationsInput | string
-  allowIncludedSpecialCards?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  includedSpecialCards?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hostDisconnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   hostDisconnectDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -636,7 +636,7 @@ export type LobbyUncheckedUpdateWithoutPlayersInput = {
   openPredictionRestriction?: Prisma.EnumOpenPredictionRestrictionFieldUpdateOperationsInput | $Enums.OpenPredictionRestriction
   readLogEnabledByDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   languageDefault?: Prisma.StringFieldUpdateOperationsInput | string
-  allowIncludedSpecialCards?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  includedSpecialCards?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hostDisconnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   hostDisconnectDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -653,7 +653,7 @@ export type LobbyCreateWithoutGameStateInput = {
   openPredictionRestriction?: $Enums.OpenPredictionRestriction
   readLogEnabledByDefault?: boolean
   languageDefault?: string
-  allowIncludedSpecialCards?: boolean
+  includedSpecialCards?: string | null
   hostDisconnectedAt?: Date | string | null
   hostDisconnectDeadline?: Date | string | null
   createdAt?: Date | string
@@ -670,7 +670,7 @@ export type LobbyUncheckedCreateWithoutGameStateInput = {
   openPredictionRestriction?: $Enums.OpenPredictionRestriction
   readLogEnabledByDefault?: boolean
   languageDefault?: string
-  allowIncludedSpecialCards?: boolean
+  includedSpecialCards?: string | null
   hostDisconnectedAt?: Date | string | null
   hostDisconnectDeadline?: Date | string | null
   createdAt?: Date | string
@@ -703,7 +703,7 @@ export type LobbyUpdateWithoutGameStateInput = {
   openPredictionRestriction?: Prisma.EnumOpenPredictionRestrictionFieldUpdateOperationsInput | $Enums.OpenPredictionRestriction
   readLogEnabledByDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   languageDefault?: Prisma.StringFieldUpdateOperationsInput | string
-  allowIncludedSpecialCards?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  includedSpecialCards?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hostDisconnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   hostDisconnectDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -720,7 +720,7 @@ export type LobbyUncheckedUpdateWithoutGameStateInput = {
   openPredictionRestriction?: Prisma.EnumOpenPredictionRestrictionFieldUpdateOperationsInput | $Enums.OpenPredictionRestriction
   readLogEnabledByDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   languageDefault?: Prisma.StringFieldUpdateOperationsInput | string
-  allowIncludedSpecialCards?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  includedSpecialCards?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hostDisconnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   hostDisconnectDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -768,7 +768,7 @@ export type LobbySelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   openPredictionRestriction?: boolean
   readLogEnabledByDefault?: boolean
   languageDefault?: boolean
-  allowIncludedSpecialCards?: boolean
+  includedSpecialCards?: boolean
   hostDisconnectedAt?: boolean
   hostDisconnectDeadline?: boolean
   createdAt?: boolean
@@ -787,7 +787,7 @@ export type LobbySelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   openPredictionRestriction?: boolean
   readLogEnabledByDefault?: boolean
   languageDefault?: boolean
-  allowIncludedSpecialCards?: boolean
+  includedSpecialCards?: boolean
   hostDisconnectedAt?: boolean
   hostDisconnectDeadline?: boolean
   createdAt?: boolean
@@ -803,7 +803,7 @@ export type LobbySelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   openPredictionRestriction?: boolean
   readLogEnabledByDefault?: boolean
   languageDefault?: boolean
-  allowIncludedSpecialCards?: boolean
+  includedSpecialCards?: boolean
   hostDisconnectedAt?: boolean
   hostDisconnectDeadline?: boolean
   createdAt?: boolean
@@ -819,14 +819,14 @@ export type LobbySelectScalar = {
   openPredictionRestriction?: boolean
   readLogEnabledByDefault?: boolean
   languageDefault?: boolean
-  allowIncludedSpecialCards?: boolean
+  includedSpecialCards?: boolean
   hostDisconnectedAt?: boolean
   hostDisconnectDeadline?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type LobbyOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "code" | "status" | "hostPlayerId" | "predictionVisibility" | "openPredictionRestriction" | "readLogEnabledByDefault" | "languageDefault" | "allowIncludedSpecialCards" | "hostDisconnectedAt" | "hostDisconnectDeadline" | "createdAt" | "updatedAt", ExtArgs["result"]["lobby"]>
+export type LobbyOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "code" | "status" | "hostPlayerId" | "predictionVisibility" | "openPredictionRestriction" | "readLogEnabledByDefault" | "languageDefault" | "includedSpecialCards" | "hostDisconnectedAt" | "hostDisconnectDeadline" | "createdAt" | "updatedAt", ExtArgs["result"]["lobby"]>
 export type LobbyInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   players?: boolean | Prisma.Lobby$playersArgs<ExtArgs>
   gameState?: boolean | Prisma.Lobby$gameStateArgs<ExtArgs>
@@ -850,7 +850,7 @@ export type $LobbyPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     openPredictionRestriction: $Enums.OpenPredictionRestriction
     readLogEnabledByDefault: boolean
     languageDefault: string
-    allowIncludedSpecialCards: boolean
+    includedSpecialCards: string | null
     hostDisconnectedAt: Date | null
     hostDisconnectDeadline: Date | null
     createdAt: Date
@@ -1288,7 +1288,7 @@ export interface LobbyFieldRefs {
   readonly openPredictionRestriction: Prisma.FieldRef<"Lobby", 'OpenPredictionRestriction'>
   readonly readLogEnabledByDefault: Prisma.FieldRef<"Lobby", 'Boolean'>
   readonly languageDefault: Prisma.FieldRef<"Lobby", 'String'>
-  readonly allowIncludedSpecialCards: Prisma.FieldRef<"Lobby", 'Boolean'>
+  readonly includedSpecialCards: Prisma.FieldRef<"Lobby", 'String'>
   readonly hostDisconnectedAt: Prisma.FieldRef<"Lobby", 'DateTime'>
   readonly hostDisconnectDeadline: Prisma.FieldRef<"Lobby", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"Lobby", 'DateTime'>

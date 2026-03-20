@@ -1,5 +1,15 @@
-import type { Card, GameConfig, Suit, WizardGameState } from '@wizard/shared'
-import { filterOutBombPlays, resolveTrickWinner } from '@wizard/shared'
+import type {
+  Card,
+  GameConfig,
+  SpecialCardKey,
+  Suit,
+  WizardGameState,
+} from '@wizard/shared'
+import {
+  SPECIAL_CARD_KEYS,
+  filterOutBombPlays,
+  resolveTrickWinner,
+} from '@wizard/shared'
 import { prisma } from '../../db/prisma.js'
 import type { Prisma } from '../../generated/prisma/client.js'
 import {
@@ -9,6 +19,17 @@ import {
 import { disablesFollowSuitForDragonLead } from './specials/index.js'
 
 export const normalizeCode = (code: string) => code.trim().toUpperCase()
+
+const parseIncludedSpecialCards = (value: string | null): SpecialCardKey[] => {
+  if (value === null) return [...SPECIAL_CARD_KEYS]
+  try {
+    const parsed = JSON.parse(value)
+    if (Array.isArray(parsed)) return parsed as SpecialCardKey[]
+    return [...SPECIAL_CARD_KEYS]
+  } catch {
+    return [...SPECIAL_CARD_KEYS]
+  }
+}
 
 const toPredictionVisibility = (
   value: PredictionVisibility,
@@ -52,7 +73,7 @@ export const lobbyConfigToShared = (
   ),
   readLogEnabledByDefault: lobby.readLogEnabledByDefault,
   languageDefault: lobby.languageDefault === 'de' ? 'de' : 'en',
-  allowIncludedSpecialCards: lobby.allowIncludedSpecialCards,
+  includedSpecialCards: parseIncludedSpecialCards(lobby.includedSpecialCards),
 })
 
 export const toJson = (value: WizardGameState): Prisma.JsonObject =>

@@ -676,7 +676,7 @@ export const LobbyScalarFieldEnum = {
   openPredictionRestriction: 'openPredictionRestriction',
   readLogEnabledByDefault: 'readLogEnabledByDefault',
   languageDefault: 'languageDefault',
-  allowIncludedSpecialCards: 'allowIncludedSpecialCards',
+  includedSpecialCards: 'includedSpecialCards',
   hostDisconnectedAt: 'hostDisconnectedAt',
   hostDisconnectDeadline: 'hostDisconnectDeadline',
   createdAt: 'createdAt',

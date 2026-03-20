@@ -1,4 +1,5 @@
-import type { GameConfig, LobbySummary } from '@wizard/shared'
+import type { GameConfig, LobbySummary, SpecialCardKey } from '@wizard/shared'
+import { SPECIAL_CARD_KEYS } from '@wizard/shared'
 import crypto from 'node:crypto'
 import { env } from '../config/env.js'
 import { prisma } from '../db/prisma.js'
@@ -11,10 +12,25 @@ import {
 import { defaultGameConfig } from '../utils/default-game-config.js'
 import { mapLobbyToSummary } from './lobby-mapper.js'
 
+const normalizeCode = (code: string) => code.trim().toUpperCase()
+
+const parseIncludedSpecialCards = (value: string | null): SpecialCardKey[] => {
+  if (value === null) return [...SPECIAL_CARD_KEYS]
+  try {
+    const parsed = JSON.parse(value)
+    if (Array.isArray(parsed)) return parsed as SpecialCardKey[]
+    return [...SPECIAL_CARD_KEYS]
+  } catch {
+    return [...SPECIAL_CARD_KEYS]
+  }
+}
+
+const serializeIncludedSpecialCards = (keys: SpecialCardKey[]): string =>
+  JSON.stringify(keys)
+
 const CODE_LENGTH = 6
 const lobbyPasswordHashes = new Map<string, string>()
 
-const normalizeCode = (code: string) => code.trim().toUpperCase()
 const normalizePassword = (password: string | undefined) =>
   password?.trim() ?? ''
 const hashPassword = (password: string) =>
@@ -88,7 +104,7 @@ const getLastKnownHostedConfig = async (
           : 'none',
     readLogEnabledByDefault: previousLobby.readLogEnabledByDefault,
     languageDefault: previousLobby.languageDefault === 'de' ? 'de' : 'en',
-    allowIncludedSpecialCards: previousLobby.allowIncludedSpecialCards,
+    includedSpecialCards: parseIncludedSpecialCards(previousLobby.includedSpecialCards),
   }
 }
 
@@ -266,7 +282,7 @@ export class LobbyService {
         ),
         readLogEnabledByDefault: mergedConfig.readLogEnabledByDefault,
         languageDefault: mergedConfig.languageDefault,
-        allowIncludedSpecialCards: mergedConfig.allowIncludedSpecialCards,
+        includedSpecialCards: serializeIncludedSpecialCards(mergedConfig.includedSpecialCards),
         players: {
           create: {
             name: input.playerName.trim(),
@@ -573,7 +589,9 @@ export class LobbyService {
           : undefined,
         readLogEnabledByDefault: input.config.readLogEnabledByDefault,
         languageDefault: input.config.languageDefault,
-        allowIncludedSpecialCards: input.config.allowIncludedSpecialCards,
+        includedSpecialCards: input.config.includedSpecialCards
+          ? serializeIncludedSpecialCards(input.config.includedSpecialCards)
+          : undefined,
       },
       include: includePlayersByJoinOrder(),
     })
