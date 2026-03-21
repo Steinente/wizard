@@ -28,8 +28,7 @@ import { TPipe } from '../../../shared/pipes/t.pipe'
             [active]="isActive(player.playerId)"
             [showCloudIndicator]="hasPendingCloudAdjustment(player.playerId)"
             [showPredictionStartIndicator]="
-              state.pendingDecision?.type === 'werewolfTrumpSwap' &&
-              state.currentRound?.roundLeaderPlayerId === player.playerId
+              showRoundLeaderStartIndicator(player.playerId)
             "
           />
         }
@@ -80,6 +79,18 @@ export class PlayerListPanelComponent {
       this.state.currentRound?.players.find(
         (player) => player.playerId === playerId,
       )?.pendingCloudAdjustment === true
+    )
+  }
+
+  showRoundLeaderStartIndicator(playerId: string) {
+    const decisionType = this.state.pendingDecision?.type
+    const isTrumpSelectionPending =
+      decisionType === 'selectTrumpSuit' || decisionType === 'werewolfTrumpSwap'
+    const isPredictionPhase = this.state.phase === 'prediction'
+
+    return (
+      (isTrumpSelectionPending || isPredictionPhase) &&
+      this.state.currentRound?.roundLeaderPlayerId === playerId
     )
   }
 }
