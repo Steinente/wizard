@@ -36,6 +36,15 @@ export interface GameLogEntry {
   visibleToPlayerId?: string
 }
 
+export interface GameChatMessage {
+  id: string
+  createdAt: string
+  senderPlayerId: string
+  senderName: string
+  senderRole: 'host' | 'player' | 'spectator'
+  text: string
+}
+
 export interface WizardGameState {
   lobbyCode: string
   lobbyStatus: LobbyStatus
@@ -46,6 +55,7 @@ export interface WizardGameState {
   currentRound: RoundState | null
   scoreboard: PlayerScoreEntry[]
   logs: GameLogEntry[]
+  chatMessages: GameChatMessage[]
   pendingDecision: PendingDecision | null
   resolvedCardEffects: ResolvedCardRuntimeEffect[]
   createdAt: string

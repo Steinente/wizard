@@ -93,6 +93,7 @@ export const createGameStateView = (
     (entry) =>
       !entry.visibleToPlayerId || entry.visibleToPlayerId === selfPlayerId,
   ),
+  chatMessages: state.chatMessages,
   pendingDecision: state.pendingDecision,
   resolvedCardEffects: state.resolvedCardEffects,
   createdAt: state.createdAt,

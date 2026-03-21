@@ -66,10 +66,12 @@ const SPECIAL_TRUMP_REASON_CARDS = new Set([
             [playersVisible]="playersVisible"
             [scoreboardVisible]="scoreboardVisible"
             [logVisible]="logVisible"
+            [chatVisible]="chatVisible"
             (settingsChange)="panelSettingsChange.emit($event)"
             (playersChange)="panelPlayersChange.emit($event)"
             (scoreboardChange)="panelScoreboardChange.emit($event)"
             (logChange)="panelLogChange.emit($event)"
+            (chatChange)="panelChatChange.emit($event)"
           />
           <button class="btn" type="button" (click)="confirmLeaveGame()">
             {{ 'home' | t }}
@@ -108,11 +110,13 @@ export class GameHeaderComponent {
   @Input({ required: true }) playersVisible = true
   @Input({ required: true }) scoreboardVisible = true
   @Input({ required: true }) logVisible = true
+  @Input({ required: true }) chatVisible = true
 
   @Output() readonly panelSettingsChange = new EventEmitter<boolean>()
   @Output() readonly panelPlayersChange = new EventEmitter<boolean>()
   @Output() readonly panelScoreboardChange = new EventEmitter<boolean>()
   @Output() readonly panelLogChange = new EventEmitter<boolean>()
+  @Output() readonly panelChatChange = new EventEmitter<boolean>()
 
   get translatedPhase() {
     return this.i18n.t(`phase_${this.state.phase}` as TranslationKey)

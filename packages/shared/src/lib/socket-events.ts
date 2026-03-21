@@ -104,6 +104,12 @@ export interface ClientToServerEvents {
     suit: Suit | null
   }) => void
 
+  'game:sendChatMessage': (payload: {
+    code: string
+    sessionToken: string
+    text: string
+  }) => void
+
   'player:setReadLogEnabled': (payload: {
     code: string
     sessionToken: string

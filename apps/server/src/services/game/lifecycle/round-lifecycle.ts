@@ -123,9 +123,9 @@ export function applyRoundStartState(state: WizardGameState) {
       },
     })
   } else {
-    const hasTrumpNumber =
-      round.trumpCard?.type === 'number' &&
-      typeof round.trumpCard.value === 'number'
+    const trumpNumberValue =
+      round.trumpCard?.type === 'number' ? round.trumpCard.value : null
+    const hasTrumpNumber = typeof trumpNumberValue === 'number'
 
     state.logs.push({
       id: crypto.randomUUID(),
@@ -136,7 +136,7 @@ export function applyRoundStartState(state: WizardGameState) {
         : 'game.trump.roundStart',
       messageParams: {
         suit: round.trumpSuit ?? 'none',
-        ...(hasTrumpNumber ? { value: round.trumpCard.value } : {}),
+        ...(hasTrumpNumber ? { value: trumpNumberValue } : {}),
       },
     })
   }

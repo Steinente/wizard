@@ -13,8 +13,10 @@ import {
   PANEL_PLAYERS_VISIBLE_KEY,
   PANEL_SCOREBOARD_VISIBLE_KEY,
   PANEL_LOG_VISIBLE_KEY,
+  PANEL_CHAT_VISIBLE_KEY,
   LOG_SHOW_TIMESTAMP_KEY,
   SCOREBOARD_A11Y_MODE_KEY,
+  CHAT_SOUND_ENABLED_KEY,
 } from '../config/app.config-values'
 import {
   normalizeSpeechRate,
@@ -57,8 +59,10 @@ export class SessionService {
   private readonly panelPlayersVisibleSignal = signal(true)
   private readonly panelScoreboardVisibleSignal = signal(true)
   private readonly panelLogVisibleSignal = signal(true)
+  private readonly panelChatVisibleSignal = signal(true)
   private readonly logShowTimestampSignal = signal(true)
   private readonly scoreboardA11yModeSignal = signal(true)
+  private readonly chatSoundEnabledSignal = signal(true)
 
   readonly sessionToken = computed(() => this.sessionTokenSignal())
   readonly playerName = computed(() => this.playerNameSignal())
@@ -81,8 +85,10 @@ export class SessionService {
     this.panelScoreboardVisibleSignal(),
   )
   readonly panelLogVisible = computed(() => this.panelLogVisibleSignal())
+  readonly panelChatVisible = computed(() => this.panelChatVisibleSignal())
   readonly logShowTimestamp = computed(() => this.logShowTimestampSignal())
   readonly scoreboardA11yMode = computed(() => this.scoreboardA11yModeSignal())
+  readonly chatSoundEnabled = computed(() => this.chatSoundEnabledSignal())
 
   constructor(private readonly storage: LocalStorageService) {
     const existingToken =
@@ -131,11 +137,17 @@ export class SessionService {
     const storedPanelLog = this.storage.get(PANEL_LOG_VISIBLE_KEY)
     this.panelLogVisibleSignal.set(storedPanelLog !== 'false')
 
+    const storedPanelChat = this.storage.get(PANEL_CHAT_VISIBLE_KEY)
+    this.panelChatVisibleSignal.set(storedPanelChat !== 'false')
+
     const storedLogShowTimestamp = this.storage.get(LOG_SHOW_TIMESTAMP_KEY)
     this.logShowTimestampSignal.set(storedLogShowTimestamp !== 'false')
 
     const storedScoreboardA11yMode = this.storage.get(SCOREBOARD_A11Y_MODE_KEY)
     this.scoreboardA11yModeSignal.set(storedScoreboardA11yMode !== 'false')
+
+    const storedChatSoundEnabled = this.storage.get(CHAT_SOUND_ENABLED_KEY)
+    this.chatSoundEnabledSignal.set(storedChatSoundEnabled !== 'false')
   }
 
   setPlayerName(name: string) {
@@ -196,6 +208,11 @@ export class SessionService {
     this.storage.set(PANEL_LOG_VISIBLE_KEY, String(visible))
   }
 
+  setPanelChatVisible(visible: boolean) {
+    this.panelChatVisibleSignal.set(visible)
+    this.storage.set(PANEL_CHAT_VISIBLE_KEY, String(visible))
+  }
+
   setLogShowTimestamp(show: boolean) {
     this.logShowTimestampSignal.set(show)
     this.storage.set(LOG_SHOW_TIMESTAMP_KEY, String(show))
@@ -204,6 +221,11 @@ export class SessionService {
   setScoreboardA11yMode(enabled: boolean) {
     this.scoreboardA11yModeSignal.set(enabled)
     this.storage.set(SCOREBOARD_A11Y_MODE_KEY, String(enabled))
+  }
+
+  setChatSoundEnabled(enabled: boolean) {
+    this.chatSoundEnabledSignal.set(enabled)
+    this.storage.set(CHAT_SOUND_ENABLED_KEY, String(enabled))
   }
 
   setLobbyConfig(config: GameConfig) {

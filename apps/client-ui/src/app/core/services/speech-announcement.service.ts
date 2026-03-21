@@ -58,6 +58,26 @@ export class SpeechAnnouncementService {
     })
   }
 
+  chatPing() {
+    if (!this.audioContextUnlocked) {
+      return
+    }
+
+    const ctx = this.ensureAudioContext()
+
+    if (!ctx) {
+      return
+    }
+
+    void ctx.resume().then(() => {
+      if (ctx.state !== 'running') {
+        return
+      }
+
+      this.playChatPingTone(ctx)
+    })
+  }
+
   unlock() {
     this.unlockAudioContext()
 
@@ -134,6 +154,37 @@ export class SpeechAnnouncementService {
     oscillator.onended = () => {
       oscillator.disconnect()
       gain.disconnect()
+    }
+  }
+
+  private playChatPingTone(ctx: AudioContext) {
+    const masterGain = ctx.createGain()
+    masterGain.connect(ctx.destination)
+
+    const startGain = Math.max(0.001, 0.28 * this.speechVolume)
+    masterGain.gain.setValueAtTime(startGain, ctx.currentTime)
+    masterGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.26)
+
+    const first = ctx.createOscillator()
+    first.type = 'triangle'
+    first.frequency.setValueAtTime(740, ctx.currentTime)
+    first.frequency.exponentialRampToValueAtTime(1040, ctx.currentTime + 0.08)
+    first.connect(masterGain)
+    first.start(ctx.currentTime)
+    first.stop(ctx.currentTime + 0.09)
+
+    const second = ctx.createOscillator()
+    second.type = 'triangle'
+    second.frequency.setValueAtTime(980, ctx.currentTime + 0.11)
+    second.frequency.exponentialRampToValueAtTime(1360, ctx.currentTime + 0.19)
+    second.connect(masterGain)
+    second.start(ctx.currentTime + 0.11)
+    second.stop(ctx.currentTime + 0.2)
+
+    second.onended = () => {
+      first.disconnect()
+      second.disconnect()
+      masterGain.disconnect()
     }
   }
 

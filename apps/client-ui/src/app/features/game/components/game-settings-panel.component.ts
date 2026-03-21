@@ -47,6 +47,23 @@ import { TPipe } from '../../../shared/pipes/t.pipe'
         </label>
       </div>
 
+      <div class="row" style="margin-top: 8px;">
+        <label class="row">
+          <input
+            type="checkbox"
+            [ngModel]="chatSoundEnabled"
+            (ngModelChange)="toggleChatSound($event)"
+          />
+          <span>
+            {{
+              chatSoundEnabled
+                ? ('chatSoundEnabled' | t)
+                : ('chatSoundDisabled' | t)
+            }}
+          </span>
+        </label>
+      </div>
+
       <div style="margin-top: 12px;">
         <label class="label"
           >{{ 'speechVolumeLabel' | t }}: {{ volumePercent() }}%</label
@@ -170,9 +187,11 @@ export class GameSettingsPanelComponent {
   @Input({ required: true }) audioVolume = 1
   @Input({ required: true }) audioSpeed = 1
   @Input({ required: true }) bingEnabled = true
+  @Input({ required: true }) chatSoundEnabled = true
   @Input({ required: true }) isHost = false
   @Input({ required: true }) onToggleAudio!: (enabled: boolean) => void
   @Input({ required: true }) onBingToggle!: (enabled: boolean) => void
+  @Input({ required: true }) onChatSoundToggle!: (enabled: boolean) => void
   @Input({ required: true }) onAudioVolumeChange!: (volume: number) => void
   @Input({ required: true }) onAudioSpeedChange!: (speed: number) => void
   @Input({ required: true }) onEndLobby!: () => void
@@ -191,6 +210,10 @@ export class GameSettingsPanelComponent {
 
   toggleBing(enabled: boolean) {
     this.onBingToggle(enabled)
+  }
+
+  toggleChatSound(enabled: boolean) {
+    this.onChatSoundToggle(enabled)
   }
 
   changeAudioVolume(value: number | string) {

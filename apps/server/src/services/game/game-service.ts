@@ -45,6 +45,8 @@ import {
 } from './specials/index.js'
 
 export class GameService {
+  private static readonly CHAT_MESSAGE_LIMIT = 200
+
   async startGame(input: { code: string; sessionToken: string }) {
     const lobby = await loadLobbyByCode(input.code)
 
@@ -585,6 +587,51 @@ export class GameService {
     }
 
     return null
+  }
+
+  async sendChatMessage(input: {
+    code: string
+    sessionToken: string
+    text: string
+  }) {
+    const { lobby, state } = await loadStateOrThrow(input.code)
+    const player = getPlayerBySessionToken(lobby, input.sessionToken)
+    const text = input.text.trim()
+
+    if (!text.length) {
+      throw new Error('error.chatMessageEmpty')
+    }
+
+    if (text.length > 300) {
+      throw new Error('error.chatMessageTooLong')
+    }
+
+    const senderRole: 'host' | 'player' | 'spectator' =
+      player.role === PlayerRole.HOST
+        ? 'host'
+        : player.role === PlayerRole.SPECTATOR
+          ? 'spectator'
+          : 'player'
+
+    state.chatMessages.push({
+      id: crypto.randomUUID(),
+      createdAt: nowIso(),
+      senderPlayerId: player.id,
+      senderName: player.name,
+      senderRole,
+      text,
+    })
+
+    if (state.chatMessages.length > GameService.CHAT_MESSAGE_LIMIT) {
+      state.chatMessages.splice(
+        0,
+        state.chatMessages.length - GameService.CHAT_MESSAGE_LIMIT,
+      )
+    }
+
+    await persistState(lobby.id, state)
+
+    return state
   }
 
   async getViewState(input: { code: string; sessionToken: string }) {

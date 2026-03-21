@@ -7,6 +7,7 @@ import {
   resolveJugglerSchema,
   resolveShapeShifterSchema,
   resolveWerewolfTrumpSwapSchema,
+  sendChatMessageSchema,
   selectJugglerPassCardSchema,
   selectTrumpSuitSchema,
 } from '../schemas/game-schemas.js'
@@ -201,5 +202,18 @@ export const registerGameHandlers = ({
         error instanceof Error ? error.message : 'error.playCardFailed',
       )
     }
+  })
+
+  socket.on('game:sendChatMessage', async (payload) => {
+    await runSocketAction(
+      socket,
+      payload,
+      sendChatMessageSchema.parse,
+      async (input) => {
+        await gameService.sendChatMessage(input)
+        await emitStateForCode(io, input.code, sessionStore, gameService)
+      },
+      'error.chatMessageFailed',
+    )
   })
 }

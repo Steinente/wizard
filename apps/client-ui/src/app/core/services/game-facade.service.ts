@@ -33,6 +33,8 @@ type InteractionEvent = (typeof INTERACTION_EVENTS)[number]
 export class GameFacadeService {
   private lastAnnouncedLogId: string | null = null
   private lastLogCursorLobbyCode: string | null = null
+  private lastSeenChatMessageId: string | null = null
+  private lastChatCursorLobbyCode: string | null = null
   private lastInteractionPromptKey: string | null = null
   private suppressNextSelfInteractionBing = false
   private wasConnected = false
@@ -162,6 +164,7 @@ export class GameFacadeService {
       this.notifySelfInteraction(payload.state)
 
       this.announceNewLogs(payload.state)
+      this.notifyIncomingChatMessage(payload.state)
       this.router.navigateByUrl(`/game/${payload.state.lobbyCode}`)
     })
 
@@ -250,6 +253,7 @@ export class GameFacadeService {
       | 'game:resolveCloudAdjustment'
       | 'game:resolveJuggler'
       | 'game:selectJugglerPassCard'
+      | 'game:sendChatMessage'
       | 'player:setReadLogEnabled'
       | 'player:setInGame',
   >(
@@ -537,6 +541,12 @@ export class GameFacadeService {
     })
   }
 
+  sendChatMessage(code: string, text: string) {
+    this.emitCodeScoped('game:sendChatMessage', code, {
+      text,
+    })
+  }
+
   setReadLogEnabled(code: string, enabled: boolean) {
     this.applyReadLogEnabled(code, enabled, false)
   }
@@ -562,5 +572,44 @@ export class GameFacadeService {
     this.emitCodeScoped('player:setReadLogEnabled', code, {
       enabled,
     })
+  }
+
+  private notifyIncomingChatMessage(state: WizardGameViewState) {
+    if (!state.chatMessages.length) {
+      return
+    }
+
+    const isFirstStateForLobby =
+      this.lastChatCursorLobbyCode !== state.lobbyCode
+
+    if (isFirstStateForLobby) {
+      this.lastChatCursorLobbyCode = state.lobbyCode
+      this.lastSeenChatMessageId = state.chatMessages.at(-1)?.id ?? null
+      return
+    }
+
+    let startIndex = 0
+
+    if (this.lastSeenChatMessageId) {
+      const index = state.chatMessages.findIndex(
+        (entry) => entry.id === this.lastSeenChatMessageId,
+      )
+
+      if (index >= 0) {
+        startIndex = index + 1
+      }
+    }
+
+    const unseen = state.chatMessages.slice(startIndex)
+
+    for (const entry of unseen) {
+      if (
+        entry.senderPlayerId !== state.selfPlayerId &&
+        this.session.chatSoundEnabled()
+      ) {
+        this.audio.chatPing()
+      }
+      this.lastSeenChatMessageId = entry.id
+    }
   }
 }

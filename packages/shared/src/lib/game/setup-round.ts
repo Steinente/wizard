@@ -88,6 +88,7 @@ export const createInitialGameState = (input: {
   currentRound: null,
   scoreboard: [],
   logs: [],
+  chatMessages: [],
   pendingDecision: null,
   resolvedCardEffects: [],
   createdAt: new Date().toISOString(),

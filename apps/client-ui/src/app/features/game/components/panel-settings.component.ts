@@ -60,6 +60,15 @@ import { TPipe } from '../../../shared/pipes/t.pipe'
             />
             <span>{{ 'logs' | t }}</span>
           </label>
+
+          <label class="row" style="margin-top: 8px;">
+            <input
+              type="checkbox"
+              [ngModel]="chatVisible"
+              (ngModelChange)="chatChange.emit($event)"
+            />
+            <span>{{ 'chat' | t }}</span>
+          </label>
         </div>
       }
     </div>
@@ -92,11 +101,13 @@ export class PanelSettingsComponent {
   @Input({ required: true }) playersVisible = true
   @Input({ required: true }) scoreboardVisible = true
   @Input({ required: true }) logVisible = true
+  @Input({ required: true }) chatVisible = true
 
   @Output() readonly settingsChange = new EventEmitter<boolean>()
   @Output() readonly playersChange = new EventEmitter<boolean>()
   @Output() readonly scoreboardChange = new EventEmitter<boolean>()
   @Output() readonly logChange = new EventEmitter<boolean>()
+  @Output() readonly chatChange = new EventEmitter<boolean>()
 
   isOpen = false
 

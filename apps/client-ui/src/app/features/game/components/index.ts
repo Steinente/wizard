@@ -1,3 +1,4 @@
+export { ChatPanelComponent } from './chat-panel.component'
 export { GameFinishedPanelComponent } from './game-finished-panel.component'
 export { GameHeaderComponent } from './game-header.component'
 export { GameSettingsPanelComponent } from './game-settings-panel.component'

@@ -11,6 +11,7 @@ import { SessionService } from '../../core/services/session.service'
 import { AppStore } from '../../core/state/app.store'
 import { TPipe } from '../../shared/pipes/t.pipe'
 import {
+  ChatPanelComponent,
   GameFinishedPanelComponent,
   GameHeaderComponent,
   GameSettingsPanelComponent,
@@ -49,6 +50,7 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
     TPipe,
     GameHeaderComponent,
     GameFinishedPanelComponent,
+    ChatPanelComponent,
     PlayerListPanelComponent,
     TrickAreaComponent,
     HandAreaComponent,
@@ -70,10 +72,12 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
             [playersVisible]="panelPlayersVisibleSignal()"
             [scoreboardVisible]="panelScoreboardVisibleSignal()"
             [logVisible]="panelLogVisibleSignal()"
+            [chatVisible]="panelChatVisibleSignal()"
             (panelSettingsChange)="setPanelSettingsVisibleFn($event)"
             (panelPlayersChange)="setPanelPlayersVisibleFn($event)"
             (panelScoreboardChange)="setPanelScoreboardVisibleFn($event)"
             (panelLogChange)="setPanelLogVisibleFn($event)"
+            (panelChatChange)="setPanelChatVisibleFn($event)"
           />
         </div>
 
@@ -93,6 +97,18 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
               />
             </div>
           </div>
+
+          @if (panelChatVisibleSignal()) {
+            <div class="game-chat-finished" style="margin-top: 16px;">
+              <wiz-chat-panel
+                [messages]="store.gameState()!.chatMessages"
+                [selfPlayerId]="store.gameState()!.selfPlayerId"
+                [chatSoundEnabled]="chatSoundEnabledSignal()"
+                (sendMessage)="sendChatMessageFn($event)"
+                (chatSoundToggle)="setChatSoundEnabledFn($event)"
+              />
+            </div>
+          }
         } @else {
           <div class="game-layout">
             @if (panelSettingsVisibleSignal()) {
@@ -103,11 +119,13 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
                   [audioVolume]="speechVolumeSignal()"
                   [audioSpeed]="speechSpeedSignal()"
                   [bingEnabled]="bingEnabledSignal()"
+                  [chatSoundEnabled]="chatSoundEnabledSignal()"
                   [isHost]="isHost()"
                   [showTimestamp]="logShowTimestampSignal()"
                   [scoreboardA11yMode]="scoreboardA11yModeSignal()"
                   [onToggleAudio]="toggleReadLogFn"
                   [onBingToggle]="toggleBingFn"
+                  [onChatSoundToggle]="setChatSoundEnabledFn"
                   [onAudioVolumeChange]="setSpeechVolumeFn"
                   [onAudioSpeedChange]="setSpeechSpeedFn"
                   [onEndLobby]="endLobbyFn"
@@ -199,6 +217,18 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
                 />
               </div>
             }
+
+            @if (panelChatVisibleSignal()) {
+              <div class="game-block game-chat-block">
+                <wiz-chat-panel
+                  [messages]="store.gameState()!.chatMessages"
+                  [selfPlayerId]="store.gameState()!.selfPlayerId"
+                  [chatSoundEnabled]="chatSoundEnabledSignal()"
+                  (sendMessage)="sendChatMessageFn($event)"
+                  (chatSoundToggle)="setChatSoundEnabledFn($event)"
+                />
+              </div>
+            }
           </div>
         }
       }
@@ -244,11 +274,16 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
         grid-area: log;
       }
 
+      .game-chat-block {
+        grid-area: chat;
+      }
+
       .game-layout {
         grid-template-columns: 320px minmax(0, 1fr) 320px;
         grid-template-areas:
           'settings trick scoreboard'
-          'players interaction log';
+          'players interaction log'
+          'chat chat chat';
       }
 
       @media (max-width: 1100px) {
@@ -264,7 +299,8 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
             'players'
             'trick'
             'interaction'
-            'log';
+            'log'
+            'chat';
         }
       }
     `,
@@ -300,11 +336,17 @@ export class GamePageComponent {
   readonly panelLogVisibleSignal = computed(() =>
     this.session.panelLogVisible(),
   )
+  readonly panelChatVisibleSignal = computed(() =>
+    this.session.panelChatVisible(),
+  )
   readonly logShowTimestampSignal = computed(() =>
     this.session.logShowTimestamp(),
   )
   readonly scoreboardA11yModeSignal = computed(() =>
     this.session.scoreboardA11yMode(),
+  )
+  readonly chatSoundEnabledSignal = computed(() =>
+    this.session.chatSoundEnabled(),
   )
 
   readonly playCardFn = (card: Card) => this.playCard(card)
@@ -322,6 +364,8 @@ export class GamePageComponent {
   readonly toggleReadLogFn = (enabled: boolean) => this.toggleAudio(enabled)
   readonly toggleBingFn = (enabled: boolean) =>
     this.session.setBingEnabled(enabled)
+  readonly setChatSoundEnabledFn = (enabled: boolean) =>
+    this.session.setChatSoundEnabled(enabled)
   readonly sortHandFn = () => this.sortHand()
   readonly reorderHandFn = (draggedCardId: string, targetCardId: string) =>
     this.reorderHand(draggedCardId, targetCardId)
@@ -336,10 +380,13 @@ export class GamePageComponent {
     this.session.setPanelScoreboardVisible(v)
   readonly setPanelLogVisibleFn = (v: boolean) =>
     this.session.setPanelLogVisible(v)
+  readonly setPanelChatVisibleFn = (v: boolean) =>
+    this.session.setPanelChatVisible(v)
   readonly setLogShowTimestampFn = (v: boolean) =>
     this.session.setLogShowTimestamp(v)
   readonly setScoreboardA11yModeFn = (v: boolean) =>
     this.session.setScoreboardA11yMode(v)
+  readonly sendChatMessageFn = (text: string) => this.sendChatMessage(text)
 
   constructor(
     private readonly appStore: AppStore,
@@ -706,6 +753,16 @@ export class GamePageComponent {
     }
 
     this.facade.endLobby(state.lobbyCode)
+  }
+
+  sendChatMessage(text: string) {
+    const code = this.store.gameState()?.lobbyCode
+
+    if (!code) {
+      return
+    }
+
+    this.facade.sendChatMessage(code, text)
   }
 
   sortHand() {

@@ -79,8 +79,15 @@ export const lobbyConfigToShared = (
 export const toJson = (value: WizardGameState): Prisma.JsonObject =>
   JSON.parse(JSON.stringify(value)) as Prisma.JsonObject
 
-export const fromJson = (value: unknown): WizardGameState =>
-  value as WizardGameState
+export const fromJson = (value: unknown): WizardGameState => {
+  const state = value as WizardGameState & { chatMessages?: unknown }
+
+  if (!Array.isArray(state.chatMessages)) {
+    state.chatMessages = []
+  }
+
+  return state as WizardGameState
+}
 
 export const nowIso = () => new Date().toISOString()
 
