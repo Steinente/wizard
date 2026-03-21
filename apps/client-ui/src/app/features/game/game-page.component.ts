@@ -138,6 +138,8 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
                     class="active-turn"
                     [values]="predictionOptions()"
                     [submit]="predictFn"
+                    [trumpSuit]="store.gameState()!.currentRound?.trumpSuit ?? null"
+                    [trumpValue]="trumpNumberValue()"
                   />
                 }
               } @else {
@@ -473,6 +475,12 @@ export class GamePageComponent {
       predictions: round.players.map((player) => player.prediction),
       trickCount: round.roundNumber,
     })
+  }
+
+  trumpNumberValue(): number | null {
+    const card = this.store.gameState()?.currentRound?.trumpCard
+
+    return card?.type === 'number' ? card.value : null
   }
 
   predict(value: number) {
