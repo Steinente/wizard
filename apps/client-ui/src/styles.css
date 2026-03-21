@@ -89,6 +89,12 @@ button {
   border-color: #ef6f6b;
 }
 
+.btn-active {
+  background: var(--accent);
+  color: #111827;
+  border-color: #e4bc48;
+}
+
 .input,
 .select {
   width: 100%;

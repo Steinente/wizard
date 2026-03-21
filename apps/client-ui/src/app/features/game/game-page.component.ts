@@ -158,6 +158,7 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
                   [cards]="displayHand()"
                   [canPlay]="canPlayCardFn"
                   [play]="playCardFn"
+                  [isSortActive]="handSortEnabled()"
                   [onSort]="sortHandFn"
                   [onReorder]="reorderHandFn"
                 />
@@ -249,7 +250,7 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
 })
 export class GamePageComponent {
   protected readonly store = this.appStore
-  private readonly handSortEnabled = signal(false)
+  protected readonly handSortEnabled = signal(false)
   private readonly manualHandOrder = signal<string[] | null>(null)
   private lastSeenRoundKey: string | null = null
 
@@ -311,7 +312,6 @@ export class GamePageComponent {
       }
 
       if (this.lastSeenRoundKey !== currentRoundKey) {
-        this.handSortEnabled.set(false)
         this.manualHandOrder.set(null)
         this.lastSeenRoundKey = currentRoundKey
       }
@@ -657,8 +657,15 @@ export class GamePageComponent {
   }
 
   sortHand() {
-    this.manualHandOrder.set(null)
-    this.handSortEnabled.set(true)
+    const next = !this.handSortEnabled()
+    if (next) {
+      this.manualHandOrder.set(null)
+      this.handSortEnabled.set(true)
+    } else {
+      const currentOrder = this.displayHand().map((card) => card.id)
+      this.handSortEnabled.set(false)
+      this.manualHandOrder.set(currentOrder)
+    }
   }
 
   reorderHand(draggedCardId: string, targetCardId: string) {
