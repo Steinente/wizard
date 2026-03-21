@@ -3,6 +3,7 @@ import {
   Component,
   ElementRef,
   EventEmitter,
+  HostListener,
   Input,
   OnChanges,
   Output,
@@ -20,7 +21,7 @@ const QUICK_EMOTES = ['😀', '🎉', '👏', '😅', '🤔', '❤️']
   standalone: true,
   imports: [FormsModule, TPipe, DatePipe],
   template: `
-    <div class="panel chat-panel">
+    <div #panelRoot class="panel chat-panel">
       <div class="chat-header">
         <h3 style="margin: 0;">{{ 'chat' | t }}</h3>
         <button
@@ -95,6 +96,13 @@ const QUICK_EMOTES = ['😀', '🎉', '👏', '😅', '🤔', '❤️']
           {{ 'chatSend' | t }}
         </button>
       </div>
+
+      <div
+        class="chat-resize-handle"
+        role="presentation"
+        aria-hidden="true"
+        (mousedown)="startResize($event)"
+      ></div>
     </div>
   `,
   styles: [
@@ -102,8 +110,22 @@ const QUICK_EMOTES = ['😀', '🎉', '👏', '😅', '🤔', '❤️']
       .chat-panel {
         display: flex;
         flex-direction: column;
+        position: relative;
         gap: 10px;
         height: 320px;
+        min-height: 260px;
+        overflow: hidden;
+      }
+
+      .chat-resize-handle {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 10px;
+        cursor: ns-resize;
+        background: transparent;
+        z-index: 2;
       }
 
       .chat-messages {
@@ -193,6 +215,12 @@ const QUICK_EMOTES = ['😀', '🎉', '👏', '😅', '🤔', '❤️']
       @media (max-width: 700px) {
         .chat-panel {
           height: auto;
+          min-height: 0;
+          max-height: none;
+        }
+
+        .chat-resize-handle {
+          display: none;
         }
 
         .chat-messages {
@@ -204,6 +232,9 @@ const QUICK_EMOTES = ['😀', '🎉', '👏', '😅', '🤔', '❤️']
   ],
 })
 export class ChatPanelComponent implements OnChanges {
+  @ViewChild('panelRoot')
+  private panelRoot?: ElementRef<HTMLElement>
+
   @ViewChild('scrollContainer')
   private scrollContainer?: ElementRef<HTMLElement>
 
@@ -216,6 +247,96 @@ export class ChatPanelComponent implements OnChanges {
   draft = ''
   readonly quickEmotes = QUICK_EMOTES
   private isAtBottom = true
+  private isResizing = false
+  private resizeStartPageY = 0
+  private resizeStartHeight = 0
+  private lastPointerClientY = 0
+  private autoScrollRafId: number | null = null
+
+  startResize(event: MouseEvent) {
+    if (typeof window === 'undefined' || window.innerWidth <= 700) {
+      return
+    }
+
+    const panel = this.panelRoot?.nativeElement
+
+    if (!panel) {
+      return
+    }
+
+    event.preventDefault()
+    this.isResizing = true
+    this.resizeStartPageY = event.pageY
+    this.resizeStartHeight = panel.getBoundingClientRect().height
+    this.lastPointerClientY = event.clientY
+    document.body.style.userSelect = 'none'
+    this.ensureAutoScrollLoop()
+  }
+
+  @HostListener('document:mousemove', ['$event'])
+  onResizeMove(event: MouseEvent) {
+    if (!this.isResizing) {
+      return
+    }
+
+    this.lastPointerClientY = event.clientY
+    this.applyResizeFromPageY(event.pageY)
+  }
+
+  private applyResizeFromPageY(pointerPageY: number) {
+    const panel = this.panelRoot?.nativeElement
+
+    if (!panel) {
+      return
+    }
+
+    const deltaY = pointerPageY - this.resizeStartPageY
+    const minHeight = 260
+    const nextHeight = Math.max(minHeight, this.resizeStartHeight + deltaY)
+
+    panel.style.height = `${nextHeight}px`
+  }
+
+  private ensureAutoScrollLoop() {
+    if (this.autoScrollRafId !== null) {
+      return
+    }
+
+    const step = () => {
+      if (!this.isResizing) {
+        this.autoScrollRafId = null
+        return
+      }
+
+      const edge = 8
+      const speed = 0.5
+
+      if (this.lastPointerClientY >= window.innerHeight - edge) {
+        window.scrollBy(0, speed)
+      }
+
+      const pointerPageY = this.lastPointerClientY + window.scrollY
+      this.applyResizeFromPageY(pointerPageY)
+
+      this.autoScrollRafId = window.requestAnimationFrame(step)
+    }
+
+    this.autoScrollRafId = window.requestAnimationFrame(step)
+  }
+
+  @HostListener('document:mouseup')
+  stopResize() {
+    if (!this.isResizing) {
+      return
+    }
+
+    this.isResizing = false
+    if (this.autoScrollRafId !== null) {
+      window.cancelAnimationFrame(this.autoScrollRafId)
+      this.autoScrollRafId = null
+    }
+    document.body.style.removeProperty('user-select')
+  }
 
   onScroll() {
     const el = this.scrollContainer?.nativeElement
