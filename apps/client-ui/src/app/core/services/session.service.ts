@@ -61,7 +61,7 @@ export class SessionService {
   private readonly panelLogVisibleSignal = signal(true)
   private readonly panelChatVisibleSignal = signal(true)
   private readonly logShowTimestampSignal = signal(true)
-  private readonly scoreboardA11yModeSignal = signal(true)
+  private readonly scoreboardA11yModeSignal = signal(false)
   private readonly chatSoundEnabledSignal = signal(true)
 
   readonly sessionToken = computed(() => this.sessionTokenSignal())
@@ -144,7 +144,7 @@ export class SessionService {
     this.logShowTimestampSignal.set(storedLogShowTimestamp !== 'false')
 
     const storedScoreboardA11yMode = this.storage.get(SCOREBOARD_A11Y_MODE_KEY)
-    this.scoreboardA11yModeSignal.set(storedScoreboardA11yMode !== 'false')
+    this.scoreboardA11yModeSignal.set(storedScoreboardA11yMode === 'true')
 
     const storedChatSoundEnabled = this.storage.get(CHAT_SOUND_ENABLED_KEY)
     this.chatSoundEnabledSignal.set(storedChatSoundEnabled !== 'false')
