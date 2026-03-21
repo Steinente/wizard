@@ -1,4 +1,4 @@
-import { Component, ElementRef, Input, inject } from '@angular/core'
+import { ChangeDetectorRef, Component, ElementRef, Input, inject } from '@angular/core'
 import type { Card, ResolvedCardRuntimeEffect } from '@wizard/shared'
 import { I18nService } from '../../core/i18n/i18n.service'
 import type { TranslationKey } from '../../core/i18n/translations'
@@ -237,9 +237,14 @@ import { SUIT_BACKGROUNDS } from '../utils/suit-colors.util'
 export class CardComponent {
   private readonly i18n = inject(I18nService)
   private readonly hostElement = inject<ElementRef<HTMLButtonElement>>(ElementRef)
+  private readonly cdr = inject(ChangeDetectorRef)
   private longPressTimerId: ReturnType<typeof setTimeout> | null = null
   private hideInfoTimerId: ReturnType<typeof setTimeout> | null = null
   private longPressHandled = false
+  private readonly dismissPopover = () => {
+    this.hideInfo()
+    this.cdr.detectChanges()
+  }
   cardInfoVisible = false
   cardInfoLeftPx = 0
   cardInfoWidthPx = 260
@@ -352,7 +357,7 @@ export class CardComponent {
 
   ngOnDestroy() {
     this.clearLongPressTimer()
-    this.clearHideInfoTimer()
+    this.hideInfo()
   }
 
   onCardPointerDown(event: PointerEvent) {
@@ -393,10 +398,16 @@ export class CardComponent {
     this.updateCardInfoLayout()
     this.cardInfoVisible = true
     this.clearHideInfoTimer()
-    this.hideInfoTimerId = setTimeout(() => {
-      this.cardInfoVisible = false
-      this.hideInfoTimerId = null
-    }, 2600)
+    this.hideInfoTimerId = setTimeout(() => this.hideInfo(), 2600)
+    document.addEventListener('touchstart', this.dismissPopover, { capture: true })
+    window.addEventListener('scroll', this.dismissPopover, { capture: true, passive: true })
+  }
+
+  private hideInfo() {
+    this.clearHideInfoTimer()
+    this.cardInfoVisible = false
+    document.removeEventListener('touchstart', this.dismissPopover, { capture: true })
+    window.removeEventListener('scroll', this.dismissPopover, { capture: true })
   }
 
   private clearLongPressTimer() {
