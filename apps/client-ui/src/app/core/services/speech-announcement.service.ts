@@ -119,7 +119,10 @@ export class SpeechAnnouncementService {
 
     oscillator.type = 'sine'
     oscillator.frequency.setValueAtTime(880, ctx.currentTime)
-    oscillator.frequency.exponentialRampToValueAtTime(1320, ctx.currentTime + 0.08)
+    oscillator.frequency.exponentialRampToValueAtTime(
+      1320,
+      ctx.currentTime + 0.08,
+    )
 
     const startGain = Math.max(0.001, 0.4 * this.speechVolume)
     gain.gain.setValueAtTime(startGain, ctx.currentTime)
@@ -174,9 +177,13 @@ export class SpeechAnnouncementService {
       return null
     }
 
-    return (window as typeof window & {
-      webkitAudioContext?: typeof AudioContext
-    }).webkitAudioContext ?? AudioContext
+    return (
+      (
+        window as typeof window & {
+          webkitAudioContext?: typeof AudioContext
+        }
+      ).webkitAudioContext ?? AudioContext
+    )
   }
 
   private registerGestureUnlockListeners() {

@@ -16,7 +16,9 @@ import { TPipe } from '../../../shared/pipes/t.pipe'
 
       <div class="prediction-grid">
         @for (value of values; track value) {
-          <button class="btn prediction-btn" (click)="submit(value)">{{ value }}</button>
+          <button class="btn prediction-btn" (click)="submit(value)">
+            {{ value }}
+          </button>
         }
       </div>
     </div>
@@ -35,7 +37,9 @@ export class PredictionPanelComponent {
       return this.i18n.t('noTrump')
     }
 
-    const translatedSuit = this.i18n.t(`suit.${this.trumpSuit}` as TranslationKey)
+    const translatedSuit = this.i18n.t(
+      `suit.${this.trumpSuit}` as TranslationKey,
+    )
     const withValue =
       typeof this.trumpValue === 'number'
         ? `${translatedSuit} ${this.trumpValue}`

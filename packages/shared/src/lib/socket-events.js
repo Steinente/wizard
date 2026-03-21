@@ -1,2 +1,2 @@
-export {};
+export {}
 //# sourceMappingURL=socket-events.js.map

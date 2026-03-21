@@ -9,6 +9,12 @@ import {
   LOBBY_CONFIG_KEY,
   PLAYER_NAME_KEY,
   SESSION_TOKEN_KEY,
+  PANEL_SETTINGS_VISIBLE_KEY,
+  PANEL_PLAYERS_VISIBLE_KEY,
+  PANEL_SCOREBOARD_VISIBLE_KEY,
+  PANEL_LOG_VISIBLE_KEY,
+  LOG_SHOW_TIMESTAMP_KEY,
+  SCOREBOARD_A11Y_MODE_KEY,
 } from '../config/app.config-values'
 import {
   normalizeSpeechRate,
@@ -47,6 +53,12 @@ export class SessionService {
   private readonly bingEnabledSignal = signal(true)
   private readonly hasReadLogPreferenceSignal = signal(false)
   private readonly lobbyConfigSignal = signal<GameConfig | null>(null)
+  private readonly panelSettingsVisibleSignal = signal(true)
+  private readonly panelPlayersVisibleSignal = signal(true)
+  private readonly panelScoreboardVisibleSignal = signal(true)
+  private readonly panelLogVisibleSignal = signal(true)
+  private readonly logShowTimestampSignal = signal(true)
+  private readonly scoreboardA11yModeSignal = signal(true)
 
   readonly sessionToken = computed(() => this.sessionTokenSignal())
   readonly playerName = computed(() => this.playerNameSignal())
@@ -55,8 +67,22 @@ export class SessionService {
   readonly speechVolume = computed(() => this.speechVolumeSignal())
   readonly speechRate = computed(() => this.speechRateSignal())
   readonly bingEnabled = computed(() => this.bingEnabledSignal())
-  readonly hasReadLogPreference = computed(() => this.hasReadLogPreferenceSignal())
+  readonly hasReadLogPreference = computed(() =>
+    this.hasReadLogPreferenceSignal(),
+  )
   readonly lobbyConfig = computed(() => this.lobbyConfigSignal())
+  readonly panelSettingsVisible = computed(() =>
+    this.panelSettingsVisibleSignal(),
+  )
+  readonly panelPlayersVisible = computed(() =>
+    this.panelPlayersVisibleSignal(),
+  )
+  readonly panelScoreboardVisible = computed(() =>
+    this.panelScoreboardVisibleSignal(),
+  )
+  readonly panelLogVisible = computed(() => this.panelLogVisibleSignal())
+  readonly logShowTimestamp = computed(() => this.logShowTimestampSignal())
+  readonly scoreboardA11yMode = computed(() => this.scoreboardA11yModeSignal())
 
   constructor(private readonly storage: LocalStorageService) {
     const existingToken =
@@ -92,6 +118,24 @@ export class SessionService {
 
     const storedBingEnabled = this.storage.get(BING_ENABLED_KEY)
     this.bingEnabledSignal.set(storedBingEnabled !== 'false')
+
+    const storedPanelSettings = this.storage.get(PANEL_SETTINGS_VISIBLE_KEY)
+    this.panelSettingsVisibleSignal.set(storedPanelSettings !== 'false')
+
+    const storedPanelPlayers = this.storage.get(PANEL_PLAYERS_VISIBLE_KEY)
+    this.panelPlayersVisibleSignal.set(storedPanelPlayers !== 'false')
+
+    const storedPanelScoreboard = this.storage.get(PANEL_SCOREBOARD_VISIBLE_KEY)
+    this.panelScoreboardVisibleSignal.set(storedPanelScoreboard !== 'false')
+
+    const storedPanelLog = this.storage.get(PANEL_LOG_VISIBLE_KEY)
+    this.panelLogVisibleSignal.set(storedPanelLog !== 'false')
+
+    const storedLogShowTimestamp = this.storage.get(LOG_SHOW_TIMESTAMP_KEY)
+    this.logShowTimestampSignal.set(storedLogShowTimestamp !== 'false')
+
+    const storedScoreboardA11yMode = this.storage.get(SCOREBOARD_A11Y_MODE_KEY)
+    this.scoreboardA11yModeSignal.set(storedScoreboardA11yMode !== 'false')
   }
 
   setPlayerName(name: string) {
@@ -130,6 +174,36 @@ export class SessionService {
   setBingEnabled(enabled: boolean) {
     this.bingEnabledSignal.set(enabled)
     this.storage.set(BING_ENABLED_KEY, String(enabled))
+  }
+
+  setPanelSettingsVisible(visible: boolean) {
+    this.panelSettingsVisibleSignal.set(visible)
+    this.storage.set(PANEL_SETTINGS_VISIBLE_KEY, String(visible))
+  }
+
+  setPanelPlayersVisible(visible: boolean) {
+    this.panelPlayersVisibleSignal.set(visible)
+    this.storage.set(PANEL_PLAYERS_VISIBLE_KEY, String(visible))
+  }
+
+  setPanelScoreboardVisible(visible: boolean) {
+    this.panelScoreboardVisibleSignal.set(visible)
+    this.storage.set(PANEL_SCOREBOARD_VISIBLE_KEY, String(visible))
+  }
+
+  setPanelLogVisible(visible: boolean) {
+    this.panelLogVisibleSignal.set(visible)
+    this.storage.set(PANEL_LOG_VISIBLE_KEY, String(visible))
+  }
+
+  setLogShowTimestamp(show: boolean) {
+    this.logShowTimestampSignal.set(show)
+    this.storage.set(LOG_SHOW_TIMESTAMP_KEY, String(show))
+  }
+
+  setScoreboardA11yMode(enabled: boolean) {
+    this.scoreboardA11yModeSignal.set(enabled)
+    this.storage.set(SCOREBOARD_A11Y_MODE_KEY, String(enabled))
   }
 
   setLobbyConfig(config: GameConfig) {

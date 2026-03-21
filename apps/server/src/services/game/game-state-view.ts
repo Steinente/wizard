@@ -43,7 +43,10 @@ const toRoundPlayerView = (
   hand: player.playerId === selfPlayerId ? player.hand : [],
   handCount: player.hand.length,
   tricksWon: player.tricksWon,
-  prediction: toPredictionView(player.prediction, player.playerId === selfPlayerId),
+  prediction: toPredictionView(
+    player.prediction,
+    player.playerId === selfPlayerId,
+  ),
   pendingCloudAdjustment: player.pendingCloudAdjustment ?? false,
 })
 

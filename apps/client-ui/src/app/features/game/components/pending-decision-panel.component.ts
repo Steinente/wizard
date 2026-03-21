@@ -1,5 +1,9 @@
 import { Component, Input } from '@angular/core'
-import { calculateRoundScore, type PendingDecision, type Suit } from '@wizard/shared'
+import {
+  calculateRoundScore,
+  type PendingDecision,
+  type Suit,
+} from '@wizard/shared'
 import type { TranslationKey } from '../../../core/i18n/translations'
 import { TPipe } from '../../../shared/pipes/t.pipe'
 import {
@@ -49,56 +53,62 @@ const NO_TRUMP_SPECIALS = new Set([
         } @else {
           @switch (decision.type) {
             @case ('werewolfTrumpSwap') {
-            <p class="muted">{{ 'chooseWerewolfTrump' | t }}</p>
-            <div class="row" style="flex-wrap: wrap;">
-              @for (suit of suits; track suit) {
+              <p class="muted">{{ 'chooseWerewolfTrump' | t }}</p>
+              <div class="row" style="flex-wrap: wrap;">
+                @for (suit of suits; track suit) {
+                  <button
+                    class="btn"
+                    [style.background]="getSuitColor(suit)"
+                    [style.color]="getTextColorForSuit(suit)"
+                    (click)="pickWerewolfTrump(suit)"
+                  >
+                    {{ suitKey(suit) | t }}
+                  </button>
+                }
                 <button
-                  class="btn"
-                  [style.background]="getSuitColor(suit)"
-                  [style.color]="getTextColorForSuit(suit)"
-                  (click)="pickWerewolfTrump(suit)"
+                  class="btn btn-outline"
+                  (click)="pickWerewolfTrump(null)"
                 >
-                  {{ suitKey(suit) | t }}
+                  {{ 'noTrump' | t }}
                 </button>
-              }
-              <button class="btn btn-outline" (click)="pickWerewolfTrump(null)">
-                {{ 'noTrump' | t }}
-              </button>
-            </div>
+              </div>
             }
 
             @case ('shapeShifterChoice') {
-            <div class="row">
-              <button class="btn" (click)="pickShapeShifter('jester')">
-                {{ 'asJester' | t }}
-              </button>
-              <button
-                class="btn btn-primary"
-                (click)="pickShapeShifter('wizard')"
-              >
-                {{ 'asWizard' | t }}
-              </button>
-            </div>
+              <div class="row">
+                <button class="btn" (click)="pickShapeShifter('jester')">
+                  {{ 'asJester' | t }}
+                </button>
+                <button
+                  class="btn btn-primary"
+                  (click)="pickShapeShifter('wizard')"
+                >
+                  {{ 'asWizard' | t }}
+                </button>
+              </div>
             }
 
             @case ('cloudPredictionAdjustment') {
-            <p class="muted">{{ 'chooseCloudAdjustment' | t }}</p>
-            <div class="row">
-              <button class="btn" (click)="pickCloudAdjustment(-1)">
-                {{ cloudAdjustmentButtonLabel(-1) }}
-              </button>
-              <button class="btn btn-primary" (click)="pickCloudAdjustment(1)">
-                {{ cloudAdjustmentButtonLabel(1) }}
-              </button>
-            </div>
+              <p class="muted">{{ 'chooseCloudAdjustment' | t }}</p>
+              <div class="row">
+                <button class="btn" (click)="pickCloudAdjustment(-1)">
+                  {{ cloudAdjustmentButtonLabel(-1) }}
+                </button>
+                <button
+                  class="btn btn-primary"
+                  (click)="pickCloudAdjustment(1)"
+                >
+                  {{ cloudAdjustmentButtonLabel(1) }}
+                </button>
+              </div>
             }
 
             @case ('jugglerPassCard') {
-            <p class="muted">{{ 'choosePassCard' | t }}</p>
+              <p class="muted">{{ 'choosePassCard' | t }}</p>
             }
 
             @default {
-            <p class="muted">{{ 'unsupportedDecision' | t }}</p>
+              <p class="muted">{{ 'unsupportedDecision' | t }}</p>
             }
           }
         }

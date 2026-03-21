@@ -1,2 +1,2 @@
-export {};
+export {}
 //# sourceMappingURL=game-actions.js.map

@@ -9,5 +9,4 @@ export const SUIT_BACKGROUNDS: Record<Suit, string> = {
   blue: 'var(--card-blue)',
 }
 
-export const getSuitBackground = (suit: Suit): string =>
-  SUIT_BACKGROUNDS[suit]
+export const getSuitBackground = (suit: Suit): string => SUIT_BACKGROUNDS[suit]

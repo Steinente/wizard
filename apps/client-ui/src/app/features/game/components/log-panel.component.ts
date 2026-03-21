@@ -31,7 +31,9 @@ import { normalizeLogParams } from '../utils/log-params.util'
               <div class="log-message">
                 {{ format(entry.messageKey, entry.messageParams) }}
               </div>
-              <div class="log-time">{{ formatDate(entry.createdAt) }}</div>
+              @if (showTimestamp) {
+                <div class="log-time">{{ formatDate(entry.createdAt) }}</div>
+              }
             </div>
           }
         </div>
@@ -65,6 +67,7 @@ export class LogPanelComponent implements OnChanges {
 
   @Input({ required: true }) logs: WizardGameViewState['logs'] = []
   @Input({ required: true }) players: WizardGameViewState['players'] = []
+  @Input({ required: true }) showTimestamp = true
 
   private isAtBottom = true
 

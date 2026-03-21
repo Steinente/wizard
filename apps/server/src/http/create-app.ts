@@ -7,7 +7,7 @@ export const createApp = (): Express => {
 
   app.use(
     cors({
-      origin: [env.CLIENT_UI_URL, env.CLIENT_A11Y_URL],
+      origin: env.CLIENT_UI_URL,
       credentials: true,
     }),
   )

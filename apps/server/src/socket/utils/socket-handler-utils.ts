@@ -5,10 +5,7 @@ import { LobbyService } from '../../services/lobby-service.js'
 import { SocketSessionStore } from '../socket-session-store.js'
 import type { WizardSocket } from '../types.js'
 
-export type WizardIoServer = Server<
-  ClientToServerEvents,
-  ServerToClientEvents
->
+export type WizardIoServer = Server<ClientToServerEvents, ServerToClientEvents>
 
 export type SocketHandlerContext = {
   io: WizardIoServer

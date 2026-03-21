@@ -13,7 +13,12 @@ import { TPipe } from '../../../shared/pipes/t.pipe'
         style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px;"
       >
         <h3 style="margin: 0;">{{ 'yourHand' | t }}</h3>
-        <button class="btn" [class.btn-active]="isSortActive" type="button" (click)="sortCards()">
+        <button
+          class="btn"
+          [class.btn-active]="isSortActive"
+          type="button"
+          (click)="sortCards()"
+        >
           {{ 'sortHand' | t }}
         </button>
       </div>

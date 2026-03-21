@@ -1,4 +1,7 @@
-import { setInGameSchema, setReadLogEnabledSchema } from '../schemas/player-schemas.js'
+import {
+  setInGameSchema,
+  setReadLogEnabledSchema,
+} from '../schemas/player-schemas.js'
 import {
   emitStateForCode,
   normalizeRoomCode,

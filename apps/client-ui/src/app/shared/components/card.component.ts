@@ -1,4 +1,10 @@
-import { ChangeDetectorRef, Component, ElementRef, Input, inject } from '@angular/core'
+import {
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  Input,
+  inject,
+} from '@angular/core'
 import type { Card, ResolvedCardRuntimeEffect } from '@wizard/shared'
 import { I18nService } from '../../core/i18n/i18n.service'
 import type { TranslationKey } from '../../core/i18n/translations'
@@ -236,7 +242,8 @@ import { SUIT_BACKGROUNDS } from '../utils/suit-colors.util'
 })
 export class CardComponent {
   private readonly i18n = inject(I18nService)
-  private readonly hostElement = inject<ElementRef<HTMLButtonElement>>(ElementRef)
+  private readonly hostElement =
+    inject<ElementRef<HTMLButtonElement>>(ElementRef)
   private readonly cdr = inject(ChangeDetectorRef)
   private longPressTimerId: ReturnType<typeof setTimeout> | null = null
   private hideInfoTimerId: ReturnType<typeof setTimeout> | null = null
@@ -399,14 +406,21 @@ export class CardComponent {
     this.cardInfoVisible = true
     this.clearHideInfoTimer()
     this.hideInfoTimerId = setTimeout(() => this.hideInfo(), 2600)
-    document.addEventListener('touchstart', this.dismissPopover, { capture: true })
-    window.addEventListener('scroll', this.dismissPopover, { capture: true, passive: true })
+    document.addEventListener('touchstart', this.dismissPopover, {
+      capture: true,
+    })
+    window.addEventListener('scroll', this.dismissPopover, {
+      capture: true,
+      passive: true,
+    })
   }
 
   private hideInfo() {
     this.clearHideInfoTimer()
     this.cardInfoVisible = false
-    document.removeEventListener('touchstart', this.dismissPopover, { capture: true })
+    document.removeEventListener('touchstart', this.dismissPopover, {
+      capture: true,
+    })
     window.removeEventListener('scroll', this.dismissPopover, { capture: true })
   }
 
@@ -437,7 +451,8 @@ export class CardComponent {
     const cardRect = this.hostElement.nativeElement.getBoundingClientRect()
     const centeredLeft = cardRect.width / 2 - tooltipWidth / 2
     const minLeft = viewportMargin - cardRect.left
-    const maxLeft = viewportWidth - viewportMargin - cardRect.left - tooltipWidth
+    const maxLeft =
+      viewportWidth - viewportMargin - cardRect.left - tooltipWidth
 
     this.cardInfoWidthPx = tooltipWidth
     this.cardInfoLeftPx = Math.min(Math.max(centeredLeft, minLeft), maxLeft)

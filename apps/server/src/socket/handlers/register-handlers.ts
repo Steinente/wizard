@@ -19,7 +19,13 @@ export const registerHandlers = (
 ) => {
   registerLobbyHandlers({ io, socket, lobbyService, gameService, sessionStore })
   registerGameHandlers({ io, socket, lobbyService, gameService, sessionStore })
-  registerPlayerHandlers({ io, socket, lobbyService, gameService, sessionStore })
+  registerPlayerHandlers({
+    io,
+    socket,
+    lobbyService,
+    gameService,
+    sessionStore,
+  })
 
   socket.on('disconnect', async () => {
     const session = sessionStore.get(socket.id)

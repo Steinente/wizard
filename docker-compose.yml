@@ -27,7 +27,6 @@ services:
       DATABASE_URL: ${DOCKER_DATABASE_URL:-postgresql://wizard:wizard@postgres:5432/wizard}
       PORT: ${DOCKER_SERVER_PORT:-3000}
       CLIENT_UI_URL: ${DOCKER_CLIENT_UI_URL:-http://localhost:8080}
-      CLIENT_A11Y_URL: ${DOCKER_CLIENT_A11Y_URL:-http://localhost:8080}
       HOST_DISCONNECT_TIMEOUT_MS: ${DOCKER_HOST_DISCONNECT_TIMEOUT_MS:-600000}
     depends_on:
       postgres:

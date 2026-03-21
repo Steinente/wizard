@@ -23,9 +23,7 @@ const CARD_SPECIAL_MAP: Record<string, TranslationKey> = {
   fairy: 'card.special.fairy',
 }
 
-const isSuit = (
-  value: string,
-): value is 'red' | 'yellow' | 'green' | 'blue' =>
+const isSuit = (value: string): value is 'red' | 'yellow' | 'green' | 'blue' =>
   value === 'red' || value === 'yellow' || value === 'green' || value === 'blue'
 
 export const translateCardLabel = (value: string, t: TranslateFn): string => {
@@ -83,10 +81,7 @@ export const replacePlayerReferences = (
   return next
 }
 
-export const translateSuitValue = (
-  value: string,
-  t: TranslateFn,
-): string => {
+export const translateSuitValue = (value: string, t: TranslateFn): string => {
   const lower = value.toLowerCase()
 
   if (isSuit(lower)) {
@@ -120,7 +115,10 @@ export const normalizeLogParams = (
     next.cardLabel = translateCardLabel(next.cardLabel, t)
   }
 
-  if (options?.includeSwappedCardLabel && typeof next.swappedCardLabel === 'string') {
+  if (
+    options?.includeSwappedCardLabel &&
+    typeof next.swappedCardLabel === 'string'
+  ) {
     next.swappedCardLabel = translateCardLabel(next.swappedCardLabel, t)
   }
 

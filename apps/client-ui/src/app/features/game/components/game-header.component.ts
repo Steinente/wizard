@@ -1,4 +1,4 @@
-import { Component, Input, inject } from '@angular/core'
+import { Component, EventEmitter, Input, Output, inject } from '@angular/core'
 import { Router } from '@angular/router'
 import type { WizardGameViewState } from '@wizard/shared'
 import { I18nService } from '../../../core/i18n/i18n.service'
@@ -6,6 +6,7 @@ import type { TranslationKey } from '../../../core/i18n/translations'
 import { GameFacadeService } from '../../../core/services/game-facade.service'
 import { TPipe } from '../../../shared/pipes/t.pipe'
 import { SUIT_BACKGROUNDS } from '../../../shared/utils/suit-colors.util'
+import { PanelSettingsComponent } from './panel-settings.component'
 import {
   translateCardLabel,
   translateSuitValue,
@@ -22,7 +23,7 @@ const SPECIAL_TRUMP_REASON_CARDS = new Set([
 @Component({
   selector: 'wiz-game-header',
   standalone: true,
-  imports: [TPipe],
+  imports: [TPipe, PanelSettingsComponent],
   template: `
     <div class="panel">
       <div class="spread">
@@ -60,6 +61,16 @@ const SPECIAL_TRUMP_REASON_CARDS = new Set([
           >
             {{ 'spectators' | t }} {{ spectatorCount }}
           </span>
+          <wiz-panel-settings
+            [settingsVisible]="settingsVisible"
+            [playersVisible]="playersVisible"
+            [scoreboardVisible]="scoreboardVisible"
+            [logVisible]="logVisible"
+            (settingsChange)="panelSettingsChange.emit($event)"
+            (playersChange)="panelPlayersChange.emit($event)"
+            (scoreboardChange)="panelScoreboardChange.emit($event)"
+            (logChange)="panelLogChange.emit($event)"
+          />
           <button class="btn" type="button" (click)="confirmLeaveGame()">
             {{ 'home' | t }}
           </button>
@@ -93,6 +104,15 @@ export class GameHeaderComponent {
   showSpectators = false
 
   @Input({ required: true }) state!: WizardGameViewState
+  @Input({ required: true }) settingsVisible = true
+  @Input({ required: true }) playersVisible = true
+  @Input({ required: true }) scoreboardVisible = true
+  @Input({ required: true }) logVisible = true
+
+  @Output() readonly panelSettingsChange = new EventEmitter<boolean>()
+  @Output() readonly panelPlayersChange = new EventEmitter<boolean>()
+  @Output() readonly panelScoreboardChange = new EventEmitter<boolean>()
+  @Output() readonly panelLogChange = new EventEmitter<boolean>()
 
   get translatedPhase() {
     return this.i18n.t(`phase_${this.state.phase}` as TranslationKey)

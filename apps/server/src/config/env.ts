@@ -8,7 +8,6 @@ const envSchema = z.object({
   DATABASE_URL: z.string().min(1),
   PORT: z.coerce.number().int().positive().default(3000),
   CLIENT_UI_URL: z.string().url(),
-  CLIENT_A11Y_URL: z.string().url(),
   LOBBY_INACTIVITY_TIMEOUT_MS: z.coerce
     .number()
     .int()

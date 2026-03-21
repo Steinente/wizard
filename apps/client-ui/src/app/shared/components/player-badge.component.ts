@@ -8,6 +8,7 @@ import { TPipe } from '../pipes/t.pipe'
   template: `
     <div
       class="panel"
+      [class.compact]="compact"
       [style.outline]="active ? '3px solid #d4a72c' : '1px solid var(--border)'"
       [style.outlineOffset]="active ? '0' : '0'"
     >
@@ -63,6 +64,24 @@ import { TPipe } from '../pipes/t.pipe'
         color: #d4a72c;
         font-weight: 700;
       }
+
+      .panel.compact {
+        padding: 10px;
+      }
+
+      .panel.compact .name-wrap {
+        font-size: 13px;
+      }
+
+      .panel.compact .row {
+        gap: 8px;
+        margin-top: 6px !important;
+      }
+
+      .panel.compact .status-pill,
+      .panel.compact .muted {
+        font-size: 11px;
+      }
     `,
   ],
 })
@@ -75,6 +94,7 @@ export class PlayerBadgeComponent {
   @Input() active = false
   @Input() showCloudIndicator = false
   @Input() showPredictionStartIndicator = false
+  @Input() compact = false
 
   get statusClass() {
     return this.presence === 'online'

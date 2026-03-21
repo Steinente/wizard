@@ -10,16 +10,18 @@ import { GameFacadeService } from '../../core/services/game-facade.service'
 import { SessionService } from '../../core/services/session.service'
 import { AppStore } from '../../core/state/app.store'
 import { TPipe } from '../../shared/pipes/t.pipe'
-import { GameControlsPanelComponent } from './components/game-controls-panel.component'
-import { GameFinishedPanelComponent } from './components/game-finished-panel.component'
-import { GameHeaderComponent } from './components/game-header.component'
-import { HandAreaComponent } from './components/hand-area.component'
-import { LogPanelComponent } from './components/log-panel.component'
-import { PendingDecisionPanelComponent } from './components/pending-decision-panel.component'
-import { PlayerListPanelComponent } from './components/player-list-panel.component'
-import { PredictionPanelComponent } from './components/prediction-panel.component'
-import { ScoreboardPanelComponent } from './components/scoreboard-panel.component'
-import { TrickAreaComponent } from './components/trick-area.component'
+import {
+  GameFinishedPanelComponent,
+  GameHeaderComponent,
+  GameSettingsPanelComponent,
+  HandAreaComponent,
+  LogPanelComponent,
+  PendingDecisionPanelComponent,
+  PlayerListPanelComponent,
+  PredictionPanelComponent,
+  ScoreboardPanelComponent,
+  TrickAreaComponent,
+} from './components'
 
 const SPECIAL_SORT_PRIORITY: Record<string, number> = {
   dragon: 90,
@@ -54,7 +56,7 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
     LogPanelComponent,
     PredictionPanelComponent,
     PendingDecisionPanelComponent,
-    GameControlsPanelComponent,
+    GameSettingsPanelComponent,
   ],
   template: `
     <div class="page-shell">
@@ -62,7 +64,17 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
         <div class="panel">{{ 'waitingForPlayers' | t }}</div>
       } @else {
         <div class="game-top">
-          <wiz-game-header [state]="store.gameState()!" />
+          <wiz-game-header
+            [state]="store.gameState()!"
+            [settingsVisible]="panelSettingsVisibleSignal()"
+            [playersVisible]="panelPlayersVisibleSignal()"
+            [scoreboardVisible]="panelScoreboardVisibleSignal()"
+            [logVisible]="panelLogVisibleSignal()"
+            (panelSettingsChange)="setPanelSettingsVisibleFn($event)"
+            (panelPlayersChange)="setPanelPlayersVisibleFn($event)"
+            (panelScoreboardChange)="setPanelScoreboardVisibleFn($event)"
+            (panelLogChange)="setPanelLogVisibleFn($event)"
+          />
         </div>
 
         @if (store.gameState()!.phase === 'finished') {
@@ -70,38 +82,55 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
             <wiz-game-finished-panel [state]="store.gameState()!" />
 
             <div class="game-column">
-              <wiz-scoreboard-panel [state]="store.gameState()!" />
+              <wiz-scoreboard-panel
+                [state]="store.gameState()!"
+                [a11yMode]="scoreboardA11yModeSignal()"
+              />
               <wiz-log-panel
                 [logs]="store.gameState()!.logs"
                 [players]="store.gameState()!.players"
+                [showTimestamp]="logShowTimestampSignal()"
               />
             </div>
           </div>
         } @else {
           <div class="game-layout">
-            <div class="game-block game-controls-block">
-              <wiz-game-controls-panel
-                [state]="store.gameState()!"
-                [audioEnabled]="readLogEnabledSignal()"
-                [audioVolume]="speechVolumeSignal()"
-                [audioSpeed]="speechSpeedSignal()"
-                [bingEnabled]="bingEnabledSignal()"
-                [isHost]="isHost()"
-                [onToggleAudio]="toggleReadLogFn"
-                [onBingToggle]="toggleBingFn"
-                [onAudioVolumeChange]="setSpeechVolumeFn"
-                [onAudioSpeedChange]="setSpeechSpeedFn"
-                [onEndLobby]="endLobbyFn"
-              />
-            </div>
+            @if (panelSettingsVisibleSignal()) {
+              <div class="game-block game-settings-block">
+                <wiz-game-settings-panel
+                  [state]="store.gameState()!"
+                  [audioEnabled]="readLogEnabledSignal()"
+                  [audioVolume]="speechVolumeSignal()"
+                  [audioSpeed]="speechSpeedSignal()"
+                  [bingEnabled]="bingEnabledSignal()"
+                  [isHost]="isHost()"
+                  [showTimestamp]="logShowTimestampSignal()"
+                  [scoreboardA11yMode]="scoreboardA11yModeSignal()"
+                  [onToggleAudio]="toggleReadLogFn"
+                  [onBingToggle]="toggleBingFn"
+                  [onAudioVolumeChange]="setSpeechVolumeFn"
+                  [onAudioSpeedChange]="setSpeechSpeedFn"
+                  [onEndLobby]="endLobbyFn"
+                  [onShowTimestampChange]="setLogShowTimestampFn"
+                  [onScoreboardA11yModeChange]="setScoreboardA11yModeFn"
+                />
+              </div>
+            }
 
-            <div class="game-block game-players-block">
-              <wiz-player-list-panel [state]="store.gameState()!" />
-            </div>
+            @if (panelPlayersVisibleSignal()) {
+              <div class="game-block game-players-block">
+                <wiz-player-list-panel [state]="store.gameState()!" />
+              </div>
+            }
 
-            <div class="game-block game-scoreboard-block">
-              <wiz-scoreboard-panel [state]="store.gameState()!" />
-            </div>
+            @if (panelScoreboardVisibleSignal()) {
+              <div class="game-block game-scoreboard-block">
+                <wiz-scoreboard-panel
+                  [state]="store.gameState()!"
+                  [a11yMode]="scoreboardA11yModeSignal()"
+                />
+              </div>
+            }
 
             <div class="game-block game-trick-block">
               <wiz-trick-area
@@ -161,12 +190,15 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
               }
             </div>
 
-            <div class="game-block game-log-block">
-              <wiz-log-panel
-                [logs]="store.gameState()!.logs"
-                [players]="store.gameState()!.players"
-              />
-            </div>
+            @if (panelLogVisibleSignal()) {
+              <div class="game-block game-log-block">
+                <wiz-log-panel
+                  [logs]="store.gameState()!.logs"
+                  [players]="store.gameState()!.players"
+                  [showTimestamp]="logShowTimestampSignal()"
+                />
+              </div>
+            }
           </div>
         }
       }
@@ -186,8 +218,8 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
         min-width: 0;
       }
 
-      .game-controls-block {
-        grid-area: controls;
+      .game-settings-block {
+        grid-area: settings;
       }
 
       .game-players-block {
@@ -215,7 +247,7 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
       .game-layout {
         grid-template-columns: 320px minmax(0, 1fr) 320px;
         grid-template-areas:
-          'controls trick scoreboard'
+          'settings trick scoreboard'
           'players interaction log';
       }
 
@@ -227,7 +259,7 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
         .game-layout {
           grid-template-columns: 1fr;
           grid-template-areas:
-            'controls'
+            'settings'
             'scoreboard'
             'players'
             'trick'
@@ -256,6 +288,24 @@ export class GamePageComponent {
   readonly speechVolumeSignal = computed(() => this.session.speechVolume())
   readonly speechSpeedSignal = computed(() => this.session.speechRate())
   readonly bingEnabledSignal = computed(() => this.session.bingEnabled())
+  readonly panelSettingsVisibleSignal = computed(() =>
+    this.session.panelSettingsVisible(),
+  )
+  readonly panelPlayersVisibleSignal = computed(() =>
+    this.session.panelPlayersVisible(),
+  )
+  readonly panelScoreboardVisibleSignal = computed(() =>
+    this.session.panelScoreboardVisible(),
+  )
+  readonly panelLogVisibleSignal = computed(() =>
+    this.session.panelLogVisible(),
+  )
+  readonly logShowTimestampSignal = computed(() =>
+    this.session.logShowTimestamp(),
+  )
+  readonly scoreboardA11yModeSignal = computed(() =>
+    this.session.scoreboardA11yMode(),
+  )
 
   readonly playCardFn = (card: Card) => this.playCard(card)
   readonly canPlayCardFn = (card: Card) => this.canPlayCard(card)
@@ -278,6 +328,18 @@ export class GamePageComponent {
   readonly setSpeechVolumeFn = (volume: number) => this.setAudioVolume(volume)
   readonly setSpeechSpeedFn = (speed: number) => this.setAudioSpeed(speed)
   readonly endLobbyFn = () => this.endLobby()
+  readonly setPanelSettingsVisibleFn = (v: boolean) =>
+    this.session.setPanelSettingsVisible(v)
+  readonly setPanelPlayersVisibleFn = (v: boolean) =>
+    this.session.setPanelPlayersVisible(v)
+  readonly setPanelScoreboardVisibleFn = (v: boolean) =>
+    this.session.setPanelScoreboardVisible(v)
+  readonly setPanelLogVisibleFn = (v: boolean) =>
+    this.session.setPanelLogVisible(v)
+  readonly setLogShowTimestampFn = (v: boolean) =>
+    this.session.setLogShowTimestamp(v)
+  readonly setScoreboardA11yModeFn = (v: boolean) =>
+    this.session.setScoreboardA11yMode(v)
 
   constructor(
     private readonly appStore: AppStore,

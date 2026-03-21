@@ -83,7 +83,7 @@ export const mapLobbyToSummary = (lobby: LobbyWithPlayers): LobbySummary => {
           : lobby.status === 'FINISHED'
             ? 'finished'
             : 'closed',
-      hasPassword: false,
+    hasPassword: false,
     config,
     players,
     createdAt: lobby.createdAt.toISOString(),

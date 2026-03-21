@@ -137,7 +137,9 @@ export const registerGameHandlers = ({
     } catch (error) {
       emitError(
         socket,
-        error instanceof Error ? error.message : 'error.jugglerResolutionFailed',
+        error instanceof Error
+          ? error.message
+          : 'error.jugglerResolutionFailed',
       )
     }
   })

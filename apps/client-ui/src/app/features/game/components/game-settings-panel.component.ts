@@ -12,12 +12,12 @@ import {
 import { TPipe } from '../../../shared/pipes/t.pipe'
 
 @Component({
-  selector: 'wiz-game-controls-panel',
+  selector: 'wiz-game-settings-panel',
   standalone: true,
   imports: [FormsModule, TPipe],
   template: `
-    <div class="panel">
-      <h3 style="margin-top: 0;">{{ 'controls' | t }}</h3>
+    <div class="panel settings-panel">
+      <h3 style="margin-top: 0;">{{ 'settings' | t }}</h3>
 
       <div class="row">
         <label class="row">
@@ -77,9 +77,40 @@ import { TPipe } from '../../../shared/pipes/t.pipe'
         />
       </div>
 
+      <div class="row" style="margin-top: 12px;">
+        <label class="row">
+          <input
+            type="checkbox"
+            [ngModel]="showTimestamp"
+            (ngModelChange)="changeShowTimestamp($event)"
+          />
+          <span>{{ 'logShowTimestamp' | t }}</span>
+        </label>
+      </div>
+
+      <div class="row" style="margin-top: 12px;">
+        <label class="row">
+          <input
+            type="checkbox"
+            [ngModel]="scoreboardA11yMode"
+            (ngModelChange)="changeScoreboardA11yMode($event)"
+          />
+          <span>
+            {{
+              scoreboardA11yMode
+                ? ('a11yScoreboardModeOn' | t)
+                : ('a11yScoreboardModeOff' | t)
+            }}
+          </span>
+        </label>
+      </div>
+
       @if (isHost && !confirmingEnd) {
         <div style="margin-top: 12px;">
-          <button class="btn btn-danger" (click)="confirmingEnd = true">
+          <button
+            class="btn btn-danger compact-btn"
+            (click)="confirmingEnd = true"
+          >
             {{ 'closeLobby' | t }}
           </button>
         </div>
@@ -87,18 +118,46 @@ import { TPipe } from '../../../shared/pipes/t.pipe'
 
       @if (isHost && confirmingEnd) {
         <div style="margin-top: 12px;" class="row">
-          <button class="btn btn-danger" (click)="endLobby()">
+          <button class="btn btn-danger compact-btn" (click)="endLobby()">
             {{ 'confirmCloseLobby' | t }}
           </button>
-          <button class="btn" (click)="confirmingEnd = false">
+          <button class="btn compact-btn" (click)="confirmingEnd = false">
             {{ 'cancel' | t }}
           </button>
         </div>
       }
     </div>
   `,
+  styles: [
+    `
+      .settings-panel {
+        padding: 10px;
+      }
+
+      .settings-panel .row {
+        gap: 8px;
+      }
+
+      .settings-panel label,
+      .settings-panel span,
+      .settings-panel .label {
+        font-size: 12px;
+        line-height: 1.2;
+      }
+
+      .settings-panel .input {
+        padding: 6px 8px;
+      }
+
+      .compact-btn {
+        padding: 6px 10px;
+        border-radius: 8px;
+        font-size: 12px;
+      }
+    `,
+  ],
 })
-export class GameControlsPanelComponent {
+export class GameSettingsPanelComponent {
   readonly speechVolumeMin = SPEECH_VOLUME_MIN
   readonly speechVolumeMax = SPEECH_VOLUME_MAX
   readonly speechVolumeStep = SPEECH_VOLUME_STEP
@@ -117,6 +176,12 @@ export class GameControlsPanelComponent {
   @Input({ required: true }) onAudioVolumeChange!: (volume: number) => void
   @Input({ required: true }) onAudioSpeedChange!: (speed: number) => void
   @Input({ required: true }) onEndLobby!: () => void
+  @Input({ required: true }) showTimestamp = true
+  @Input({ required: true }) onShowTimestampChange!: (show: boolean) => void
+  @Input({ required: true }) scoreboardA11yMode = true
+  @Input({ required: true }) onScoreboardA11yModeChange!: (
+    enabled: boolean,
+  ) => void
 
   confirmingEnd = false
 
@@ -134,6 +199,14 @@ export class GameControlsPanelComponent {
 
   changeAudioSpeed(value: number | string) {
     this.onAudioSpeedChange(Number(value))
+  }
+
+  changeShowTimestamp(show: boolean) {
+    this.onShowTimestampChange(show)
+  }
+
+  changeScoreboardA11yMode(enabled: boolean) {
+    this.onScoreboardA11yModeChange(enabled)
   }
 
   volumePercent() {

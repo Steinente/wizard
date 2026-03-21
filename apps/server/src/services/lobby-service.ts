@@ -104,7 +104,9 @@ const getLastKnownHostedConfig = async (
           : 'none',
     readLogEnabledByDefault: previousLobby.readLogEnabledByDefault,
     languageDefault: previousLobby.languageDefault === 'de' ? 'de' : 'en',
-    includedSpecialCards: parseIncludedSpecialCards(previousLobby.includedSpecialCards),
+    includedSpecialCards: parseIncludedSpecialCards(
+      previousLobby.includedSpecialCards,
+    ),
   }
 }
 
@@ -282,7 +284,9 @@ export class LobbyService {
         ),
         readLogEnabledByDefault: mergedConfig.readLogEnabledByDefault,
         languageDefault: mergedConfig.languageDefault,
-        includedSpecialCards: serializeIncludedSpecialCards(mergedConfig.includedSpecialCards),
+        includedSpecialCards: serializeIncludedSpecialCards(
+          mergedConfig.includedSpecialCards,
+        ),
         players: {
           create: {
             name: input.playerName.trim(),

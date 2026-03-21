@@ -1,10 +1,10 @@
 export {
   applyRoundStartState,
   buildInitialState,
-  finishRoundAndAdvance
+  finishRoundAndAdvance,
 } from './round-lifecycle.js'
 
 export {
   continueOrResolveCurrentTrick,
-  resolveCompletedTrick
+  resolveCompletedTrick,
 } from './trick-lifecycle.js'

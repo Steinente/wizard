@@ -100,7 +100,6 @@ Die `docker-compose.yml` nutzt sinnvolle Defaults. Du kannst Werte per Shell-Umg
 Verwende bewusst die `DOCKER_`-Varianten, damit es keine Kollision mit deiner bestehenden App-`.env` gibt:
 
 - `DOCKER_CLIENT_UI_URL` (Default: `http://localhost:8080`)
-- `DOCKER_CLIENT_A11Y_URL` (Default: `http://localhost:8080`)
 - `DOCKER_SERVER_PORT` (Default: `3000`)
 - `DOCKER_DATABASE_URL` (Default: `postgresql://wizard:wizard@postgres:5432/wizard`)
 - `DOCKER_POSTGRES_USER` / `DOCKER_POSTGRES_PASSWORD` / `DOCKER_POSTGRES_DB`
@@ -109,7 +108,7 @@ Verwende bewusst die `DOCKER_`-Varianten, damit es keine Kollision mit deiner be
 Beispiel für LAN:
 
 ```bash
-DOCKER_CLIENT_UI_URL=http://192.168.178.50:8080 DOCKER_CLIENT_A11Y_URL=http://192.168.178.50:8080 docker compose up -d --build
+DOCKER_CLIENT_UI_URL=http://192.168.178.50:8080 docker compose up -d --build
 ```
 
 ### Hinweise zum Docker-Betrieb

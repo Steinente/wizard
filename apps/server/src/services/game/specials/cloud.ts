@@ -10,7 +10,9 @@ interface ResolveCloudContext {
   playerId: string
   cardId: string
   suit: Suit
-  registerResolvedEffect: (effect: WizardGameState['resolvedCardEffects'][number]) => void
+  registerResolvedEffect: (
+    effect: WizardGameState['resolvedCardEffects'][number],
+  ) => void
   removeCardFromHand: (playerId: string, cardId: string) => Card
   appendCardToCurrentTrick: (playerId: string, card: Card) => void
 }
@@ -122,4 +124,3 @@ export const resolveCloudAdjustmentDecision = async (
 
   await context.finishRoundAndAdvance()
 }
-

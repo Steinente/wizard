@@ -11,36 +11,61 @@ import { TPipe } from '../../../shared/pipes/t.pipe'
       <h3 style="margin-top: 0;">{{ 'scoreboard' | t }}</h3>
 
       <div class="panel-scroll panel-scroll-compact score-scroll">
-        <table class="score-table">
-          <thead>
-            <tr>
-              <th></th>
-              @for (player of orderedPlayers(); track player.playerId) {
-                <th colspan="2">{{ player.name }}</th>
-              }
-            </tr>
-          </thead>
-
-          <tbody>
-            @for (round of roundNumbers(); track round) {
+        @if (a11yMode) {
+          <ul class="rounds-list" [attr.aria-label]="'scoreboard' | t">
+            @for (round of playedRoundNumbers(); track round) {
+              <li class="round-item">
+                <div class="round-label">{{ 'round' | t }} {{ round }}</div>
+                <ul class="players-list">
+                  @for (player of orderedPlayers(); track player.playerId) {
+                    <li class="player-score-item">
+                      <span class="player-name-score">{{ player.name }}:</span>
+                      <span class="bid-score">
+                        {{ 'bid' | t }}:
+                        {{ bidDisplayValue(player.playerId, round) }}
+                      </span>
+                      <span class="points-score">
+                        {{ 'points' | t }}:
+                        {{ pointsValue(player.playerId, round) || '–' }}
+                      </span>
+                    </li>
+                  }
+                </ul>
+              </li>
+            }
+          </ul>
+        } @else {
+          <table class="score-table">
+            <thead>
               <tr>
-                <td>{{ round }}</td>
-
+                <th></th>
                 @for (player of orderedPlayers(); track player.playerId) {
-                  <td>{{ pointsValue(player.playerId, round) }}</td>
-                  <td>
-                    <div>{{ bidValue(player.playerId, round) }}</div>
-                    @if (bidAdjustment(player.playerId, round)) {
-                      <div class="muted" style="font-size: 10px;">
-                        {{ bidAdjustment(player.playerId, round) }}
-                      </div>
-                    }
-                  </td>
+                  <th colspan="2">{{ player.name }}</th>
                 }
               </tr>
-            }
-          </tbody>
-        </table>
+            </thead>
+
+            <tbody>
+              @for (round of roundNumbers(); track round) {
+                <tr>
+                  <td>{{ round }}</td>
+
+                  @for (player of orderedPlayers(); track player.playerId) {
+                    <td>{{ pointsValue(player.playerId, round) }}</td>
+                    <td>
+                      <div>{{ bidValue(player.playerId, round) }}</div>
+                      @if (bidAdjustment(player.playerId, round)) {
+                        <div class="muted" style="font-size: 10px;">
+                          {{ bidAdjustment(player.playerId, round) }}
+                        </div>
+                      }
+                    </td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
       </div>
     </div>
   `,
@@ -75,11 +100,65 @@ import { TPipe } from '../../../shared/pipes/t.pipe'
         background: #162033;
         z-index: 1;
       }
+
+      .rounds-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .round-item {
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        overflow: hidden;
+      }
+
+      .round-label {
+        background: #162033;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 4px 8px;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .players-list {
+        list-style: none;
+        margin: 0;
+        padding: 4px 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+      }
+
+      .player-score-item {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        font-size: 12px;
+        align-items: baseline;
+      }
+
+      .player-name-score {
+        font-weight: 600;
+        flex-shrink: 0;
+      }
+
+      .bid-score,
+      .points-score {
+        color: var(--muted);
+        white-space: nowrap;
+      }
     `,
   ],
 })
 export class ScoreboardPanelComponent {
   @Input({ required: true }) state!: WizardGameViewState
+  @Input({ required: true }) a11yMode = true
 
   orderedPlayers() {
     return [...this.state.players].sort((a, b) => a.seatIndex - b.seatIndex)
@@ -87,6 +166,14 @@ export class ScoreboardPanelComponent {
 
   roundNumbers() {
     return Array.from({ length: this.state.maxRounds }, (_, index) => index + 1)
+  }
+
+  playedRoundNumbers() {
+    const maxRound =
+      this.state.phase === 'finished'
+        ? this.state.maxRounds
+        : (this.state.currentRound?.roundNumber ?? 0)
+    return Array.from({ length: maxRound }, (_, i) => i + 1)
   }
 
   private scoreEntry(playerId: string, round: number) {
@@ -147,5 +234,28 @@ export class ScoreboardPanelComponent {
     }
 
     return live > 0 ? '+1' : '-1'
+  }
+
+  bidDisplayValue(playerId: string, round: number) {
+    const saved = this.scoreEntry(playerId, round)
+
+    if (saved) {
+      const adj = saved.predictionAdjustment
+      return adj
+        ? `${saved.predicted} (${adj > 0 ? '+1' : '-1'})`
+        : String(saved.predicted)
+    }
+
+    const live = this.livePrediction(playerId, round)
+
+    if (!live || live.value === null) {
+      return '–'
+    }
+
+    const cloudDelta = live.cloudDelta ?? 0
+    const base = live.value - cloudDelta
+    return cloudDelta
+      ? `${base} (${cloudDelta > 0 ? '+1' : '-1'})`
+      : String(base)
   }
 }

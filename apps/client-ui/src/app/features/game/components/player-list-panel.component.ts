@@ -8,12 +8,13 @@ import { TPipe } from '../../../shared/pipes/t.pipe'
   standalone: true,
   imports: [PlayerBadgeComponent, TPipe],
   template: `
-    <div class="panel">
+    <div class="panel player-panel">
       <h3 style="margin-top: 0;">{{ 'players' | t }}</h3>
 
-      <div class="grid" style="gap: 12px;">
+      <div class="grid" style="gap: 8px;">
         @for (player of state.players; track player.playerId) {
           <wiz-player-badge
+            [compact]="true"
             [name]="
               player.name +
               (player.playerId === state.selfPlayerId
@@ -35,6 +36,13 @@ import { TPipe } from '../../../shared/pipes/t.pipe'
       </div>
     </div>
   `,
+  styles: [
+    `
+      .player-panel {
+        padding: 10px;
+      }
+    `,
+  ],
 })
 export class PlayerListPanelComponent {
   @Input({ required: true }) state!: WizardGameViewState

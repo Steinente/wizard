@@ -29,4 +29,3 @@ export * from './lib/rules/special-rules.js'
 
 export * from './lib/events/game-actions.js'
 export * from './lib/i18n/languages.js'
-

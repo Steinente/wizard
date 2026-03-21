@@ -41,7 +41,9 @@ export class TrickAreaComponent {
   }
 
   getPlayerName(playerId: string): string {
-    return this.players.find((player) => player.playerId === playerId)?.name ??
+    return (
+      this.players.find((player) => player.playerId === playerId)?.name ??
       playerId
+    )
   }
 }

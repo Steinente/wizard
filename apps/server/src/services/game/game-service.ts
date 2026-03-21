@@ -1,7 +1,4 @@
-import type {
-  PlayerPrediction,
-  Suit
-} from '@wizard/shared'
+import type { PlayerPrediction, Suit } from '@wizard/shared'
 import {
   getAllowedPredictionValues,
   isLegalPlay,

@@ -1,5 +1,9 @@
 import { Injectable, computed, signal } from '@angular/core'
-import type { GameConfig, LobbySummary, WizardGameViewState } from '@wizard/shared'
+import type {
+  GameConfig,
+  LobbySummary,
+  WizardGameViewState,
+} from '@wizard/shared'
 
 @Injectable({ providedIn: 'root' })
 export class AppStore {

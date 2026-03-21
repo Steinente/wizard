@@ -33,7 +33,7 @@ export const translations = {
     spectators: 'Spectators',
     noSpectators: 'No spectators',
     rules: 'Rules',
-    controls: 'Controls',
+    settings: 'Settings',
     back: 'Back',
     home: 'Home',
     confirmLeaveGame:
@@ -61,6 +61,10 @@ export const translations = {
     bingDisabled: 'Turn notification sound disabled',
     speechVolumeLabel: 'Volume',
     speechSpeedLabel: 'Speed',
+    panelSettingsLabel: 'Displayed panels',
+    logShowTimestamp: 'Show timestamps in log',
+    a11yScoreboardModeOn: 'Accessibility score view enabled',
+    a11yScoreboardModeOff: 'Accessibility score view disabled',
     tooltipPredictionStartOrder: 'Starts with the prediction',
     tooltipCloudAdjustmentPending: 'Cloud adjustment pending',
     kick: 'Kick',
@@ -105,7 +109,8 @@ export const translations = {
     openRestrictionInfo:
       'This setting is only available when Prediction visibility is set to Open predictions.',
     specialCardsLabel: 'Special cards',
-    specialCardsInfo: 'Click cards to enable or disable them for the game. Grayed-out cards are excluded.',
+    specialCardsInfo:
+      'Click cards to enable or disable them for the game. Grayed-out cards are excluded.',
     loading: 'Loading',
     self: 'You',
     host: 'Host',
@@ -282,7 +287,7 @@ export const translations = {
     spectators: 'Zuschauer',
     noSpectators: 'Keine Zuschauer',
     rules: 'Regeln',
-    controls: 'Steuerung',
+    settings: 'Einstellungen',
     back: 'Zurück',
     home: 'Startseite',
     confirmLeaveGame:
@@ -310,6 +315,10 @@ export const translations = {
     bingDisabled: 'Zugbenachrichtigung deaktiviert',
     speechVolumeLabel: 'Lautstärke',
     speechSpeedLabel: 'Geschwindigkeit',
+    panelSettingsLabel: 'Angezeigte Blöcke',
+    logShowTimestamp: 'Zeitstempel im Protokoll anzeigen',
+    a11yScoreboardModeOn: 'Barrierefreier Punktestand aktiv',
+    a11yScoreboardModeOff: 'Barrierefreier Punktestand deaktiviert',
     tooltipPredictionStartOrder: 'Startet mit der Ansage',
     tooltipCloudAdjustmentPending: 'Wolken-Anpassung ausstehend',
     kick: 'Rauswerfen',
@@ -354,7 +363,8 @@ export const translations = {
     openRestrictionInfo:
       'Diese Einstellung ist nur erlaubt, wenn der Ansagemodus auf Offene Ansagen steht.',
     specialCardsLabel: 'Sonderkarten',
-    specialCardsInfo: 'Karten anklicken, um sie für das Spiel zu aktivieren oder deaktivieren. Ausgegraute Karten sind ausgeschlossen.',
+    specialCardsInfo:
+      'Karten anklicken, um sie für das Spiel zu aktivieren oder deaktivieren. Ausgegraute Karten sind ausgeschlossen.',
     loading: 'Lädt',
     self: 'Du',
     host: 'Host',

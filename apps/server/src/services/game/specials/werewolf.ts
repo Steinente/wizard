@@ -5,7 +5,9 @@ interface ResolveWerewolfTrumpSwapContext {
   state: WizardGameState
   playerId: string
   suit: Suit | null
-  registerResolvedEffect: (effect: WizardGameState['resolvedCardEffects'][number]) => void
+  registerResolvedEffect: (
+    effect: WizardGameState['resolvedCardEffects'][number],
+  ) => void
 }
 
 export const resolveWerewolfTrumpSwapDecision = (
