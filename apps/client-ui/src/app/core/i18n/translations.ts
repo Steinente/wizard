@@ -72,7 +72,8 @@ export const translations = {
     logShowTimestamp: 'Show timestamps in log',
     a11yScoreboardModeOn: 'Accessibility score view enabled',
     a11yScoreboardModeOff: 'Accessibility score view disabled',
-    tooltipPredictionStartOrder: 'Starts with the prediction',
+    tooltipPredictionStartOrder:
+      'Starts with the prediction and leads the first trick',
     tooltipCloudAdjustmentPending: 'Cloud adjustment pending',
     kick: 'Kick',
     waitingForPlayers: 'Waiting for players',
@@ -337,7 +338,8 @@ export const translations = {
     logShowTimestamp: 'Zeitstempel im Protokoll anzeigen',
     a11yScoreboardModeOn: 'Barrierefreier Punktestand aktiv',
     a11yScoreboardModeOff: 'Barrierefreier Punktestand deaktiviert',
-    tooltipPredictionStartOrder: 'Startet mit der Ansage',
+    tooltipPredictionStartOrder:
+      'Startet mit der Ansage und legt im ersten Stich zuerst',
     tooltipCloudAdjustmentPending: 'Wolken-Anpassung ausstehend',
     kick: 'Rauswerfen',
     waitingForPlayers: 'Warten auf Spieler',
