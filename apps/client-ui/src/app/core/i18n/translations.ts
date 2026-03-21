@@ -73,7 +73,7 @@ export const translations = {
     a11yScoreboardModeOn: 'Accessibility score view enabled',
     a11yScoreboardModeOff: 'Accessibility score view disabled',
     tooltipPredictionStartOrder:
-      'Starts with the prediction and leads the first trick',
+      'Starts with the prediction and leads the trick',
     tooltipCloudAdjustmentPending: 'Cloud adjustment pending',
     kick: 'Kick',
     waitingForPlayers: 'Waiting for players',
@@ -339,7 +339,7 @@ export const translations = {
     a11yScoreboardModeOn: 'Barrierefreier Punktestand aktiv',
     a11yScoreboardModeOff: 'Barrierefreier Punktestand deaktiviert',
     tooltipPredictionStartOrder:
-      'Startet mit der Ansage und legt im ersten Stich zuerst',
+      'Startet mit der Ansage und legt im Stich zuerst',
     tooltipCloudAdjustmentPending: 'Wolken-Anpassung ausstehend',
     kick: 'Rauswerfen',
     waitingForPlayers: 'Warten auf Spieler',
