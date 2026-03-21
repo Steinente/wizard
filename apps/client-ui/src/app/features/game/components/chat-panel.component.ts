@@ -108,6 +108,8 @@ const QUICK_EMOTES = ['😀', '🎉', '👏', '😅', '🤔', '❤️']
 
       .chat-messages {
         display: grid;
+        align-content: start;
+        grid-auto-rows: max-content;
         gap: 8px;
         flex: 1;
         min-height: 0;
