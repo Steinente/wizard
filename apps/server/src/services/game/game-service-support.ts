@@ -221,6 +221,21 @@ export const getHypotheticalNextLeaderPlayerId = (
     resolvedEffects,
   )
 
+  const fairyPlay = filteredPlays.find(
+    (play) => play.card.type === 'special' && play.card.special === 'fairy',
+  )
+  const dragonPlay = filteredPlays.find(
+    (play) => play.card.type === 'special' && play.card.special === 'dragon',
+  )
+
+  if (fairyPlay && dragonPlay) {
+    return fairyPlay.playerId
+  }
+
+  if (!fairyPlay && dragonPlay) {
+    return dragonPlay.playerId
+  }
+
   return simulated.winnerPlayerId
 }
 

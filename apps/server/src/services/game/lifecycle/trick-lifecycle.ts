@@ -50,11 +50,34 @@ export async function resolveCompletedTrick(
 
   const trick = state.currentRound.currentTrick
 
-  const resolvedTrick = resolveTrickWinner(
+  let resolvedTrick = resolveTrickWinner(
     trick,
     state.currentRound.trumpSuit,
     state.resolvedCardEffects,
   )
+
+  if (!resolvedTrick.cancelledByBomb) {
+    const fairyPlay = resolvedTrick.plays.find(
+      (play) => play.card.type === 'special' && play.card.special === 'fairy',
+    )
+    const dragonPlay = resolvedTrick.plays.find(
+      (play) => play.card.type === 'special' && play.card.special === 'dragon',
+    )
+
+    if (fairyPlay && dragonPlay) {
+      resolvedTrick = {
+        ...resolvedTrick,
+        winnerPlayerId: fairyPlay.playerId,
+        winningCard: fairyPlay.card,
+      }
+    } else if (!fairyPlay && dragonPlay) {
+      resolvedTrick = {
+        ...resolvedTrick,
+        winnerPlayerId: dragonPlay.playerId,
+        winningCard: dragonPlay.card,
+      }
+    }
+  }
 
   state.currentRound.currentTrick = null
   state.currentRound.completedTricks.push(resolvedTrick)
