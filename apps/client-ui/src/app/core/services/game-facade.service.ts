@@ -109,7 +109,7 @@ export class GameFacadeService {
           !previousPlayers.some((prev) => prev.id === p.id),
       )
       if (newOtherPlayers.length > 0) {
-        this.audio.bing()
+        this.audio.lobbyJoinPing()
       }
       if (
         currentPlayerId &&
@@ -349,7 +349,7 @@ export class GameFacadeService {
     }
 
     if (this.session.bingEnabled()) {
-      this.audio.bing()
+      this.audio.turnPing()
     }
   }
 

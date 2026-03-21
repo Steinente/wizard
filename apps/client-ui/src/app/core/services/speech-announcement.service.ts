@@ -38,7 +38,7 @@ export class SpeechAnnouncementService {
     this.trySpeakNext()
   }
 
-  bing() {
+  lobbyJoinPing() {
     if (!this.audioContextUnlocked) {
       return
     }
@@ -54,7 +54,7 @@ export class SpeechAnnouncementService {
         return
       }
 
-      this.playBingTone(ctx)
+      this.playLobbyJoinTone(ctx)
     })
   }
 
@@ -75,6 +75,26 @@ export class SpeechAnnouncementService {
       }
 
       this.playChatPingTone(ctx)
+    })
+  }
+
+  turnPing() {
+    if (!this.audioContextUnlocked) {
+      return
+    }
+
+    const ctx = this.ensureAudioContext()
+
+    if (!ctx) {
+      return
+    }
+
+    void ctx.resume().then(() => {
+      if (ctx.state !== 'running') {
+        return
+      }
+
+      this.playTurnPingTone(ctx)
     })
   }
 
@@ -130,7 +150,7 @@ export class SpeechAnnouncementService {
     window.speechSynthesis.speak(utterance)
   }
 
-  private playBingTone(ctx: AudioContext) {
+  private playLobbyJoinTone(ctx: AudioContext) {
     const oscillator = ctx.createOscillator()
     const gain = ctx.createGain()
 
@@ -185,6 +205,33 @@ export class SpeechAnnouncementService {
       first.disconnect()
       second.disconnect()
       masterGain.disconnect()
+    }
+  }
+
+  private playTurnPingTone(ctx: AudioContext) {
+    const oscillator = ctx.createOscillator()
+    const gain = ctx.createGain()
+
+    oscillator.connect(gain)
+    gain.connect(ctx.destination)
+
+    oscillator.type = 'square'
+    oscillator.frequency.setValueAtTime(520, ctx.currentTime)
+    oscillator.frequency.exponentialRampToValueAtTime(
+      780,
+      ctx.currentTime + 0.12,
+    )
+
+    const startGain = Math.max(0.001, 0.32 * this.speechVolume)
+    gain.gain.setValueAtTime(startGain, ctx.currentTime)
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.22)
+
+    oscillator.start(ctx.currentTime)
+    oscillator.stop(ctx.currentTime + 0.22)
+
+    oscillator.onended = () => {
+      oscillator.disconnect()
+      gain.disconnect()
     }
   }
 
