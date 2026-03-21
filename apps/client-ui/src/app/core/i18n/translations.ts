@@ -190,6 +190,7 @@ export const translations = {
     'log.game.trump.selected': 'Trump selected - {suit}',
     'log.game.trump.selection.pending': '{playerId} chooses trump suit',
     'log.game.trump.roundStart': 'Trump is {suit}',
+    'log.game.trump.roundStart.withValue': 'Trump is {suit} {value}',
     'log.game.trump.noTrumpDueToCard':
       'There is no trump, as {cardLabel} was revealed',
     'log.game.trump.selected.bySpecial':
@@ -443,6 +444,7 @@ export const translations = {
     'log.game.trump.selected': 'Trumpf gewählt - {suit}',
     'log.game.trump.selection.pending': '{playerId} wählt Trumpffarbe',
     'log.game.trump.roundStart': 'Der Trumpf ist {suit}',
+    'log.game.trump.roundStart.withValue': 'Der Trumpf ist {suit} {value}',
     'log.game.trump.noTrumpDueToCard':
       'Es gibt keinen Trumpf, da {cardLabel} aufgedeckt wurde',
     'log.game.trump.selected.bySpecial':
