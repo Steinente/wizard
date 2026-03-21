@@ -138,7 +138,9 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
                     class="active-turn"
                     [values]="predictionOptions()"
                     [submit]="predictFn"
-                    [trumpSuit]="store.gameState()!.currentRound?.trumpSuit ?? null"
+                    [trumpSuit]="
+                      store.gameState()!.currentRound?.trumpSuit ?? null
+                    "
                     [trumpValue]="trumpNumberValue()"
                   />
                 }
@@ -234,8 +236,8 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
           grid-template-columns: 1fr;
           grid-template-areas:
             'controls'
-            'players'
             'scoreboard'
+            'players'
             'trick'
             'interaction'
             'hand'
