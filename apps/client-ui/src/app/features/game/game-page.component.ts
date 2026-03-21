@@ -144,15 +144,7 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
                     [trumpValue]="trumpNumberValue()"
                   />
                 }
-              } @else {
-                <div class="panel">
-                  <span class="muted">{{ 'spectatorMode' | t }}</span>
-                </div>
-              }
-            </div>
 
-            @if (!isSpectator()) {
-              <div class="game-block game-hand-block">
                 <wiz-hand-area
                   [class.active-turn]="isMyTurnToPlay()"
                   [cards]="displayHand()"
@@ -162,8 +154,12 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
                   [onSort]="sortHandFn"
                   [onReorder]="reorderHandFn"
                 />
-              </div>
-            }
+              } @else {
+                <div class="panel">
+                  <span class="muted">{{ 'spectatorMode' | t }}</span>
+                </div>
+              }
+            </div>
 
             <div class="game-block game-log-block">
               <wiz-log-panel
@@ -212,10 +208,6 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
         gap: 16px;
       }
 
-      .game-hand-block {
-        grid-area: hand;
-      }
-
       .game-log-block {
         grid-area: log;
       }
@@ -224,8 +216,7 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
         grid-template-columns: 320px minmax(0, 1fr) 320px;
         grid-template-areas:
           'controls trick scoreboard'
-          'players interaction log'
-          'players hand log';
+          'players interaction log';
       }
 
       @media (max-width: 1100px) {
@@ -241,7 +232,6 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
             'players'
             'trick'
             'interaction'
-            'hand'
             'log';
         }
       }
