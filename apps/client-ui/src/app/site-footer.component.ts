@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core'
+import { Component, ElementRef, HostListener, signal } from '@angular/core'
 import { RouterLink, RouterLinkActive } from '@angular/router'
 import { AppStore } from './core/state/app.store'
 import { TPipe } from './shared/pipes/t.pipe'
@@ -233,33 +233,42 @@ import { TPipe } from './shared/pipes/t.pipe'
 
         .site-legal-inner {
           display: flex;
-          justify-content: flex-start;
-          align-items: flex-start;
-          flex-wrap: wrap;
+          justify-content: space-between;
+          align-items: center;
+          flex-wrap: nowrap;
+          gap: 10px;
         }
 
         .site-legal-links,
         .site-donate {
-          width: 100%;
+          width: auto;
           grid-column: auto;
         }
 
-        .site-donate {
+        .site-legal-links {
           justify-content: flex-start;
+          flex-wrap: nowrap;
+          gap: 8px 12px;
+        }
+
+        .site-donate {
+          justify-content: flex-end;
+          flex: 0 0 auto;
         }
 
         .site-donate-popover {
-          left: 0;
-          right: auto;
+          left: auto;
+          right: 0;
         }
 
         .site-donate-popover::after {
-          left: 22px;
-          right: auto;
+          left: auto;
+          right: 22px;
         }
 
         .site-legal-link {
-          width: 100%;
+          width: auto;
+          white-space: nowrap;
         }
       }
     `,
@@ -268,7 +277,40 @@ import { TPipe } from './shared/pipes/t.pipe'
 export class SiteFooterComponent {
   protected readonly donationOpen = signal(false)
 
-  constructor(private readonly appStore: AppStore) {}
+  constructor(
+    private readonly appStore: AppStore,
+    private readonly elementRef: ElementRef<HTMLElement>,
+  ) {}
+
+  @HostListener('document:pointerdown', ['$event'])
+  handleDocumentPointerDown(event: PointerEvent) {
+    if (!this.donationOpen()) {
+      return
+    }
+
+    const eventTarget = event.target
+    if (!(eventTarget instanceof Node)) {
+      return
+    }
+
+    if (!this.elementRef.nativeElement.contains(eventTarget)) {
+      this.donationOpen.set(false)
+    }
+  }
+
+  @HostListener('window:scroll')
+  handleWindowScroll() {
+    if (this.donationOpen()) {
+      this.donationOpen.set(false)
+    }
+  }
+
+  @HostListener('document:touchmove')
+  handleDocumentTouchMove() {
+    if (this.donationOpen()) {
+      this.donationOpen.set(false)
+    }
+  }
 
   clearTransientMessages() {
     this.appStore.setError(null)
