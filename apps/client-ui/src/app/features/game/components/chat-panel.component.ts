@@ -114,6 +114,7 @@ const QUICK_EMOTES = ['😀', '🎉', '👏', '😅', '🤔', '❤️']
         gap: 10px;
         height: 320px;
         min-height: 260px;
+        max-height: 75vh;
         overflow: hidden;
       }
 
@@ -292,7 +293,11 @@ export class ChatPanelComponent implements OnChanges {
 
     const deltaY = pointerPageY - this.resizeStartPageY
     const minHeight = 260
-    const nextHeight = Math.max(minHeight, this.resizeStartHeight + deltaY)
+    const maxHeight = Math.floor(window.innerHeight * 0.75)
+    const nextHeight = Math.min(
+      maxHeight,
+      Math.max(minHeight, this.resizeStartHeight + deltaY),
+    )
 
     panel.style.height = `${nextHeight}px`
   }
