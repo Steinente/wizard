@@ -1,4 +1,10 @@
-import { Component, Input } from '@angular/core'
+import {
+  Component,
+  ElementRef,
+  Input,
+  OnChanges,
+  ViewChild,
+} from '@angular/core'
 import type { WizardGameViewState } from '@wizard/shared'
 import { TPipe } from '../../../shared/pipes/t.pipe'
 
@@ -10,7 +16,11 @@ import { TPipe } from '../../../shared/pipes/t.pipe'
     <div class="panel score-panel">
       <h3 style="margin-top: 0;">{{ 'scoreboard' | t }}</h3>
 
-      <div class="panel-scroll panel-scroll-compact score-scroll">
+      <div
+        #scrollContainer
+        class="panel-scroll panel-scroll-compact score-scroll"
+        (scroll)="onScroll()"
+      >
         @if (a11yMode) {
           <ul class="rounds-list" [attr.aria-label]="'scoreboard' | t">
             @for (round of playedRoundNumbers(); track round) {
@@ -156,9 +166,34 @@ import { TPipe } from '../../../shared/pipes/t.pipe'
     `,
   ],
 })
-export class ScoreboardPanelComponent {
+export class ScoreboardPanelComponent implements OnChanges {
+  @ViewChild('scrollContainer')
+  private scrollContainer?: ElementRef<HTMLElement>
+
   @Input({ required: true }) state!: WizardGameViewState
   @Input({ required: true }) a11yMode = true
+
+  private isAtBottom = true
+
+  onScroll() {
+    const el = this.scrollContainer?.nativeElement
+    if (!el) return
+
+    const threshold = 8
+    this.isAtBottom =
+      el.scrollHeight - el.scrollTop - el.clientHeight <= threshold
+  }
+
+  ngOnChanges() {
+    if (!this.isAtBottom) return
+
+    requestAnimationFrame(() => {
+      const el = this.scrollContainer?.nativeElement
+      if (el) {
+        el.scrollTop = el.scrollHeight
+      }
+    })
+  }
 
   orderedPlayers() {
     return [...this.state.players].sort((a, b) => a.seatIndex - b.seatIndex)
