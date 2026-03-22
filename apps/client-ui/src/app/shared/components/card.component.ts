@@ -26,7 +26,7 @@ import { SUIT_BACKGROUNDS } from '../utils/suit-colors.util'
       class="wiz-card"
       [class.wiz-card-showing-info]="cardInfoVisible"
       type="button"
-      [disabled]="disabled"
+      [attr.aria-disabled]="disabled"
       [style.border-color]="accent"
       [style.background]="background"
       [style.color]="foreground"
@@ -368,7 +368,7 @@ export class CardComponent {
   }
 
   onCardPointerDown(event: PointerEvent) {
-    if (!this.showSpecialInfo || !this.specialInfoText || this.disabled) {
+    if (!this.showSpecialInfo || !this.specialInfoText) {
       return
     }
 
