@@ -282,7 +282,11 @@ export class GameFacadeService {
       params,
       state.players,
       (key) => this.i18n.t(key),
-      { modeBehavior: 'wizardJesterOnly' },
+      {
+        modeBehavior: 'wizardJesterOnly',
+        includeSwappedCardLabel: true,
+        includeSpecial: true,
+      },
     )
   }
 
