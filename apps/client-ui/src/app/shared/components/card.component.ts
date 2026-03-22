@@ -147,11 +147,35 @@ const SPECIAL_CARD_ARTWORK: Record<string, string> = {
         position: absolute;
         top: 6px;
         right: 6px;
-        width: 16px;
-        height: 16px;
+        width: 22px;
+        height: 22px;
         margin-left: 0;
-        font-size: 11px;
-        z-index: 1;
+        font-size: 18px;
+        font-weight: bold;
+        color: #fff;
+        background: #1e293bcc;
+        border-radius: 50%;
+        box-shadow: 0 2px 6px 0 #0008;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid #fbbf24;
+        z-index: 2;
+        text-shadow:
+          0 1px 4px #000a,
+          0 0 2px #fbbf24;
+        transition:
+          background 0.2s,
+          color 0.2s,
+          border 0.2s;
+      }
+      .wiz-card-artwork-mode .wiz-card-info {
+        background: #fff8;
+        color: #1e293b;
+        border: 2px solid #1e293b;
+        text-shadow:
+          0 1px 4px #fff,
+          0 0 2px #1e293b;
       }
 
       .wiz-card-info-popover {
