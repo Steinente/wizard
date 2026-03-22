@@ -152,6 +152,8 @@ export const translations = {
     logShowTimestamp: 'Show timestamps in log',
     a11yScoreboardModeOn: 'Accessibility score view enabled',
     a11yScoreboardModeOff: 'Accessibility score view disabled',
+    cardArtworkModeOn: 'Card artwork enabled',
+    cardArtworkModeOff: 'Card artwork disabled',
     tooltipPredictionStartOrder:
       'Starts with the prediction and leads the trick',
     tooltipCloudAdjustmentPending: 'Cloud adjustment pending',
@@ -496,6 +498,8 @@ export const translations = {
     logShowTimestamp: 'Zeitstempel im Protokoll anzeigen',
     a11yScoreboardModeOn: 'Barrierefreier Punktestand aktiv',
     a11yScoreboardModeOff: 'Barrierefreier Punktestand deaktiviert',
+    cardArtworkModeOn: 'Kartenbilder aktiv',
+    cardArtworkModeOff: 'Kartenbilder deaktiviert',
     tooltipPredictionStartOrder:
       'Startet mit der Ansage und legt im Stich zuerst',
     tooltipCloudAdjustmentPending: 'Wolken-Anpassung ausstehend',

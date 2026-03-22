@@ -123,6 +123,7 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
                   [isHost]="isHost()"
                   [showTimestamp]="logShowTimestampSignal()"
                   [scoreboardA11yMode]="scoreboardA11yModeSignal()"
+                  [cardArtworkEnabled]="cardArtworkEnabledSignal()"
                   [onToggleAudio]="toggleReadLogFn"
                   [onBingToggle]="toggleBingFn"
                   [onChatSoundToggle]="setChatSoundEnabledFn"
@@ -131,6 +132,7 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
                   [onEndLobby]="endLobbyFn"
                   [onShowTimestampChange]="setLogShowTimestampFn"
                   [onScoreboardA11yModeChange]="setScoreboardA11yModeFn"
+                  [onCardArtworkEnabledChange]="setCardArtworkEnabledFn"
                 />
               </div>
             }
@@ -155,6 +157,7 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
                 [trick]="store.gameState()!.currentRound?.currentTrick ?? null"
                 [players]="store.gameState()!.players"
                 [resolvedCardEffects]="store.gameState()!.resolvedCardEffects"
+                [useArtwork]="cardArtworkEnabledSignal()"
               />
             </div>
 
@@ -197,6 +200,7 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
                   [cards]="displayHand()"
                   [canPlay]="canPlayCardFn"
                   [play]="playCardFn"
+                  [useArtwork]="cardArtworkEnabledSignal()"
                   [isSortActive]="handSortEnabled()"
                   [onSort]="sortHandFn"
                   [onReorder]="reorderHandFn"
@@ -348,6 +352,9 @@ export class GamePageComponent {
   readonly chatSoundEnabledSignal = computed(() =>
     this.session.chatSoundEnabled(),
   )
+  readonly cardArtworkEnabledSignal = computed(() =>
+    this.session.cardArtworkEnabled(),
+  )
 
   readonly playCardFn = (card: Card) => this.playCard(card)
   readonly canPlayCardFn = (card: Card) => this.canPlayCard(card)
@@ -386,6 +393,8 @@ export class GamePageComponent {
     this.session.setLogShowTimestamp(v)
   readonly setScoreboardA11yModeFn = (v: boolean) =>
     this.session.setScoreboardA11yMode(v)
+  readonly setCardArtworkEnabledFn = (v: boolean) =>
+    this.session.setCardArtworkEnabled(v)
   readonly sendChatMessageFn = (text: string) => this.sendChatMessage(text)
 
   constructor(

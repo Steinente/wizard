@@ -17,6 +17,18 @@ import {
 } from '../utils/card-label.util'
 import { SUIT_BACKGROUNDS } from '../utils/suit-colors.util'
 
+const WILD_CARD_VARIANTS = ['red', 'yellow', 'green', 'blue'] as const
+
+const SPECIAL_CARD_ARTWORK: Record<string, string> = {
+  shapeShifter: 'shape_shifter',
+  bomb: 'bomb',
+  werewolf: 'werewolf',
+  cloud: 'cloud',
+  juggler: 'juggler',
+  dragon: 'dragon',
+  fairy: 'fairy',
+}
+
 @Component({
   selector: 'wiz-card',
   standalone: true,
@@ -25,8 +37,10 @@ import { SUIT_BACKGROUNDS } from '../utils/suit-colors.util'
     <button
       class="wiz-card"
       [class.wiz-card-showing-info]="cardInfoVisible"
+      [class.wiz-card-artwork-mode]="showArtwork"
       type="button"
       [attr.aria-disabled]="disabled"
+      [attr.aria-label]="cardAriaLabel"
       [style.border-color]="accent"
       [style.background]="background"
       [style.color]="foreground"
@@ -51,34 +65,45 @@ import { SUIT_BACKGROUNDS } from '../utils/suit-colors.util'
           {{ specialInfoText }}
         </div>
       }
-      <div class="wiz-card-value">{{ primaryText }}</div>
+      @if (showArtwork && artworkSrc) {
+        <img class="wiz-card-artwork-image" [src]="artworkSrc" alt="" />
+      } @else {
+        <div class="wiz-card-value">{{ primaryText }}</div>
+      }
       @if (middleLabel) {
-        <div class="wiz-card-middle-label">{{ middleLabel }}</div>
-      }
-      <div class="wiz-card-title" [class.wiz-card-title-top]="pinTitleTop">
-        {{ title }}
-      </div>
-      @if (subtitle) {
-        <div class="wiz-card-subtitle">{{ subtitle }}</div>
-      }
-      @if (shapeShifterMode) {
         <div
-          class="wiz-card-subtitle"
-          style="margin-top: 4px; font-size: 11px; font-weight: 600;"
+          class="wiz-card-middle-label"
+          [class.wiz-card-middle-label-artwork]="showArtwork"
         >
-          ({{
-            shapeShifterMode === 'card.wizard'
-              ? ('card.wizard' | t)
-              : ('card.jester' | t)
-          }})
+          {{ middleLabel }}
         </div>
+      }
+      @if (!showArtwork || !artworkSrc) {
+        <div class="wiz-card-title" [class.wiz-card-title-top]="pinTitleTop">
+          {{ title }}
+        </div>
+        @if (subtitle) {
+          <div class="wiz-card-subtitle">{{ subtitle }}</div>
+        }
+        @if (shapeShifterMode) {
+          <div
+            class="wiz-card-subtitle"
+            style="margin-top: 4px; font-size: 11px; font-weight: 600;"
+          >
+            ({{
+              shapeShifterMode === 'card.wizard'
+                ? ('card.wizard' | t)
+                : ('card.jester' | t)
+            }})
+          </div>
+        }
       }
     </button>
   `,
   styles: [
     `
       .wiz-card {
-        width: 110px;
+        width: 96px;
         min-height: 150px;
         position: relative;
         overflow: visible;
@@ -97,6 +122,21 @@ import { SUIT_BACKGROUNDS } from '../utils/suit-colors.util'
         z-index: 20;
       }
 
+      .wiz-card-artwork-mode {
+        background: #f8fafc !important;
+      }
+
+      .wiz-card-artwork-image {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 12px;
+        z-index: 0;
+        pointer-events: none;
+      }
+
       .wiz-card-value {
         font-size: 28px;
         font-weight: 700;
@@ -111,6 +151,7 @@ import { SUIT_BACKGROUNDS } from '../utils/suit-colors.util'
         height: 16px;
         margin-left: 0;
         font-size: 11px;
+        z-index: 1;
       }
 
       .wiz-card-info-popover {
@@ -129,6 +170,7 @@ import { SUIT_BACKGROUNDS } from '../utils/suit-colors.util'
         font-size: 11px;
         line-height: 1.25;
         text-align: left;
+        z-index: 3;
       }
 
       .wiz-card-title {
@@ -169,6 +211,22 @@ import { SUIT_BACKGROUNDS } from '../utils/suit-colors.util'
         line-height: 1.1;
         pointer-events: none;
         text-shadow: 0 1px 2px rgb(0 0 0 / 0.25);
+        z-index: 1;
+      }
+
+      .wiz-card-middle-label-artwork {
+        left: 50%;
+        right: auto;
+        transform: translate(-50%, -50%);
+        width: max-content;
+        max-width: calc(100% - 12px);
+        padding: 4px 7px;
+        border-radius: 999px;
+        background: rgb(15 23 42 / 0.82);
+        border: 1px solid rgb(229 238 252 / 0.18);
+        color: #f8fafc;
+        text-shadow: none;
+        backdrop-filter: blur(4px);
       }
 
       @media (max-width: 700px) {
@@ -263,6 +321,7 @@ export class CardComponent {
   @Input() play!: (card: Card) => void
   @Input() resolvedEffect?: ResolvedCardRuntimeEffect
   @Input() showSpecialInfo = false
+  @Input() useArtwork = false
 
   get accent() {
     return getCardAccent(this.card)
@@ -280,6 +339,38 @@ export class CardComponent {
   get subtitle() {
     const key = getCardSubtitleKey(this.card)
     return key ? this.i18n.t(key) : ''
+  }
+
+  get cardAriaLabel() {
+    return [this.title, this.primaryText, this.subtitle]
+      .filter((value) => value.trim().length > 0)
+      .join(' ')
+  }
+
+  get showArtwork() {
+    return this.useArtwork && !!this.artworkSrc
+  }
+
+  get artworkSrc(): string | null {
+    if (!this.useArtwork) {
+      return null
+    }
+
+    if (this.card.type === 'number') {
+      return `/cards/${this.card.suit}_${this.card.value}.png`
+    }
+
+    if (this.card.type === 'special') {
+      const artworkName = SPECIAL_CARD_ARTWORK[this.card.special]
+      return artworkName ? `/cards/${artworkName}.png` : null
+    }
+
+    if (this.card.type === 'wizard' || this.card.type === 'jester') {
+      const variant = this.cardVariantFromId(this.card.id)
+      return `/cards/${this.card.type}_${variant}.png`
+    }
+
+    return null
   }
 
   get shapeShifterMode(): string | null {
@@ -360,6 +451,13 @@ export class CardComponent {
     }
 
     return '#0f172a'
+  }
+
+  private cardVariantFromId(cardId: string) {
+    const match = cardId.match(/-(\d+)$/)
+    const index = match ? Number(match[1]) - 1 : 0
+
+    return WILD_CARD_VARIANTS[index] ?? WILD_CARD_VARIANTS[0]
   }
 
   ngOnDestroy() {

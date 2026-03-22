@@ -41,6 +41,7 @@ import { TPipe } from '../../../shared/pipes/t.pipe'
               [playable]="canPlay(card)"
               [disabled]="!canPlay(card)"
               [showSpecialInfo]="true"
+              [useArtwork]="useArtwork"
               [play]="play"
             />
           </div>
@@ -79,6 +80,7 @@ export class HandAreaComponent {
     draggedCardId: string,
     targetCardId: string,
   ) => void
+  @Input() useArtwork = false
 
   draggedCardId: string | null = null
   dropTargetCardId: string | null = null

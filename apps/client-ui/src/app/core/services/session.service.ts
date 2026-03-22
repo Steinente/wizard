@@ -17,6 +17,7 @@ import {
   LOG_SHOW_TIMESTAMP_KEY,
   SCOREBOARD_A11Y_MODE_KEY,
   CHAT_SOUND_ENABLED_KEY,
+  CARD_ARTWORK_ENABLED_KEY,
 } from '../config/app.config-values'
 import {
   normalizeSpeechRate,
@@ -63,6 +64,7 @@ export class SessionService {
   private readonly logShowTimestampSignal = signal(true)
   private readonly scoreboardA11yModeSignal = signal(false)
   private readonly chatSoundEnabledSignal = signal(true)
+  private readonly cardArtworkEnabledSignal = signal(false)
 
   readonly sessionToken = computed(() => this.sessionTokenSignal())
   readonly playerName = computed(() => this.playerNameSignal())
@@ -89,6 +91,7 @@ export class SessionService {
   readonly logShowTimestamp = computed(() => this.logShowTimestampSignal())
   readonly scoreboardA11yMode = computed(() => this.scoreboardA11yModeSignal())
   readonly chatSoundEnabled = computed(() => this.chatSoundEnabledSignal())
+  readonly cardArtworkEnabled = computed(() => this.cardArtworkEnabledSignal())
 
   constructor(private readonly storage: LocalStorageService) {
     const existingToken =
@@ -148,6 +151,9 @@ export class SessionService {
 
     const storedChatSoundEnabled = this.storage.get(CHAT_SOUND_ENABLED_KEY)
     this.chatSoundEnabledSignal.set(storedChatSoundEnabled !== 'false')
+
+    const storedCardArtworkEnabled = this.storage.get(CARD_ARTWORK_ENABLED_KEY)
+    this.cardArtworkEnabledSignal.set(storedCardArtworkEnabled === 'true')
   }
 
   setPlayerName(name: string) {
@@ -226,6 +232,11 @@ export class SessionService {
   setChatSoundEnabled(enabled: boolean) {
     this.chatSoundEnabledSignal.set(enabled)
     this.storage.set(CHAT_SOUND_ENABLED_KEY, String(enabled))
+  }
+
+  setCardArtworkEnabled(enabled: boolean) {
+    this.cardArtworkEnabledSignal.set(enabled)
+    this.storage.set(CARD_ARTWORK_ENABLED_KEY, String(enabled))
   }
 
   setLobbyConfig(config: GameConfig) {

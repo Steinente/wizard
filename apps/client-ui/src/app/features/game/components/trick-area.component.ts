@@ -24,6 +24,8 @@ import { TPipe } from '../../../shared/pipes/t.pipe'
               [card]="play.card"
               [middleLabel]="getPlayerName(play.playerId)"
               [resolvedEffect]="getResolvedEffect(play.card.id)"
+              [showSpecialInfo]="true"
+              [useArtwork]="useArtwork"
             />
           }
         </div>
@@ -35,6 +37,7 @@ export class TrickAreaComponent {
   @Input() trick: TrickState | null = null
   @Input() resolvedCardEffects: ResolvedCardRuntimeEffect[] = []
   @Input() players: WizardGameViewState['players'] = []
+  @Input() useArtwork = false
 
   getResolvedEffect(cardId: string): ResolvedCardRuntimeEffect | undefined {
     return this.resolvedCardEffects.find((effect) => effect.cardId === cardId)

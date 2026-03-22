@@ -122,6 +122,23 @@ import { TPipe } from '../../../shared/pipes/t.pipe'
         </label>
       </div>
 
+      <div class="row" style="margin-top: 12px;">
+        <label class="row">
+          <input
+            type="checkbox"
+            [ngModel]="cardArtworkEnabled"
+            (ngModelChange)="changeCardArtworkEnabled($event)"
+          />
+          <span>
+            {{
+              cardArtworkEnabled
+                ? ('cardArtworkModeOn' | t)
+                : ('cardArtworkModeOff' | t)
+            }}
+          </span>
+        </label>
+      </div>
+
       @if (isHost && !confirmingEnd) {
         <div style="margin-top: 12px;">
           <button
@@ -201,6 +218,10 @@ export class GameSettingsPanelComponent {
   @Input({ required: true }) onScoreboardA11yModeChange!: (
     enabled: boolean,
   ) => void
+  @Input({ required: true }) cardArtworkEnabled = false
+  @Input({ required: true }) onCardArtworkEnabledChange!: (
+    enabled: boolean,
+  ) => void
 
   confirmingEnd = false
 
@@ -230,6 +251,10 @@ export class GameSettingsPanelComponent {
 
   changeScoreboardA11yMode(enabled: boolean) {
     this.onScoreboardA11yModeChange(enabled)
+  }
+
+  changeCardArtworkEnabled(enabled: boolean) {
+    this.onCardArtworkEnabledChange(enabled)
   }
 
   volumePercent() {

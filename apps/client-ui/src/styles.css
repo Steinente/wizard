@@ -1,3 +1,9 @@
+@font-face {
+  font-family: 'Frances Uncial Std';
+  src: url('/fonts/Frances Uncial Std Regular.otf') format('opentype');
+  font-display: swap;
+}
+
 :root {
   color-scheme: dark;
   --bg: #0f172a;
@@ -13,7 +19,7 @@
   --card-yellow: #fbbf24;
   --card-green: #15803d;
   --card-blue: #1d4ed8;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Frances Uncial Std', serif;
 }
 
 * {
@@ -30,6 +36,7 @@ body {
 
 body {
   min-height: 100vh;
+  font-family: inherit;
 }
 
 wiz-root {

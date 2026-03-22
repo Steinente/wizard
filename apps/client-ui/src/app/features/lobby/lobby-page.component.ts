@@ -271,6 +271,7 @@ import { TPipe } from '../../shared/pipes/t.pipe'
                       [card]="card"
                       [disabled]="false"
                       [showSpecialInfo]="true"
+                      [useArtwork]="session.cardArtworkEnabled()"
                       [play]="noopPlay"
                     />
                   </div>
