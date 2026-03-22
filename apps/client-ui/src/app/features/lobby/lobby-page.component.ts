@@ -39,9 +39,15 @@ import { TPipe } from '../../shared/pipes/t.pipe'
             <button
               class="btn btn-primary"
               [disabled]="store.loading() || !routeCode"
-              (click)="joinCurrentLobby()"
+              (click)="enterCurrentLobby()"
             >
-              {{ store.loading() ? ('loading' | t) : ('joinThisLobby' | t) }}
+              {{
+                store.loading()
+                  ? ('loading' | t)
+                  : isRouteLobbyRunning()
+                    ? ('watchAsSpectator' | t)
+                    : ('joinThisLobby' | t)
+              }}
             </button>
 
             <a routerLink="/" class="btn">{{ 'back' | t }}</a>
@@ -402,6 +408,36 @@ export class LobbyPageComponent {
 
     this.session.setPlayerName(this.playerName.trim())
     this.facade.joinLobby(this.routeCode, this.playerName.trim())
+  }
+
+  enterCurrentLobby() {
+    if (this.isRouteLobbyRunning()) {
+      this.spectateCurrentLobby()
+      return
+    }
+
+    this.joinCurrentLobby()
+  }
+
+  spectateCurrentLobby() {
+    if (!this.playerName.trim() || !this.routeCode) {
+      return
+    }
+
+    this.session.setPlayerName(this.playerName.trim())
+    this.facade.spectateLobby(this.routeCode, this.playerName.trim())
+  }
+
+  isRouteLobbyRunning() {
+    const routeLobby = this.store
+      .lobbyList()
+      .find((lobby) => lobby.code === this.routeCode)
+
+    if (!routeLobby) {
+      return false
+    }
+
+    return routeLobby.status.trim().toLowerCase() === 'running'
   }
 
   leaveLobby() {
