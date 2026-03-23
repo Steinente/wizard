@@ -23,42 +23,14 @@ import { TPipe } from '../../../shared/pipes/t.pipe'
         <label class="row">
           <input
             type="checkbox"
-            [ngModel]="audioEnabled"
-            (ngModelChange)="toggleAudio($event)"
+            [ngModel]="cardArtworkEnabled"
+            (ngModelChange)="changeCardArtworkEnabled($event)"
           />
           <span>
             {{
-              audioEnabled ? ('readLogEnabled' | t) : ('readLogDisabled' | t)
-            }}
-          </span>
-        </label>
-      </div>
-
-      <div class="row" style="margin-top: 8px;">
-        <label class="row">
-          <input
-            type="checkbox"
-            [ngModel]="bingEnabled"
-            (ngModelChange)="toggleBing($event)"
-          />
-          <span>
-            {{ bingEnabled ? ('bingEnabled' | t) : ('bingDisabled' | t) }}
-          </span>
-        </label>
-      </div>
-
-      <div class="row" style="margin-top: 8px;">
-        <label class="row">
-          <input
-            type="checkbox"
-            [ngModel]="chatSoundEnabled"
-            (ngModelChange)="toggleChatSound($event)"
-          />
-          <span>
-            {{
-              chatSoundEnabled
-                ? ('chatSoundEnabled' | t)
-                : ('chatSoundDisabled' | t)
+              cardArtworkEnabled
+                ? ('cardArtworkModeOn' | t)
+                : ('cardArtworkModeOff' | t)
             }}
           </span>
         </label>
@@ -81,9 +53,52 @@ import { TPipe } from '../../../shared/pipes/t.pipe'
         </label>
       </div>
 
+      <div class="row" style="margin-top: 8px;">
+        <label class="row">
+          <input
+            type="checkbox"
+            [ngModel]="scoreboardA11yMode"
+            (ngModelChange)="changeScoreboardA11yMode($event)"
+          />
+          <span>
+            {{
+              scoreboardA11yMode
+                ? ('a11yScoreboardModeOn' | t)
+                : ('a11yScoreboardModeOff' | t)
+            }}
+          </span>
+        </label>
+      </div>
+
+      <div class="row" style="margin-top: 8px;">
+        <label class="row">
+          <input
+            type="checkbox"
+            [ngModel]="showTimestamp"
+            (ngModelChange)="changeShowTimestamp($event)"
+          />
+          <span>{{ 'logShowTimestamp' | t }}</span>
+        </label>
+      </div>
+
+      <div class="row" style="margin-top: 8px;">
+        <label class="row">
+          <input
+            type="checkbox"
+            [ngModel]="audioEnabled"
+            (ngModelChange)="toggleAudio($event)"
+          />
+          <span>
+            {{
+              audioEnabled ? ('readLogEnabled' | t) : ('readLogDisabled' | t)
+            }}
+          </span>
+        </label>
+      </div>
+
       <div style="margin-top: 12px;">
         <label class="label"
-          >{{ 'speechVolumeLabel' | t }}: {{ volumePercent() }}%</label
+          >{{ 'soundVolumeLabel' | t }}: {{ volumePercent() }}%</label
         >
         <input
           class="input"
@@ -111,46 +126,31 @@ import { TPipe } from '../../../shared/pipes/t.pipe'
         />
       </div>
 
-      <div class="row" style="margin-top: 12px;">
+      <div class="row" style="margin-top: 8px;">
         <label class="row">
           <input
             type="checkbox"
-            [ngModel]="showTimestamp"
-            (ngModelChange)="changeShowTimestamp($event)"
-          />
-          <span>{{ 'logShowTimestamp' | t }}</span>
-        </label>
-      </div>
-
-      <div class="row" style="margin-top: 12px;">
-        <label class="row">
-          <input
-            type="checkbox"
-            [ngModel]="scoreboardA11yMode"
-            (ngModelChange)="changeScoreboardA11yMode($event)"
+            [ngModel]="bingEnabled"
+            (ngModelChange)="toggleBing($event)"
           />
           <span>
-            {{
-              scoreboardA11yMode
-                ? ('a11yScoreboardModeOn' | t)
-                : ('a11yScoreboardModeOff' | t)
-            }}
+            {{ bingEnabled ? ('bingEnabled' | t) : ('bingDisabled' | t) }}
           </span>
         </label>
       </div>
 
-      <div class="row" style="margin-top: 12px;">
+      <div class="row" style="margin-top: 8px;">
         <label class="row">
           <input
             type="checkbox"
-            [ngModel]="cardArtworkEnabled"
-            (ngModelChange)="changeCardArtworkEnabled($event)"
+            [ngModel]="chatSoundEnabled"
+            (ngModelChange)="toggleChatSound($event)"
           />
           <span>
             {{
-              cardArtworkEnabled
-                ? ('cardArtworkModeOn' | t)
-                : ('cardArtworkModeOff' | t)
+              chatSoundEnabled
+                ? ('chatSoundEnabled' | t)
+                : ('chatSoundDisabled' | t)
             }}
           </span>
         </label>

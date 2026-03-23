@@ -70,7 +70,8 @@ export class JoinPageComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute)
   private readonly router = inject(Router)
   private refreshIntervalId: ReturnType<typeof setInterval> | null = null
-  private routeValidationIntervalId: ReturnType<typeof setInterval> | null = null
+  private routeValidationIntervalId: ReturnType<typeof setInterval> | null =
+    null
   private initialLobbyListRef: LobbySummary[] = []
 
   protected readonly store = this.appStore
@@ -130,7 +131,9 @@ export class JoinPageComponent implements OnInit, OnDestroy {
       this.routeValidationIntervalId = null
     }
 
-    this.router.navigateByUrl('/', { state: { invalidLobbyCode: this.routeCode } })
+    this.router.navigateByUrl('/', {
+      state: { invalidLobbyCode: this.routeCode },
+    })
   }
 
   routeLobby() {

@@ -148,8 +148,8 @@ export const translations = {
     donationPopoverText:
       'This project took a lot of time to build. If you want to support that work, you can leave a small donation here.',
     donationLinkLabel: 'Donate via PayPal',
-    speechVolumeLabel: 'Volume',
-    speechSpeedLabel: 'Speed',
+    soundVolumeLabel: 'Sound volume (all sounds)',
+    speechSpeedLabel: 'Reading speed (TTS)',
     panelSettingsLabel: 'Displayed panels',
     logShowTimestamp: 'Show timestamps in log',
     a11yScoreboardModeOn: 'Accessibility score view enabled',
@@ -498,8 +498,8 @@ export const translations = {
     donationPopoverText:
       'In dieser Seite steckt viel Zeit. Wenn du die Arbeit unterstützen möchtest, kannst du hier gern eine kleine Spende dalassen.',
     donationLinkLabel: 'Per PayPal spenden',
-    speechVolumeLabel: 'Lautstärke',
-    speechSpeedLabel: 'Geschwindigkeit',
+    soundVolumeLabel: 'Lautstärke (alle Sounds)',
+    speechSpeedLabel: 'Vorlesegeschwindigkeit (TTS)',
     panelSettingsLabel: 'Angezeigte Blöcke',
     logShowTimestamp: 'Zeitstempel im Protokoll anzeigen',
     a11yScoreboardModeOn: 'Barrierefreier Punktestand aktiv',
