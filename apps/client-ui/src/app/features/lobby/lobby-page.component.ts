@@ -316,10 +316,14 @@ import { TPipe } from '../../shared/pipes/t.pipe'
                 <input
                   type="checkbox"
                   [disabled]="!isHost()"
-                  [ngModel]="store.lobby()!.config.specialCardsRandomizerEnabled"
+                  [ngModel]="
+                    store.lobby()!.config.specialCardsRandomizerEnabled
+                  "
                   (ngModelChange)="setSpecialCardsRandomizerEnabled($event)"
                 />
-                <span class="muted">{{ 'specialCardsRandomizerEnabled' | t }}</span>
+                <span class="muted">{{
+                  'specialCardsRandomizerEnabled' | t
+                }}</span>
               </label>
 
               <div
@@ -332,7 +336,8 @@ import { TPipe } from '../../shared/pipes/t.pipe'
                   @let isEnabled = isSpecialCardEnabled(card.special);
                   <div
                     [style.cursor]="
-                      isHost() && !store.lobby()!.config.specialCardsRandomizerEnabled
+                      isHost() &&
+                      !store.lobby()!.config.specialCardsRandomizerEnabled
                         ? 'pointer'
                         : 'default'
                     "
