@@ -127,7 +127,7 @@ Relevant official editions can be scoped as follows (for the requested special c
 | Anniversary variant with 6 special cards | up to 2016 (Version 2.0, includes MMXVI)                         | Dragon, Fairy, Bomb, Werewolf, Juggler, Cloud        | Cloud effect is worded for end-of-round                                               |
 | 25-year edition                          | 2021 (1996-2021 Version 1.0)                                     | + Shape Shifter (in addition to the 6)               | Cloud still end-of-round                                                              |
 | 30-year edition                          | Shop release data: 2026-01-19; rules PDF Version 1.0 (1996-2026) | + Vampire, Witch (in addition to the 7 from 25-year) | Cloud officially changed: adjustment right after the trick                            |
-| Special edition The Dark Eye            | 2024 (1996-2024 Version 1.0)                                     | The Dark Eye (1 card)                                | Treated as a special edition, not as another card in the same anniversary card family |
+| Special edition The Dark Eye             | 2024 (1996-2024 Version 1.0)                                     | The Dark Eye (1 card)                                | Treated as a special edition, not as another card in the same anniversary card family |
 
 ### Shared Rule for Anniversary Special Cards
 
@@ -194,7 +194,7 @@ In anniversary editions, special cards (in varying counts) are shuffled into the
 This is not part of the anniversary multi-card set, but a **single** special card edition.
 | | |
 | ----------------------------------------------------------------------------------------------------- | -------------------------------------------- |
-| **Setup:** for extended play, this special card is shuffled into the 60-card deck.<br>**Trump reveal:** if The Dark Eye is revealed for trump, draw three cards, choose one as trump decider, and return the other two face down.<br>**In trick:** set The Dark Eye aside (do not play it directly into trick). Draw three cards, choose one to play into the trick, return the other two face down.<br>**Final round:** if The Dark Eye is played and fewer than three cards remain in draw stack, draw what remains and continue normally. | ![The Dark Eye](/cards/the_dark_eye.png) |
+| **Trump reveal:** if The Dark Eye is revealed for trump, draw three cards, choose one as trump decider, and return the other two face down.<br>**In trick:** set The Dark Eye aside (do not play it directly into trick). Draw three cards, choose one to play into the trick, return the other two face down.<br>**Final round:** if The Dark Eye is played and fewer than three cards remain in draw stack, draw what remains and continue normally. | ![The Dark Eye](/cards/the_dark_eye.png) |
 
 ### Effect Order with Multiple Special Cards in One Trick
 
