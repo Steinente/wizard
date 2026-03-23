@@ -16,7 +16,7 @@ This rulebook prioritizes official AMIGO Spiel + Freizeit GmbH sources, especial
 - 30-year edition - AMIGO rules PDF (Version 1.0, 1996-2026), including Vampire/Witch and variant list.
 - 25-year edition (2021, Anniversary Edition 2021) - rules PDF with Shape Shifter + 6 established special cards.
 - Anniversary variant with 6 special cards (including Dragon/Fairy/Bomb/Werewolf/Juggler/Cloud).
-- Special edition Das Schwarze Auge - AMIGO rules PDF (1996-2024 Version 1.0) with special card Das Schwarze Auge.
+- Special edition The Dark Eye - AMIGO rules PDF (1996-2024 Version 1.0) with special card The Dark Eye.
 
 **Official clarifications/FAQ:**
 
@@ -116,7 +116,7 @@ Practical resolution sequence (consistent with the rules):
 3. Otherwise, if trump exists: highest trump wins.
 4. Otherwise: highest card of the followed suit wins.
 
-## Anniversary Special Cards and Das Schwarze Auge
+## Anniversary Special Cards and The Dark Eye
 
 ### Edition Overview and Card Sets
 
@@ -127,7 +127,7 @@ Relevant official editions can be scoped as follows (for the requested special c
 | Anniversary variant with 6 special cards | up to 2016 (Version 2.0, includes MMXVI)                         | Dragon, Fairy, Bomb, Werewolf, Juggler, Cloud        | Cloud effect is worded for end-of-round                                               |
 | 25-year edition                          | 2021 (1996-2021 Version 1.0)                                     | + Shape Shifter (in addition to the 6)               | Cloud still end-of-round                                                              |
 | 30-year edition                          | Shop release data: 2026-01-19; rules PDF Version 1.0 (1996-2026) | + Vampire, Witch (in addition to the 7 from 25-year) | Cloud officially changed: adjustment right after the trick                            |
-| Special edition Das Schwarze Auge        | 2024 (1996-2024 Version 1.0)                                     | Das Schwarze Auge (1 card)                           | Treated as a special edition, not as another card in the same anniversary card family |
+| Special edition The Dark Eye            | 2024 (1996-2024 Version 1.0)                                     | The Dark Eye (1 card)                                | Treated as a special edition, not as another card in the same anniversary card family |
 
 ### Shared Rule for Anniversary Special Cards
 
@@ -189,12 +189,12 @@ In anniversary editions, special cards (in varying counts) are shuffled into the
 | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
 | **Trump reveal:** if revealed, there is **no trump** this round.<br>**In trick:** Witch is lower than Jester and Fairy. First resolve all other special-card effects and determine trick winner. **After that**, the Witch player may place one card from hand into the trick and take any one card from that trick back into hand (including special cards), except Witch itself. The inserted card does not change trick winner.<br>**If Witch leads:** follow-suit behavior is like a Jester lead. | ![Witch](/cards/witch.png) |
 
-#### Das Schwarze Auge (Special Edition 2024)
+#### The Dark Eye (Special Edition 2024)
 
 This is not part of the anniversary multi-card set, but a **single** special card edition.
 | | |
 | ----------------------------------------------------------------------------------------------------- | -------------------------------------------- |
-| **Setup:** for extended play, this special card is shuffled into the 60-card deck.<br>**Trump reveal:** if Das Schwarze Auge is revealed for trump, draw three cards, choose one as trump decider, and return the other two face down.<br>**In trick:** set Das Schwarze Auge aside (do not play it directly into trick). Draw three cards, choose one to play into the trick, return the other two face down.<br>**Final round:** if Das Schwarze Auge is played and fewer than three cards remain in draw stack, draw what remains and continue normally. | ![Das Schwarze Auge](/cards/the_dark_eye.png) |
+| **Setup:** for extended play, this special card is shuffled into the 60-card deck.<br>**Trump reveal:** if The Dark Eye is revealed for trump, draw three cards, choose one as trump decider, and return the other two face down.<br>**In trick:** set The Dark Eye aside (do not play it directly into trick). Draw three cards, choose one to play into the trick, return the other two face down.<br>**Final round:** if The Dark Eye is played and fewer than three cards remain in draw stack, draw what remains and continue normally. | ![The Dark Eye](/cards/the_dark_eye.png) |
 
 ### Effect Order with Multiple Special Cards in One Trick
 
