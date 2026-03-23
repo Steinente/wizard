@@ -230,6 +230,8 @@ export const translations = {
     'info.lobbyClosedDueToInactivity':
       'The lobby was closed after 30 minutes of inactivity',
     'error.lobbyNotFound': 'Lobby not found',
+    lobbyNotFoundRedirect:
+      'Lobby {code} was not found. You have been redirected to the home page.',
     'error.lobbyNotAccepting': 'This lobby is no longer accepting players',
     'error.lobbyFull': 'This lobby is full',
     'error.playerNotFound': 'Player not found in lobby',
@@ -578,6 +580,8 @@ export const translations = {
     'info.lobbyClosedDueToInactivity':
       'Die Lobby wurde nach 30 Minuten Inaktivität geschlossen',
     'error.lobbyNotFound': 'Lobby nicht gefunden',
+    lobbyNotFoundRedirect:
+      'Lobby {code} wurde nicht gefunden. Du wurdest zur Startseite weitergeleitet.',
     'error.lobbyNotAccepting': 'Diese Lobby nimmt keine Spieler mehr an',
     'error.lobbyFull': 'Diese Lobby ist voll',
     'error.playerNotFound': 'Spieler wurde in der Lobby nicht gefunden',

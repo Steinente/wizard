@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit, inject } from '@angular/core'
 import { FormsModule } from '@angular/forms'
-import { ActivatedRoute, RouterLink } from '@angular/router'
+import { ActivatedRoute, Router, RouterLink } from '@angular/router'
 import type { LobbySummary } from '@wizard/shared'
 import { I18nService } from '../../core/i18n/i18n.service'
 import { GameFacadeService } from '../../core/services/game-facade.service'
@@ -68,7 +68,10 @@ import { TPipe } from '../../shared/pipes/t.pipe'
 })
 export class JoinPageComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute)
+  private readonly router = inject(Router)
   private refreshIntervalId: ReturnType<typeof setInterval> | null = null
+  private routeValidationIntervalId: ReturnType<typeof setInterval> | null = null
+  private initialLobbyListRef: LobbySummary[] = []
 
   protected readonly store = this.appStore
   routeCode = this.route.snapshot.paramMap.get('code')?.toUpperCase() ?? ''
@@ -83,10 +86,18 @@ export class JoinPageComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
+    this.initialLobbyListRef = this.store.lobbyList()
+
     this.refreshLobbies()
     this.refreshIntervalId = setInterval(() => {
       this.refreshLobbies()
     }, 5000)
+
+    this.routeValidationIntervalId = setInterval(() => {
+      this.redirectToHomeIfRouteLobbyMissing()
+    }, 300)
+
+    this.redirectToHomeIfRouteLobbyMissing()
   }
 
   ngOnDestroy() {
@@ -94,6 +105,32 @@ export class JoinPageComponent implements OnInit, OnDestroy {
       clearInterval(this.refreshIntervalId)
       this.refreshIntervalId = null
     }
+
+    if (this.routeValidationIntervalId) {
+      clearInterval(this.routeValidationIntervalId)
+      this.routeValidationIntervalId = null
+    }
+  }
+
+  private redirectToHomeIfRouteLobbyMissing() {
+    if (this.routeLobby()) {
+      if (this.routeValidationIntervalId) {
+        clearInterval(this.routeValidationIntervalId)
+        this.routeValidationIntervalId = null
+      }
+      return
+    }
+
+    if (this.store.lobbyList() === this.initialLobbyListRef) {
+      return
+    }
+
+    if (this.routeValidationIntervalId) {
+      clearInterval(this.routeValidationIntervalId)
+      this.routeValidationIntervalId = null
+    }
+
+    this.router.navigateByUrl('/', { state: { invalidLobbyCode: this.routeCode } })
   }
 
   routeLobby() {
