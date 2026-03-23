@@ -148,6 +148,9 @@ export const translations = {
     donationPopoverText:
       'This project took a lot of time to build. If you want to support that work, you can leave a small donation here.',
     donationLinkLabel: 'Donate via PayPal',
+    rulesButtonLabel: 'Open game rules',
+    rulesPopoverTitle: 'Wizard rulebook',
+    rulesLoadFailed: 'Rulebook could not be loaded.',
     soundVolumeLabel: 'Sound volume (all sounds)',
     speechSpeedLabel: 'Reading speed (TTS)',
     panelSettingsLabel: 'Displayed panels',
@@ -384,7 +387,7 @@ export const translations = {
     players: 'Spieler',
     spectators: 'Zuschauer',
     noSpectators: 'Keine Zuschauer',
-    rules: 'Regeln',
+    rules: 'Regelwerk',
     settings: 'Einstellungen',
     back: 'Zurück',
     home: 'Startseite',
@@ -498,6 +501,9 @@ export const translations = {
     donationPopoverText:
       'In dieser Seite steckt viel Zeit. Wenn du die Arbeit unterstützen möchtest, kannst du hier gern eine kleine Spende dalassen.',
     donationLinkLabel: 'Per PayPal spenden',
+    rulesButtonLabel: 'Regelwerk öffnen',
+    rulesPopoverTitle: 'Wizard-Regelwerk',
+    rulesLoadFailed: 'Regelwerk konnte nicht geladen werden.',
     soundVolumeLabel: 'Lautstärke (alle Sounds)',
     speechSpeedLabel: 'Vorlesegeschwindigkeit (TTS)',
     panelSettingsLabel: 'Angezeigte Blöcke',

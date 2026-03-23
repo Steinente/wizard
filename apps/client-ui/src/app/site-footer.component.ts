@@ -1,5 +1,8 @@
 import { Component, ElementRef, HostListener, signal } from '@angular/core'
 import { RouterLink, RouterLinkActive } from '@angular/router'
+import { marked } from 'marked'
+import { I18nService } from './core/i18n/i18n.service'
+import type { TranslationLanguage } from './core/i18n/translations'
 import { AppStore } from './core/state/app.store'
 import { TPipe } from './shared/pipes/t.pipe'
 
@@ -10,6 +13,39 @@ import { TPipe } from './shared/pipes/t.pipe'
   template: `
     <footer class="site-legal" [attr.aria-label]="'legalFooterLabel' | t">
       <div class="site-legal-inner">
+        <div class="site-rules">
+          @if (rulesOpen()) {
+            <div class="site-rules-popover">
+              <h4 class="site-rules-title">{{ 'rulesPopoverTitle' | t }}</h4>
+
+              @if (rulesLoading()) {
+                <p class="site-rules-loading">{{ 'loading' | t }}...</p>
+              } @else {
+                <article
+                  class="site-rules-markdown"
+                  [innerHTML]="rulesHtml()"
+                ></article>
+              }
+            </div>
+          }
+
+          <button
+            type="button"
+            class="site-rules-trigger"
+            [attr.aria-expanded]="rulesOpen()"
+            [attr.aria-label]="'rulesButtonLabel' | t"
+            (click)="toggleRules()"
+          >
+            <img
+              src="/icons/book-closed-brown.svg"
+              alt=""
+              aria-hidden="true"
+              class="site-rules-logo"
+            />
+            <span class="site-rules-trigger-text">{{ 'rules' | t }}</span>
+          </button>
+        </div>
+
         <div class="site-legal-links">
           <a
             routerLink="/imprint"
@@ -89,6 +125,174 @@ import { TPipe } from './shared/pipes/t.pipe'
         gap: 8px 18px;
         flex-wrap: wrap;
         grid-column: 2;
+      }
+
+      .site-rules {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        grid-column: 1;
+        justify-self: start;
+      }
+
+      .site-rules-trigger {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        min-height: 38px;
+        padding: 8px 14px;
+        border: 1px solid rgb(181 132 88 / 0.42);
+        border-radius: 999px;
+        background:
+          linear-gradient(135deg, rgb(64 35 18 / 0.96), rgb(130 80 42 / 0.9)),
+          linear-gradient(180deg, rgb(255 255 255 / 0.04), transparent);
+        color: #fff4e6;
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        box-shadow: 0 10px 30px rgb(0 0 0 / 0.18);
+        transition:
+          transform 180ms ease,
+          box-shadow 180ms ease,
+          border-color 180ms ease,
+          filter 180ms ease;
+      }
+
+      .site-rules-trigger:focus-visible {
+        outline: 2px solid rgb(255 199 142 / 0.95);
+        outline-offset: 3px;
+      }
+
+      .site-rules-trigger:hover {
+        transform: translateY(-1px);
+        border-color: rgb(232 176 122 / 0.68);
+        box-shadow: 0 14px 34px rgb(0 0 0 / 0.24);
+        filter: saturate(1.08);
+      }
+
+      .site-rules-logo {
+        display: block;
+        width: 22px;
+        height: 22px;
+        flex: 0 0 auto;
+        filter: drop-shadow(0 2px 8px rgb(0 0 0 / 0.28));
+      }
+
+      .site-rules-trigger-text {
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+      }
+
+      .site-rules-popover {
+        position: absolute;
+        left: 0;
+        bottom: calc(100% + 12px);
+        width: min(560px, calc(100vw - 24px));
+        max-height: min(70vh, 560px);
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+        touch-action: pan-x pan-y;
+        padding: 14px;
+        border: 1px solid rgb(170 118 79 / 0.4);
+        border-radius: 16px;
+        background: linear-gradient(
+          180deg,
+          rgb(52 30 17 / 0.97),
+          rgb(82 49 28 / 0.96)
+        );
+        box-shadow: 0 22px 48px rgb(0 0 0 / 0.28);
+        backdrop-filter: blur(12px);
+        z-index: 1002;
+      }
+
+      .site-rules-title {
+        margin: 0;
+        font-size: 15px;
+      }
+
+      .site-rules-loading {
+        margin: 10px 0 2px;
+        color: rgb(255 240 226 / 0.95);
+        font-size: 12px;
+        line-height: 1.45;
+      }
+
+      .site-rules-markdown {
+        margin-top: 10px;
+        color: rgb(255 238 221 / 0.95);
+        font-size: 12px;
+        line-height: 1.48;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .site-rules-markdown h1,
+      .site-rules-markdown h2,
+      .site-rules-markdown h3,
+      .site-rules-markdown h4 {
+        margin: 14px 0 6px;
+        line-height: 1.3;
+      }
+
+      .site-rules-markdown h1 {
+        font-size: 16px;
+      }
+
+      .site-rules-markdown h2 {
+        font-size: 14px;
+      }
+
+      .site-rules-markdown h3,
+      .site-rules-markdown h4 {
+        font-size: 13px;
+      }
+
+      .site-rules-markdown p {
+        margin: 7px 0;
+      }
+
+      .site-rules-markdown ul,
+      .site-rules-markdown ol {
+        margin: 6px 0 8px;
+        padding-left: 18px;
+      }
+
+      .site-rules-markdown li {
+        margin: 3px 0;
+      }
+
+      .site-rules-markdown a {
+        color: #ffe1bf;
+      }
+
+      .site-rules-markdown table {
+        width: max-content;
+        min-width: 100%;
+        border-collapse: collapse;
+        margin: 8px 0;
+        font-size: 11px;
+      }
+
+      .site-rules-markdown th,
+      .site-rules-markdown td {
+        border: 1px solid rgb(236 187 137 / 0.25);
+        padding: 6px;
+        text-align: left;
+        vertical-align: top;
+      }
+
+      .site-rules-markdown th {
+        background: rgb(255 220 185 / 0.08);
+      }
+
+      .site-rules-markdown hr {
+        border: 0;
+        border-top: 1px solid rgb(236 187 137 / 0.25);
+        margin: 10px 0;
       }
 
       .site-legal-link {
@@ -182,19 +386,6 @@ import { TPipe } from './shared/pipes/t.pipe'
         z-index: 1002;
       }
 
-      .site-donate-popover::after {
-        content: '';
-        position: absolute;
-        right: 22px;
-        top: 100%;
-        width: 14px;
-        height: 14px;
-        background: rgb(18 39 73 / 0.96);
-        border-right: 1px solid rgb(84 136 214 / 0.34);
-        border-bottom: 1px solid rgb(84 136 214 / 0.34);
-        transform: translateY(-7px) rotate(45deg);
-      }
-
       .site-donate-text {
         margin: 0;
         color: rgb(229 238 252 / 0.94);
@@ -241,6 +432,7 @@ import { TPipe } from './shared/pipes/t.pipe'
         }
 
         .site-legal-links,
+        .site-rules,
         .site-donate {
           width: auto;
           grid-column: auto;
@@ -257,14 +449,14 @@ import { TPipe } from './shared/pipes/t.pipe'
           flex: 0 0 auto;
         }
 
+        .site-rules-popover {
+          left: 0;
+          right: auto;
+        }
+
         .site-donate-popover {
           left: auto;
           right: 0;
-        }
-
-        .site-donate-popover::after {
-          left: auto;
-          right: 22px;
         }
 
         .site-legal-link {
@@ -277,15 +469,24 @@ import { TPipe } from './shared/pipes/t.pipe'
 })
 export class SiteFooterComponent {
   protected readonly donationOpen = signal(false)
+  protected readonly rulesOpen = signal(false)
+  protected readonly rulesHtml = signal('')
+  protected readonly rulesLoading = signal(false)
+
+  private readonly rulesDocumentCache: Partial<
+    Record<TranslationLanguage, string>
+  > = {}
+  private rulesLanguageLoaded: TranslationLanguage | null = null
 
   constructor(
     private readonly appStore: AppStore,
     private readonly elementRef: ElementRef<HTMLElement>,
+    private readonly i18n: I18nService,
   ) {}
 
   @HostListener('document:pointerdown', ['$event'])
   handleDocumentPointerDown(event: PointerEvent) {
-    if (!this.donationOpen()) {
+    if (!this.donationOpen() && !this.rulesOpen()) {
       return
     }
 
@@ -296,21 +497,40 @@ export class SiteFooterComponent {
 
     if (!this.elementRef.nativeElement.contains(eventTarget)) {
       this.donationOpen.set(false)
+      this.rulesOpen.set(false)
     }
   }
 
   @HostListener('window:scroll')
   handleWindowScroll() {
-    if (this.donationOpen()) {
+    if (this.donationOpen() || this.rulesOpen()) {
       this.donationOpen.set(false)
+      this.rulesOpen.set(false)
     }
   }
 
-  @HostListener('document:touchmove')
-  handleDocumentTouchMove() {
-    if (this.donationOpen()) {
+  @HostListener('document:touchmove', ['$event'])
+  handleDocumentTouchMove(event: TouchEvent) {
+    if (this.donationOpen() || this.rulesOpen()) {
+      const eventTarget = event.target
+      if (eventTarget instanceof Node && this.isInsidePopover(eventTarget)) {
+        return
+      }
+
       this.donationOpen.set(false)
+      this.rulesOpen.set(false)
     }
+  }
+
+  private isInsidePopover(target: Node) {
+    const element =
+      target instanceof HTMLElement ? target : target.parentElement
+
+    if (!element) {
+      return false
+    }
+
+    return !!element.closest('.site-rules-popover, .site-donate-popover')
   }
 
   clearTransientMessages() {
@@ -318,6 +538,70 @@ export class SiteFooterComponent {
   }
 
   toggleDonation() {
+    this.rulesOpen.set(false)
     this.donationOpen.update((currentValue) => !currentValue)
+  }
+
+  toggleRules() {
+    this.donationOpen.set(false)
+    const opening = !this.rulesOpen()
+    this.rulesOpen.set(opening)
+
+    if (opening) {
+      void this.loadRulesDocument()
+    }
+  }
+
+  private async loadRulesDocument() {
+    const language = this.i18n.language()
+
+    if (this.rulesLanguageLoaded === language && this.rulesHtml()) {
+      return
+    }
+
+    if (this.rulesDocumentCache[language]) {
+      this.rulesHtml.set(this.rulesDocumentCache[language] ?? '')
+      this.rulesLanguageLoaded = language
+      return
+    }
+
+    this.rulesLoading.set(true)
+
+    try {
+      const loaded = await this.fetchRulesForLanguage(language)
+      const rendered = this.renderMarkdown(loaded)
+      this.rulesDocumentCache[language] = rendered
+      this.rulesHtml.set(rendered)
+      this.rulesLanguageLoaded = language
+    } catch {
+      this.rulesHtml.set(this.i18n.t('rulesLoadFailed'))
+      this.rulesLanguageLoaded = language
+    } finally {
+      this.rulesLoading.set(false)
+    }
+  }
+
+  private renderMarkdown(markdown: string) {
+    return marked.parse(markdown, {
+      gfm: true,
+      breaks: true,
+    }) as string
+  }
+
+  private async fetchRulesForLanguage(language: TranslationLanguage) {
+    const primaryUrl = `/content/rules.${language}.md`
+    const fallbackUrl = '/content/rules.de.md'
+
+    const primaryResponse = await fetch(primaryUrl)
+    if (primaryResponse.ok) {
+      return primaryResponse.text()
+    }
+
+    const fallbackResponse = await fetch(fallbackUrl)
+    if (fallbackResponse.ok) {
+      return fallbackResponse.text()
+    }
+
+    throw new Error('rules-fetch-failed')
   }
 }
