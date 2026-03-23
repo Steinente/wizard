@@ -18,6 +18,7 @@ import {
   SCOREBOARD_A11Y_MODE_KEY,
   CHAT_SOUND_ENABLED_KEY,
   CARD_ARTWORK_ENABLED_KEY,
+  HAND_SORT_ENABLED_KEY,
 } from '../config/app.config-values'
 import {
   normalizeSpeechRate,
@@ -65,6 +66,7 @@ export class SessionService {
   private readonly scoreboardA11yModeSignal = signal(false)
   private readonly chatSoundEnabledSignal = signal(true)
   private readonly cardArtworkEnabledSignal = signal(false)
+  private readonly handSortEnabledSignal = signal(false)
 
   readonly sessionToken = computed(() => this.sessionTokenSignal())
   readonly playerName = computed(() => this.playerNameSignal())
@@ -92,6 +94,7 @@ export class SessionService {
   readonly scoreboardA11yMode = computed(() => this.scoreboardA11yModeSignal())
   readonly chatSoundEnabled = computed(() => this.chatSoundEnabledSignal())
   readonly cardArtworkEnabled = computed(() => this.cardArtworkEnabledSignal())
+  readonly handSortEnabled = computed(() => this.handSortEnabledSignal())
 
   constructor(private readonly storage: LocalStorageService) {
     const existingToken =
@@ -154,6 +157,9 @@ export class SessionService {
 
     const storedCardArtworkEnabled = this.storage.get(CARD_ARTWORK_ENABLED_KEY)
     this.cardArtworkEnabledSignal.set(storedCardArtworkEnabled === 'true')
+
+    const storedHandSortEnabled = this.storage.get(HAND_SORT_ENABLED_KEY)
+    this.handSortEnabledSignal.set(storedHandSortEnabled === 'true')
   }
 
   setPlayerName(name: string) {
@@ -237,6 +243,11 @@ export class SessionService {
   setCardArtworkEnabled(enabled: boolean) {
     this.cardArtworkEnabledSignal.set(enabled)
     this.storage.set(CARD_ARTWORK_ENABLED_KEY, String(enabled))
+  }
+
+  setHandSortEnabled(enabled: boolean) {
+    this.handSortEnabledSignal.set(enabled)
+    this.storage.set(HAND_SORT_ENABLED_KEY, String(enabled))
   }
 
   setLobbyConfig(config: GameConfig) {

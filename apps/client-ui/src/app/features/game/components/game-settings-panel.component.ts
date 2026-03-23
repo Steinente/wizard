@@ -64,6 +64,23 @@ import { TPipe } from '../../../shared/pipes/t.pipe'
         </label>
       </div>
 
+      <div class="row" style="margin-top: 8px;">
+        <label class="row">
+          <input
+            type="checkbox"
+            [ngModel]="handSortEnabled"
+            (ngModelChange)="toggleHandSort($event)"
+          />
+          <span>
+            {{
+              handSortEnabled
+                ? ('handSortEnabled' | t)
+                : ('handSortDisabled' | t)
+            }}
+          </span>
+        </label>
+      </div>
+
       <div style="margin-top: 12px;">
         <label class="label"
           >{{ 'speechVolumeLabel' | t }}: {{ volumePercent() }}%</label
@@ -205,10 +222,12 @@ export class GameSettingsPanelComponent {
   @Input({ required: true }) audioSpeed = 1
   @Input({ required: true }) bingEnabled = true
   @Input({ required: true }) chatSoundEnabled = true
+  @Input({ required: true }) handSortEnabled = false
   @Input({ required: true }) isHost = false
   @Input({ required: true }) onToggleAudio!: (enabled: boolean) => void
   @Input({ required: true }) onBingToggle!: (enabled: boolean) => void
   @Input({ required: true }) onChatSoundToggle!: (enabled: boolean) => void
+  @Input({ required: true }) onHandSortToggle!: (enabled: boolean) => void
   @Input({ required: true }) onAudioVolumeChange!: (volume: number) => void
   @Input({ required: true }) onAudioSpeedChange!: (speed: number) => void
   @Input({ required: true }) onEndLobby!: () => void
@@ -235,6 +254,10 @@ export class GameSettingsPanelComponent {
 
   toggleChatSound(enabled: boolean) {
     this.onChatSoundToggle(enabled)
+  }
+
+  toggleHandSort(enabled: boolean) {
+    this.onHandSortToggle(enabled)
   }
 
   changeAudioVolume(value: number | string) {

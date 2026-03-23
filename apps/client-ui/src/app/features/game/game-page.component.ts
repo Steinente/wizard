@@ -120,6 +120,7 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
                   [audioSpeed]="speechSpeedSignal()"
                   [bingEnabled]="bingEnabledSignal()"
                   [chatSoundEnabled]="chatSoundEnabledSignal()"
+                  [handSortEnabled]="handSortEnabledSignal()"
                   [isHost]="isHost()"
                   [showTimestamp]="logShowTimestampSignal()"
                   [scoreboardA11yMode]="scoreboardA11yModeSignal()"
@@ -127,6 +128,7 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
                   [onToggleAudio]="toggleReadLogFn"
                   [onBingToggle]="toggleBingFn"
                   [onChatSoundToggle]="setChatSoundEnabledFn"
+                  [onHandSortToggle]="setHandSortEnabledFn"
                   [onAudioVolumeChange]="setSpeechVolumeFn"
                   [onAudioSpeedChange]="setSpeechSpeedFn"
                   [onEndLobby]="endLobbyFn"
@@ -201,7 +203,7 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
                   [canPlay]="canPlayCardFn"
                   [play]="playCardFn"
                   [useArtwork]="cardArtworkEnabledSignal()"
-                  [isSortActive]="handSortEnabled()"
+                  [isSortActive]="handSortEnabledSignal()"
                   [onSort]="sortHandFn"
                   [onReorder]="reorderHandFn"
                 />
@@ -312,7 +314,6 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
 })
 export class GamePageComponent {
   protected readonly store = this.appStore
-  protected readonly handSortEnabled = signal(false)
   private readonly manualHandOrder = signal<string[] | null>(null)
   private lastSeenRoundKey: string | null = null
 
@@ -355,6 +356,9 @@ export class GamePageComponent {
   readonly cardArtworkEnabledSignal = computed(() =>
     this.session.cardArtworkEnabled(),
   )
+  readonly handSortEnabledSignal = computed(() =>
+    this.session.handSortEnabled(),
+  )
 
   readonly playCardFn = (card: Card) => this.playCard(card)
   readonly canPlayCardFn = (card: Card) => this.canPlayCard(card)
@@ -395,6 +399,7 @@ export class GamePageComponent {
     this.session.setScoreboardA11yMode(v)
   readonly setCardArtworkEnabledFn = (v: boolean) =>
     this.session.setCardArtworkEnabled(v)
+  readonly setHandSortEnabledFn = (v: boolean) => this.setHandSortEnabled(v)
   readonly sendChatMessageFn = (text: string) => this.sendChatMessage(text)
 
   constructor(
@@ -486,7 +491,7 @@ export class GamePageComponent {
       })
     }
 
-    if (!this.handSortEnabled()) {
+    if (!this.handSortEnabledSignal()) {
       return hand
     }
 
@@ -775,14 +780,11 @@ export class GamePageComponent {
   }
 
   sortHand() {
-    const next = !this.handSortEnabled()
+    const next = !this.handSortEnabledSignal()
     if (next) {
-      this.manualHandOrder.set(null)
-      this.handSortEnabled.set(true)
+      this.setHandSortEnabled(true)
     } else {
-      const currentOrder = this.displayHand().map((card) => card.id)
-      this.handSortEnabled.set(false)
-      this.manualHandOrder.set(currentOrder)
+      this.setHandSortEnabled(false)
     }
   }
 
@@ -804,8 +806,19 @@ export class GamePageComponent {
 
     reordered.splice(targetIndex, 0, draggedCard)
 
-    this.handSortEnabled.set(false)
+    this.setHandSortEnabled(false)
     this.manualHandOrder.set(reordered.map((card) => card.id))
+  }
+
+  private setHandSortEnabled(enabled: boolean) {
+    if (enabled) {
+      this.manualHandOrder.set(null)
+    } else if (this.handSortEnabledSignal()) {
+      const currentOrder = this.displayHand().map((card) => card.id)
+      this.manualHandOrder.set(currentOrder)
+    }
+
+    this.session.setHandSortEnabled(enabled)
   }
 
   private compareCardsForHandSort(
