@@ -4,7 +4,10 @@ import type { LobbySummary } from '@wizard/shared'
 import { I18nService } from '../../core/i18n/i18n.service'
 import type { TranslationLanguage } from '../../core/i18n/translations'
 import { GameFacadeService } from '../../core/services/game-facade.service'
-import { SessionService } from '../../core/services/session.service'
+import {
+  type AppFontChoice,
+  SessionService,
+} from '../../core/services/session.service'
 import { AppStore } from '../../core/state/app.store'
 import { TPipe } from '../../shared/pipes/t.pipe'
 
@@ -20,16 +23,40 @@ import { TPipe } from '../../shared/pipes/t.pipe'
             <p class="subtitle">{{ 'homeSubtitle' | t }}</p>
           </div>
 
-          <div class="home-language-box" style="min-width: 180px;">
-            <label class="label">{{ 'language' | t }}</label>
-            <select
-              class="select"
-              [ngModel]="language.language()"
-              (ngModelChange)="setLanguage($event)"
-            >
-              <option value="en">English</option>
-              <option value="de">Deutsch</option>
-            </select>
+          <div class="home-preferences-row">
+            <div class="home-language-box" style="min-width: 180px;">
+              <label class="label">{{ 'language' | t }}</label>
+              <select
+                class="select"
+                [ngModel]="language.language()"
+                (ngModelChange)="setLanguage($event)"
+              >
+                <option value="en">English</option>
+                <option value="de">Deutsch</option>
+              </select>
+            </div>
+
+            <div class="home-font-box" style="min-width: 220px;">
+              <label class="label">{{ 'fontLabel' | t }}</label>
+              <select
+                class="select"
+                [ngModel]="session.appFont()"
+                (ngModelChange)="setAppFont($event)"
+              >
+                <option
+                  value="simple"
+                  style="font-family: 'Segoe UI', 'Noto Sans', 'Helvetica Neue', Arial, sans-serif;"
+                >
+                  {{ 'fontSimple' | t }}
+                </option>
+                <option
+                  value="frances"
+                  style="font-family: 'Frances Uncial Std', serif;"
+                >
+                  {{ 'fontFrances' | t }}
+                </option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -186,6 +213,12 @@ import { TPipe } from '../../shared/pipes/t.pipe'
         grid-template-columns: 1fr 1fr;
       }
 
+      .home-preferences-row {
+        display: flex;
+        gap: 12px;
+        align-items: flex-end;
+      }
+
       .open-lobbies-password-input {
         width: 150px;
       }
@@ -197,6 +230,18 @@ import { TPipe } from '../../shared/pipes/t.pipe'
         }
 
         .home-language-box {
+          width: 100%;
+          min-width: 0 !important;
+        }
+
+        .home-preferences-row {
+          width: 100%;
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 12px;
+        }
+
+        .home-font-box {
           width: 100%;
           min-width: 0 !important;
         }
@@ -231,6 +276,10 @@ export class HomePageComponent implements OnInit, OnDestroy {
 
   setLanguage(language: TranslationLanguage) {
     this.language.setLanguage(language)
+  }
+
+  setAppFont(font: AppFontChoice) {
+    this.session.setAppFont(font)
   }
 
   ngOnInit() {

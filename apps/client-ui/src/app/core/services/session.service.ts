@@ -19,6 +19,7 @@ import {
   CHAT_SOUND_ENABLED_KEY,
   CARD_ARTWORK_ENABLED_KEY,
   HAND_SORT_ENABLED_KEY,
+  APP_FONT_KEY,
 } from '../config/app.config-values'
 import {
   normalizeSpeechRate,
@@ -46,6 +47,11 @@ const parseStoredNumber = (
   return normalize(parsed)
 }
 
+export type AppFontChoice = 'simple' | 'frances'
+
+const normalizeAppFont = (value: string | null): AppFontChoice =>
+  value === 'frances' ? 'frances' : 'simple'
+
 @Injectable({ providedIn: 'root' })
 export class SessionService {
   private readonly sessionTokenSignal = signal('')
@@ -67,6 +73,7 @@ export class SessionService {
   private readonly chatSoundEnabledSignal = signal(true)
   private readonly cardArtworkEnabledSignal = signal(false)
   private readonly handSortEnabledSignal = signal(false)
+  private readonly appFontSignal = signal<AppFontChoice>('simple')
 
   readonly sessionToken = computed(() => this.sessionTokenSignal())
   readonly playerName = computed(() => this.playerNameSignal())
@@ -95,6 +102,7 @@ export class SessionService {
   readonly chatSoundEnabled = computed(() => this.chatSoundEnabledSignal())
   readonly cardArtworkEnabled = computed(() => this.cardArtworkEnabledSignal())
   readonly handSortEnabled = computed(() => this.handSortEnabledSignal())
+  readonly appFont = computed(() => this.appFontSignal())
 
   constructor(private readonly storage: LocalStorageService) {
     const existingToken =
@@ -160,6 +168,11 @@ export class SessionService {
 
     const storedHandSortEnabled = this.storage.get(HAND_SORT_ENABLED_KEY)
     this.handSortEnabledSignal.set(storedHandSortEnabled === 'true')
+
+    const storedAppFont = this.storage.get(APP_FONT_KEY)
+    const appFont = normalizeAppFont(storedAppFont)
+    this.appFontSignal.set(appFont)
+    this.applyAppFontToDocument(appFont)
   }
 
   setPlayerName(name: string) {
@@ -250,6 +263,13 @@ export class SessionService {
     this.storage.set(HAND_SORT_ENABLED_KEY, String(enabled))
   }
 
+  setAppFont(font: AppFontChoice) {
+    const normalized = normalizeAppFont(font)
+    this.appFontSignal.set(normalized)
+    this.storage.set(APP_FONT_KEY, normalized)
+    this.applyAppFontToDocument(normalized)
+  }
+
   setLobbyConfig(config: GameConfig) {
     this.lobbyConfigSignal.set(config)
     this.storage.set(LOBBY_CONFIG_KEY, JSON.stringify(config))
@@ -262,5 +282,13 @@ export class SessionService {
     } as GameConfig
 
     this.setLobbyConfig(nextConfig)
+  }
+
+  private applyAppFontToDocument(font: AppFontChoice) {
+    if (typeof document === 'undefined') {
+      return
+    }
+
+    document.documentElement.setAttribute('data-app-font', font)
   }
 }

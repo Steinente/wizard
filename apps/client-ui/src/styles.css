@@ -19,7 +19,20 @@
   --card-yellow: #fbbf24;
   --card-green: #15803d;
   --card-blue: #1d4ed8;
-  font-family: 'Frances Uncial Std', serif;
+  --app-font-family:
+    'Segoe UI', 'Noto Sans', 'Helvetica Neue', Arial, 'Liberation Sans',
+    sans-serif;
+  font-family: var(--app-font-family);
+}
+
+:root[data-app-font='simple'] {
+  --app-font-family:
+    'Segoe UI', 'Noto Sans', 'Helvetica Neue', Arial, 'Liberation Sans',
+    sans-serif;
+}
+
+:root[data-app-font='frances'] {
+  --app-font-family: 'Frances Uncial Std', serif;
 }
 
 * {
