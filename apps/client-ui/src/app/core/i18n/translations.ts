@@ -1,6 +1,5 @@
 export const translations = {
   en: {
-    appTitle: 'Wizard Multiplayer',
     homeTitle: 'Wizard',
     homeSubtitle: 'Create or join a multiplayer lobby',
     createLobby: 'Create lobby',
@@ -355,7 +354,6 @@ export const translations = {
       'Weakest card, loses against every card except Dragon.',
   },
   de: {
-    appTitle: 'Wizard Multiplayer',
     homeTitle: 'Wizard',
     homeSubtitle: 'Erstelle oder betrete eine Multiplayer-Lobby',
     createLobby: 'Lobby erstellen',

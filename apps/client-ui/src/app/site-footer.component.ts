@@ -289,6 +289,13 @@ import { TPipe } from './shared/pipes/t.pipe'
         background: rgb(255 220 185 / 0.08);
       }
 
+      /* Visuelle Darstellung aller Bilder im Regeltext.
+         width/height werden global in styles.css gesetzt. */
+      .site-rules-markdown img {
+        border-radius: 4px;
+        vertical-align: middle;
+      }
+
       .site-rules-markdown hr {
         border: 0;
         border-top: 1px solid rgb(236 187 137 / 0.25);

@@ -1,7 +1,7 @@
 {
   "name": "Wizard Multiplayer",
   "short_name": "Wizard",
-  "description": "Wizard Multiplayer als installierbare Web-App",
+  "description": "Wizard online spielen: Kostenloses Multiplayer-Kartenspiel im Browser mit Freunden, Lobby-Code, Sonderkarten und offiziellen Regeln.",
   "lang": "de",
   "start_url": "/",
   "scope": "/",

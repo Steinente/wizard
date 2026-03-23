@@ -84,6 +84,14 @@ button {
   align-items: start;
 }
 
+/* Größe der Kartenbilder in den Regeltext-Tabellen.
+   Greift global (auch im Footer-Popover) und übersteuert
+   komponentenseitige width/height-Angaben via !important. */
+.site-rules-markdown img[src^='/cards/'] {
+  width: 80px !important;
+  max-width: none !important;
+  height: auto !important;
+}
 .btn {
   border: 1px solid var(--border);
   background: #22304a;
