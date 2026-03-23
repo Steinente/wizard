@@ -11,10 +11,17 @@ export declare const OPEN_PREDICTION_RESTRICTIONS: readonly [
 ]
 export type OpenPredictionRestriction =
   (typeof OPEN_PREDICTION_RESTRICTIONS)[number]
+export declare const CLOUD_RULE_TIMINGS: readonly [
+  'endOfRound',
+  'immediateAfterTrick',
+]
+export type CloudRuleTiming = (typeof CLOUD_RULE_TIMINGS)[number]
 export interface GameConfig {
   predictionVisibility: PredictionVisibility
   openPredictionRestriction: OpenPredictionRestriction
+  cloudRuleTiming: CloudRuleTiming
+  specialCardsRandomizerEnabled: boolean
   readLogEnabledByDefault: boolean
   languageDefault: 'en' | 'de'
-  allowIncludedSpecialCards: boolean
+  includedSpecialCards: import('./cards.js').SpecialCardKey[]
 }
