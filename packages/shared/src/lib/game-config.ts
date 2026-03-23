@@ -21,6 +21,7 @@ export interface GameConfig {
   predictionVisibility: PredictionVisibility
   openPredictionRestriction: OpenPredictionRestriction
   cloudRuleTiming: CloudRuleTiming
+  specialCardsRandomizerEnabled: boolean
   readLogEnabledByDefault: boolean
   languageDefault: 'en' | 'de'
   includedSpecialCards: SpecialCardKey[]

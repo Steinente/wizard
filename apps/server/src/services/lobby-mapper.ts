@@ -34,10 +34,12 @@ const parseSpecialCardSettings = (
 ): {
   includedSpecialCards: SpecialCardKey[]
   cloudRuleTiming: GameConfig['cloudRuleTiming']
+  specialCardsRandomizerEnabled: boolean
 } => {
   const fallback = {
     includedSpecialCards: [...SPECIAL_CARD_KEYS],
     cloudRuleTiming: 'endOfRound' as const,
+    specialCardsRandomizerEnabled: false,
   }
 
   if (value === null) return fallback
@@ -49,6 +51,7 @@ const parseSpecialCardSettings = (
       return {
         includedSpecialCards: parsed as SpecialCardKey[],
         cloudRuleTiming: fallback.cloudRuleTiming,
+        specialCardsRandomizerEnabled: fallback.specialCardsRandomizerEnabled,
       }
     }
 
@@ -57,6 +60,9 @@ const parseSpecialCardSettings = (
         .includedSpecialCards
       const maybeTiming = (parsed as { cloudRuleTiming?: unknown })
         .cloudRuleTiming
+      const maybeRandomizer = (
+        parsed as { specialCardsRandomizerEnabled?: unknown }
+      ).specialCardsRandomizerEnabled
 
       return {
         includedSpecialCards: Array.isArray(maybeCards)
@@ -66,6 +72,7 @@ const parseSpecialCardSettings = (
           maybeTiming === 'immediateAfterTrick'
             ? 'immediateAfterTrick'
             : 'endOfRound',
+        specialCardsRandomizerEnabled: maybeRandomizer === true,
       }
     }
 
@@ -86,6 +93,8 @@ export const mapLobbyToSummary = (lobby: LobbyWithPlayers): LobbySummary => {
       lobby.openPredictionRestriction,
     ),
     cloudRuleTiming: specialCardSettings.cloudRuleTiming,
+    specialCardsRandomizerEnabled:
+      specialCardSettings.specialCardsRandomizerEnabled,
     readLogEnabledByDefault: lobby.readLogEnabledByDefault,
     languageDefault: lobby.languageDefault === 'de' ? 'de' : 'en',
     includedSpecialCards: specialCardSettings.includedSpecialCards,

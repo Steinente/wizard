@@ -1,7 +1,8 @@
-import type { PlayerPrediction, Suit } from '@wizard/shared'
+import type { PlayerPrediction, SpecialCardKey, Suit } from '@wizard/shared'
 import {
   getAllowedPredictionValues,
   isLegalPlay,
+  SPECIAL_CARD_KEYS,
   validatePredictionRestriction,
 } from '@wizard/shared'
 import crypto from 'node:crypto'
@@ -24,6 +25,8 @@ import {
   isFollowSuitDisabledInTrick,
   loadLobbyByCode,
   nowIso,
+  parseSpecialCardSettings,
+  serializeSpecialCardSettings,
 } from './game-service-support.js'
 import { createGameStateView } from './game-state-view.js'
 import {
@@ -48,6 +51,12 @@ import {
 export class GameService {
   private static readonly CHAT_MESSAGE_LIMIT = 200
 
+  private randomizeSpecialCards(): SpecialCardKey[] {
+    const shuffled = [...SPECIAL_CARD_KEYS].sort(() => Math.random() - 0.5)
+    const count = Math.floor(Math.random() * SPECIAL_CARD_KEYS.length) + 1
+    return shuffled.slice(0, count)
+  }
+
   async startGame(input: { code: string; sessionToken: string }) {
     const lobby = await loadLobbyByCode(input.code)
 
@@ -65,6 +74,24 @@ export class GameService {
       throw new Error('error.wizardMinPlayers')
     }
 
+    const specialCardSettings = parseSpecialCardSettings(
+      lobby.includedSpecialCards,
+    )
+
+    const randomizedIncludedSpecialCards =
+      specialCardSettings.specialCardsRandomizerEnabled
+        ? this.randomizeSpecialCards()
+        : null
+
+    if (randomizedIncludedSpecialCards) {
+      lobby.includedSpecialCards = serializeSpecialCardSettings({
+        includedSpecialCards: randomizedIncludedSpecialCards,
+        cloudRuleTiming: specialCardSettings.cloudRuleTiming,
+        specialCardsRandomizerEnabled:
+          specialCardSettings.specialCardsRandomizerEnabled,
+      })
+    }
+
     const state = buildInitialState(lobby)
 
     await prisma.lobby.update({
@@ -73,6 +100,9 @@ export class GameService {
         status: LobbyStatus.RUNNING,
         hostDisconnectedAt: null,
         hostDisconnectDeadline: null,
+        includedSpecialCards: randomizedIncludedSpecialCards
+          ? lobby.includedSpecialCards
+          : undefined,
       },
     })
 

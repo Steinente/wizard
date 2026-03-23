@@ -295,13 +295,47 @@ import { TPipe } from '../../shared/pipes/t.pipe'
                 </div>
               }
 
+              <label class="label" style="margin-top: 4px;">
+                {{ 'specialCardsRandomizerLabel' | t }}
+                <button
+                  type="button"
+                  class="info-icon"
+                  [attr.aria-label]="i18n.t('specialCardsRandomizerInfo')"
+                  (click)="toggleRuleInfo('specialCardsRandomizer')"
+                >
+                  ?
+                </button>
+              </label>
+              @if (activeRuleInfo() === 'specialCardsRandomizer') {
+                <div class="rule-info-box">
+                  {{ i18n.t('specialCardsRandomizerInfo') }}
+                </div>
+              }
+
+              <label class="row" style="gap: 8px; margin-top: 8px;">
+                <input
+                  type="checkbox"
+                  [disabled]="!isHost()"
+                  [ngModel]="store.lobby()!.config.specialCardsRandomizerEnabled"
+                  (ngModelChange)="setSpecialCardsRandomizerEnabled($event)"
+                />
+                <span class="muted">{{ 'specialCardsRandomizerEnabled' | t }}</span>
+              </label>
+
               <div
                 style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px;"
+                [style.opacity]="
+                  store.lobby()!.config.specialCardsRandomizerEnabled ? 0.55 : 1
+                "
               >
                 @for (card of specialCards; track card.id) {
                   @let isEnabled = isSpecialCardEnabled(card.special);
                   <div
-                    [style.cursor]="isHost() ? 'pointer' : 'default'"
+                    [style.cursor]="
+                      isHost() && !store.lobby()!.config.specialCardsRandomizerEnabled
+                        ? 'pointer'
+                        : 'default'
+                    "
                     [style.opacity]="isEnabled ? '1' : '0.45'"
                     [style.filter]="isEnabled ? 'none' : 'grayscale(0.4)'"
                     (click)="toggleSpecialCard(card.special)"
@@ -363,6 +397,7 @@ export class LobbyPageComponent {
     | 'predictionVisibility'
     | 'openRestriction'
     | 'cloudRuleTiming'
+    | 'specialCardsRandomizer'
     | 'specialCards'
     | null
   >(null)
@@ -403,6 +438,7 @@ export class LobbyPageComponent {
       | 'predictionVisibility'
       | 'openRestriction'
       | 'cloudRuleTiming'
+      | 'specialCardsRandomizer'
       | 'specialCards',
   ) {
     this.activeRuleInfoState.update((current) => (current === key ? null : key))
@@ -528,6 +564,16 @@ export class LobbyPageComponent {
     this.facade.updateConfig(lobby.code, { cloudRuleTiming })
   }
 
+  setSpecialCardsRandomizerEnabled(specialCardsRandomizerEnabled: boolean) {
+    const lobby = this.store.lobby()
+
+    if (!lobby || !this.isHost()) {
+      return
+    }
+
+    this.facade.updateConfig(lobby.code, { specialCardsRandomizerEnabled })
+  }
+
   isSpecialCardEnabled(key: SpecialCardKey): boolean {
     return (
       this.store.lobby()?.config.includedSpecialCards?.includes(key) ?? true
@@ -537,7 +583,11 @@ export class LobbyPageComponent {
   toggleSpecialCard(key: SpecialCardKey) {
     const lobby = this.store.lobby()
 
-    if (!lobby || !this.isHost()) {
+    if (
+      !lobby ||
+      !this.isHost() ||
+      lobby.config.specialCardsRandomizerEnabled
+    ) {
       return
     }
 

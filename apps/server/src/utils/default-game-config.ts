@@ -5,6 +5,7 @@ export const defaultGameConfig: GameConfig = {
   predictionVisibility: 'open',
   openPredictionRestriction: 'none',
   cloudRuleTiming: 'endOfRound',
+  specialCardsRandomizerEnabled: false,
   readLogEnabledByDefault: false,
   languageDefault: 'en',
   includedSpecialCards: [...SPECIAL_CARD_KEYS],

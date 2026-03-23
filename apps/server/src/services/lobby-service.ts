@@ -19,10 +19,12 @@ const parseSpecialCardSettings = (
 ): {
   includedSpecialCards: SpecialCardKey[]
   cloudRuleTiming: GameConfig['cloudRuleTiming']
+  specialCardsRandomizerEnabled: boolean
 } => {
   const fallback = {
     includedSpecialCards: [...SPECIAL_CARD_KEYS],
     cloudRuleTiming: 'endOfRound' as const,
+    specialCardsRandomizerEnabled: false,
   }
 
   if (value === null) return fallback
@@ -34,6 +36,7 @@ const parseSpecialCardSettings = (
       return {
         includedSpecialCards: parsed as SpecialCardKey[],
         cloudRuleTiming: fallback.cloudRuleTiming,
+        specialCardsRandomizerEnabled: fallback.specialCardsRandomizerEnabled,
       }
     }
 
@@ -42,6 +45,9 @@ const parseSpecialCardSettings = (
         .includedSpecialCards
       const maybeTiming = (parsed as { cloudRuleTiming?: unknown })
         .cloudRuleTiming
+      const maybeRandomizer = (
+        parsed as { specialCardsRandomizerEnabled?: unknown }
+      ).specialCardsRandomizerEnabled
 
       return {
         includedSpecialCards: Array.isArray(maybeCards)
@@ -51,6 +57,7 @@ const parseSpecialCardSettings = (
           maybeTiming === 'immediateAfterTrick'
             ? 'immediateAfterTrick'
             : 'endOfRound',
+        specialCardsRandomizerEnabled: maybeRandomizer === true,
       }
     }
 
@@ -61,7 +68,10 @@ const parseSpecialCardSettings = (
 }
 
 const serializeSpecialCardSettings = (
-  settings: Pick<GameConfig, 'includedSpecialCards' | 'cloudRuleTiming'>,
+  settings: Pick<
+    GameConfig,
+    'includedSpecialCards' | 'cloudRuleTiming' | 'specialCardsRandomizerEnabled'
+  >,
 ): string => JSON.stringify(settings)
 
 const CODE_LENGTH = 6
@@ -321,6 +331,8 @@ export class LobbyService {
         includedSpecialCards: serializeSpecialCardSettings({
           includedSpecialCards: mergedConfig.includedSpecialCards,
           cloudRuleTiming: mergedConfig.cloudRuleTiming,
+          specialCardsRandomizerEnabled:
+            mergedConfig.specialCardsRandomizerEnabled,
         }),
         players: {
           create: {
@@ -633,7 +645,9 @@ export class LobbyService {
         readLogEnabledByDefault: input.config.readLogEnabledByDefault,
         languageDefault: input.config.languageDefault,
         includedSpecialCards:
-          input.config.includedSpecialCards || input.config.cloudRuleTiming
+          input.config.includedSpecialCards ||
+          input.config.cloudRuleTiming ||
+          typeof input.config.specialCardsRandomizerEnabled === 'boolean'
             ? serializeSpecialCardSettings({
                 includedSpecialCards:
                   input.config.includedSpecialCards ??
@@ -641,6 +655,9 @@ export class LobbyService {
                 cloudRuleTiming:
                   input.config.cloudRuleTiming ??
                   previousSpecialCardSettings.cloudRuleTiming,
+                specialCardsRandomizerEnabled:
+                  input.config.specialCardsRandomizerEnabled ??
+                  previousSpecialCardSettings.specialCardsRandomizerEnabled,
               })
             : undefined,
       },

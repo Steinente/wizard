@@ -21,6 +21,7 @@ export const createLobbySchema = z.object({
         .enum(['none', 'mustEqualTricks', 'mustNotEqualTricks'])
         .optional(),
       cloudRuleTiming: z.enum(['endOfRound', 'immediateAfterTrick']).optional(),
+      specialCardsRandomizerEnabled: z.boolean().optional(),
       languageDefault: z.enum(['en', 'de']).optional(),
       includedSpecialCards: z.array(specialCardKeySchema).optional(),
     })
@@ -57,6 +58,7 @@ export const updateConfigSchema = z.object({
       .enum(['none', 'mustEqualTricks', 'mustNotEqualTricks'])
       .optional(),
     cloudRuleTiming: z.enum(['endOfRound', 'immediateAfterTrick']).optional(),
+    specialCardsRandomizerEnabled: z.boolean().optional(),
     languageDefault: z.enum(['en', 'de']).optional(),
     includedSpecialCards: z.array(specialCardKeySchema).optional(),
   }),

@@ -212,6 +212,10 @@ export const translations = {
     specialCardsLabel: 'Special cards',
     specialCardsInfo:
       'Click cards to enable or disable them for the game. Grayed-out cards are excluded.',
+    specialCardsRandomizerLabel: 'Special cards randomizer',
+    specialCardsRandomizerEnabled: 'Enable random special cards at game start',
+    specialCardsRandomizerInfo:
+      'If enabled, the host settings for individual special cards are ignored when starting the game. The game randomly decides which special cards are included.',
     loading: 'Loading',
     self: 'You',
     host: 'Host',
@@ -571,6 +575,11 @@ export const translations = {
     specialCardsLabel: 'Sonderkarten',
     specialCardsInfo:
       'Karten anklicken, um sie für das Spiel zu aktivieren oder deaktivieren. Ausgegraute Karten sind ausgeschlossen.',
+    specialCardsRandomizerLabel: 'Sonderkarten-Randomizer',
+    specialCardsRandomizerEnabled:
+      'Zufällige Sonderkarten beim Spielstart aktivieren',
+    specialCardsRandomizerInfo:
+      'Wenn aktiviert, werden die Host-Einstellungen einzelner Sonderkarten beim Spielstart ignoriert. Das Spiel entscheidet zufällig, welche Sonderkarten enthalten sind.',
     loading: 'Lädt',
     self: 'Du',
     host: 'Host',

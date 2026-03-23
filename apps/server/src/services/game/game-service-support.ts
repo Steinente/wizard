@@ -20,15 +20,17 @@ import { disablesFollowSuitForDragonLead } from './specials/index.js'
 
 export const normalizeCode = (code: string) => code.trim().toUpperCase()
 
-const parseSpecialCardSettings = (
+export const parseSpecialCardSettings = (
   value: string | null,
 ): {
   includedSpecialCards: SpecialCardKey[]
   cloudRuleTiming: GameConfig['cloudRuleTiming']
+  specialCardsRandomizerEnabled: boolean
 } => {
   const fallback = {
     includedSpecialCards: [...SPECIAL_CARD_KEYS],
     cloudRuleTiming: 'endOfRound' as const,
+    specialCardsRandomizerEnabled: false,
   }
 
   if (value === null) return fallback
@@ -40,6 +42,7 @@ const parseSpecialCardSettings = (
       return {
         includedSpecialCards: parsed as SpecialCardKey[],
         cloudRuleTiming: fallback.cloudRuleTiming,
+        specialCardsRandomizerEnabled: fallback.specialCardsRandomizerEnabled,
       }
     }
 
@@ -48,6 +51,9 @@ const parseSpecialCardSettings = (
         .includedSpecialCards
       const maybeTiming = (parsed as { cloudRuleTiming?: unknown })
         .cloudRuleTiming
+      const maybeRandomizer = (
+        parsed as { specialCardsRandomizerEnabled?: unknown }
+      ).specialCardsRandomizerEnabled
 
       return {
         includedSpecialCards: Array.isArray(maybeCards)
@@ -57,6 +63,7 @@ const parseSpecialCardSettings = (
           maybeTiming === 'immediateAfterTrick'
             ? 'immediateAfterTrick'
             : 'endOfRound',
+        specialCardsRandomizerEnabled: maybeRandomizer === true,
       }
     }
 
@@ -110,6 +117,12 @@ export const lobbyConfigToShared = (
   readLogEnabledByDefault: lobby.readLogEnabledByDefault,
   languageDefault: lobby.languageDefault === 'de' ? 'de' : 'en',
 })
+
+export const serializeSpecialCardSettings = (settings: {
+  includedSpecialCards: SpecialCardKey[]
+  cloudRuleTiming: GameConfig['cloudRuleTiming']
+  specialCardsRandomizerEnabled: boolean
+}) => JSON.stringify(settings)
 
 export const toJson = (value: WizardGameState): Prisma.JsonObject =>
   JSON.parse(JSON.stringify(value)) as Prisma.JsonObject
