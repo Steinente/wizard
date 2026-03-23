@@ -201,6 +201,8 @@ export class ScoreboardPanelComponent implements OnChanges {
   }
 
   ngOnChanges() {
+    if (!this.a11yMode) return
+
     if (!this.isAtBottom) return
 
     requestAnimationFrame(() => {
