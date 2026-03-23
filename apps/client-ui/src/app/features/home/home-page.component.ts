@@ -11,6 +11,10 @@ import {
 import { AppStore } from '../../core/state/app.store'
 import { TPipe } from '../../shared/pipes/t.pipe'
 
+const PLAYER_NAME_MAX_LENGTH = 15
+const PLAYER_NAME_EMOJI_PATTERN =
+  /[\p{Extended_Pictographic}\p{Emoji_Presentation}\p{Regional_Indicator}\u200D\uFE0F]/u
+
 @Component({
   standalone: true,
   imports: [FormsModule, TPipe],
@@ -66,7 +70,17 @@ import { TPipe } from '../../shared/pipes/t.pipe'
 
         <div class="panel">
           <label class="label">{{ 'playerName' | t }}</label>
-          <input class="input" [(ngModel)]="playerName" />
+          <input
+            class="input"
+            [ngModel]="playerName"
+            (ngModelChange)="onPlayerNameChange($event)"
+            [attr.maxlength]="playerNameMaxLength"
+          />
+          @if (playerNameValidationErrorKey()) {
+            <div class="error-box" style="margin-top: 8px;">
+              {{ playerNameValidationErrorKey()! | t }}
+            </div>
+          }
         </div>
 
         <div class="grid home-actions-grid">
@@ -79,7 +93,7 @@ import { TPipe } from '../../shared/pipes/t.pipe'
             <div style="margin-top: 16px;">
               <button
                 class="btn btn-primary"
-                [disabled]="store.loading()"
+                [disabled]="store.loading() || isPlayerNameInvalid()"
                 (click)="createLobby()"
               >
                 {{ 'createLobby' | t }}
@@ -101,7 +115,7 @@ import { TPipe } from '../../shared/pipes/t.pipe'
             <div style="margin-top: 16px;" class="row">
               <button
                 class="btn btn-primary"
-                [disabled]="store.loading()"
+                [disabled]="store.loading() || isPlayerNameInvalid()"
                 (click)="joinLobby()"
               >
                 {{ 'joinLobby' | t }}
@@ -178,7 +192,9 @@ import { TPipe } from '../../shared/pipes/t.pipe'
                         } @else {
                           <button
                             class="btn"
-                            [disabled]="store.loading()"
+                            [disabled]="
+                              store.loading() || isPlayerNameInvalid()
+                            "
                             (click)="
                               spectateListedLobby(lobby.code, lobby.hasPassword)
                             "
@@ -189,7 +205,7 @@ import { TPipe } from '../../shared/pipes/t.pipe'
                       } @else {
                         <button
                           class="btn btn-primary"
-                          [disabled]="store.loading()"
+                          [disabled]="store.loading() || isPlayerNameInvalid()"
                           (click)="
                             joinListedLobby(lobby.code, lobby.hasPassword)
                           "
@@ -263,6 +279,7 @@ import { TPipe } from '../../shared/pipes/t.pipe'
   ],
 })
 export class HomePageComponent implements OnInit, OnDestroy {
+  readonly playerNameMaxLength = PLAYER_NAME_MAX_LENGTH
   playerName = this.session.playerName()
   joinCode = this.session.lastLobbyCode()
   createPassword = ''
@@ -284,6 +301,32 @@ export class HomePageComponent implements OnInit, OnDestroy {
 
   setAppFont(font: AppFontChoice) {
     this.session.setAppFont(font)
+  }
+
+  onPlayerNameChange(value: string) {
+    this.playerName = value.slice(0, this.playerNameMaxLength)
+  }
+
+  playerNameValidationErrorKey() {
+    const trimmedName = this.playerName.trim()
+
+    if (!trimmedName) {
+      return 'error.playerNameRequired' as const
+    }
+
+    if (trimmedName.length > this.playerNameMaxLength) {
+      return 'error.playerNameTooLong' as const
+    }
+
+    if (PLAYER_NAME_EMOJI_PATTERN.test(trimmedName)) {
+      return 'error.playerNameNoEmoji' as const
+    }
+
+    return null
+  }
+
+  isPlayerNameInvalid() {
+    return this.playerNameValidationErrorKey() !== null
   }
 
   ngOnInit() {
@@ -393,8 +436,9 @@ export class HomePageComponent implements OnInit, OnDestroy {
   }
 
   createLobby() {
-    if (!this.playerName.trim()) {
-      this.appStore.setError(this.language.t('error.playerNameRequired'))
+    const nameError = this.playerNameValidationErrorKey()
+    if (nameError) {
+      this.appStore.setError(this.language.t(nameError))
       return
     }
 
@@ -417,7 +461,13 @@ export class HomePageComponent implements OnInit, OnDestroy {
   }
 
   joinLobby() {
-    if (!this.playerName.trim() || !this.joinCode.trim()) {
+    const nameError = this.playerNameValidationErrorKey()
+    if (nameError) {
+      this.appStore.setError(this.language.t(nameError))
+      return
+    }
+
+    if (!this.joinCode.trim()) {
       this.appStore.setError(
         this.language.t('error.playerNameAndLobbyCodeRequired'),
       )
@@ -452,8 +502,9 @@ export class HomePageComponent implements OnInit, OnDestroy {
   }
 
   spectateListedLobby(code: string, hasPassword: boolean) {
-    if (!this.playerName.trim()) {
-      this.appStore.setError(this.language.t('error.playerNameRequired'))
+    const nameError = this.playerNameValidationErrorKey()
+    if (nameError) {
+      this.appStore.setError(this.language.t(nameError))
       return
     }
 
@@ -475,8 +526,9 @@ export class HomePageComponent implements OnInit, OnDestroy {
   }
 
   joinListedLobby(code: string, hasPassword: boolean) {
-    if (!this.playerName.trim()) {
-      this.appStore.setError(this.language.t('error.playerNameRequired'))
+    const nameError = this.playerNameValidationErrorKey()
+    if (nameError) {
+      this.appStore.setError(this.language.t(nameError))
       return
     }
 

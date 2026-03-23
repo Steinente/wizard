@@ -298,6 +298,8 @@ export const translations = {
     'error.jugglerPassFailed': 'Juggler pass selection failed',
     'error.werewolfTrumpSwapFailed': 'Werewolf trump swap failed',
     'error.playerNameRequired': 'Player name is required',
+    'error.playerNameTooLong': 'Player name must be 15 characters or fewer',
+    'error.playerNameNoEmoji': 'Player name must not contain emoji',
     'error.playerNameAndLobbyCodeRequired':
       'Player name and lobby code are required',
 
@@ -670,6 +672,9 @@ export const translations = {
     'error.jugglerPassFailed': 'Jongleur-Weitergabe fehlgeschlagen',
     'error.werewolfTrumpSwapFailed': 'Werwolf-Trumpftausch fehlgeschlagen',
     'error.playerNameRequired': 'Spielername ist erforderlich',
+    'error.playerNameTooLong':
+      'Der Spielername darf maximal 15 Zeichen lang sein',
+    'error.playerNameNoEmoji': 'Der Spielername darf keine Emojis enthalten',
     'error.playerNameAndLobbyCodeRequired':
       'Spielername und Lobby-Code sind erforderlich',
 
