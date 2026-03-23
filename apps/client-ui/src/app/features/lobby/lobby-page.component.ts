@@ -26,30 +26,12 @@ import { TPipe } from '../../shared/pipes/t.pipe'
         <div class="panel">
           <h2 style="margin-top: 0;">{{ 'lobby' | t }} {{ routeCode }}</h2>
 
-          @if (store.error()) {
-            <div class="error-box" style="margin-bottom: 16px;">
-              {{ store.error() }}
-            </div>
-          }
-
-          <label class="label">{{ 'playerName' | t }}</label>
-          <input class="input" [(ngModel)]="playerName" />
+          <div class="muted">{{ 'loading' | t }}...</div>
 
           <div class="row" style="margin-top: 16px;">
-            <button
-              class="btn btn-primary"
-              [disabled]="store.loading() || !routeCode"
-              (click)="enterCurrentLobby()"
-            >
-              {{
-                store.loading()
-                  ? ('loading' | t)
-                  : isRouteLobbyRunning()
-                    ? ('watchAsSpectator' | t)
-                    : ('joinThisLobby' | t)
-              }}
-            </button>
-
+            <a [routerLink]="['/join', routeCode]" class="btn btn-primary">
+              {{ 'joinLobby' | t }}
+            </a>
             <a routerLink="/" class="btn">{{ 'back' | t }}</a>
           </div>
         </div>
@@ -344,7 +326,6 @@ export class LobbyPageComponent {
   private copiedTimeoutId: ReturnType<typeof setTimeout> | null = null
 
   routeCode = this.route.snapshot.paramMap.get('code')?.toUpperCase() ?? ''
-  playerName = this.session.playerName()
 
   readonly specialCards: SpecialCard[] = SPECIAL_CARD_KEYS.map((key) => ({
     id: `special-${key}`,
@@ -417,45 +398,6 @@ export class LobbyPageComponent {
         this.cdr.markForCheck()
       })
     })
-  }
-
-  joinCurrentLobby() {
-    if (!this.playerName.trim() || !this.routeCode) {
-      return
-    }
-
-    this.session.setPlayerName(this.playerName.trim())
-    this.facade.joinLobby(this.routeCode, this.playerName.trim())
-  }
-
-  enterCurrentLobby() {
-    if (this.isRouteLobbyRunning()) {
-      this.spectateCurrentLobby()
-      return
-    }
-
-    this.joinCurrentLobby()
-  }
-
-  spectateCurrentLobby() {
-    if (!this.playerName.trim() || !this.routeCode) {
-      return
-    }
-
-    this.session.setPlayerName(this.playerName.trim())
-    this.facade.spectateLobby(this.routeCode, this.playerName.trim())
-  }
-
-  isRouteLobbyRunning() {
-    const routeLobby = this.store
-      .lobbyList()
-      .find((lobby) => lobby.code === this.routeCode)
-
-    if (!routeLobby) {
-      return false
-    }
-
-    return routeLobby.status.trim().toLowerCase() === 'running'
   }
 
   leaveLobby() {

@@ -283,14 +283,16 @@ export class GameHeaderComponent {
   }
 
   confirmLeaveGame() {
+    if (this.isSpectator()) {
+      this.facade.leaveLobby(this.state.lobbyCode)
+      this.router.navigateByUrl('/')
+      return
+    }
+
     const confirmed = window.confirm(this.i18n.t('confirmLeaveGame'))
 
     if (confirmed) {
-      if (this.isSpectator()) {
-        this.facade.leaveLobby(this.state.lobbyCode)
-      } else {
-        this.facade.setInGame(this.state.lobbyCode, false)
-      }
+      this.facade.setInGame(this.state.lobbyCode, false)
       this.router.navigateByUrl('/')
     }
   }

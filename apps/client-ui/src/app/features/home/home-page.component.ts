@@ -305,6 +305,11 @@ export class HomePageComponent implements OnInit, OnDestroy {
       )
   }
 
+  private trimmedPassword(value: string) {
+    const normalized = value.trim()
+    return normalized.length > 0 ? normalized : undefined
+  }
+
   private confirmSwitchFromCurrentGame(targetCode: string) {
     const previousLobby = this.currentActiveGameLobby(targetCode)
 
@@ -324,11 +329,6 @@ export class HomePageComponent implements OnInit, OnDestroy {
 
     this.facade.leaveLobby(previousLobby.code)
     return true
-  }
-
-  private trimmedPassword(value: string) {
-    const normalized = value.trim()
-    return normalized.length > 0 ? normalized : undefined
   }
 
   createLobby() {

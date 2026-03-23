@@ -22,7 +22,11 @@ export class AppInitService {
 
     const currentUrl = this.router.url
 
-    if (currentUrl.startsWith('/lobby/')) {
+    if (
+      currentUrl.startsWith('/join/') ||
+      currentUrl.startsWith('/lobby/') ||
+      currentUrl.startsWith('/game/')
+    ) {
       return
     }
 
