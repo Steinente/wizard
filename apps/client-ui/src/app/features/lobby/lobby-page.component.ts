@@ -239,17 +239,34 @@ import { TPipe } from '../../shared/pipes/t.pipe'
             </div>
 
             <div class="panel">
-              <h3 style="margin-top: 0; margin-bottom: 4px;">
-                {{ 'specialCardsLabel' | t }}
-                <button
-                  type="button"
-                  class="info-icon"
-                  [attr.aria-label]="i18n.t('specialCardsInfo')"
-                  (click)="toggleRuleInfo('specialCards')"
-                >
-                  ?
-                </button>
-              </h3>
+              <div class="spread" style="align-items: flex-start; gap: 12px;">
+                <h3 style="margin-top: 0; margin-bottom: 4px;">
+                  {{ 'specialCardsLabel' | t }}
+                  <button
+                    type="button"
+                    class="info-icon"
+                    [attr.aria-label]="i18n.t('specialCardsInfo')"
+                    (click)="toggleRuleInfo('specialCards')"
+                  >
+                    ?
+                  </button>
+                </h3>
+
+                <label class="row" style="gap: 8px; flex-wrap: nowrap;">
+                  <input
+                    type="checkbox"
+                    [ngModel]="session.cardArtworkEnabled()"
+                    (ngModelChange)="toggleCardArtworkEnabled($event)"
+                  />
+                  <span style="font-size: 12px; line-height: 1.2;">
+                    {{
+                      session.cardArtworkEnabled()
+                        ? ('cardArtworkModeOn' | t)
+                        : ('cardArtworkModeOff' | t)
+                    }}
+                  </span>
+                </label>
+              </div>
               @if (activeRuleInfo() === 'specialCards') {
                 <div class="rule-info-box" style="margin-bottom: 10px;">
                   {{ i18n.t('specialCardsInfo') }}
@@ -530,5 +547,9 @@ export class LobbyPageComponent {
       : [...current, key]
 
     this.facade.updateConfig(lobby.code, { includedSpecialCards: next })
+  }
+
+  toggleCardArtworkEnabled(enabled: boolean) {
+    this.session.setCardArtworkEnabled(enabled)
   }
 }
