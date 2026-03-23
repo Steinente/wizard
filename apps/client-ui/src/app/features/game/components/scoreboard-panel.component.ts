@@ -49,12 +49,8 @@ import { TPipe } from '../../../shared/pipes/t.pipe'
             <thead>
               <tr>
                 <th></th>
-                @for (
-                  player of orderedPlayers();
-                  track player.playerId;
-                  let playerIndex = $index
-                ) {
-                  <th colspan="2" [class.player-divider]="playerIndex > 0">
+                @for (player of orderedPlayers(); track player.playerId) {
+                  <th colspan="2" class="player-divider">
                     {{ player.name }}
                   </th>
                 }
@@ -66,12 +62,8 @@ import { TPipe } from '../../../shared/pipes/t.pipe'
                 <tr>
                   <td>{{ round }}</td>
 
-                  @for (
-                    player of orderedPlayers();
-                    track player.playerId;
-                    let playerIndex = $index
-                  ) {
-                    <td [class.player-divider]="playerIndex > 0">
+                  @for (player of orderedPlayers(); track player.playerId) {
+                    <td class="player-divider">
                       {{ pointsValue(player.playerId, round) }}
                     </td>
                     <td>
