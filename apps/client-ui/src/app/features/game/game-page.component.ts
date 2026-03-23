@@ -170,6 +170,10 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
                     class="active-turn"
                     [decision]="myPendingDecision()"
                     [cloudAdjustmentWonTricks]="myTricksWon()"
+                    [cloudAdjustmentRoundNumber]="cloudAdjustmentRoundNumber()"
+                    [cloudAdjustmentShowScorePreview]="
+                      shouldShowCloudAdjustmentScorePreview()
+                    "
                     [onSelectTrump]="selectTrumpFn"
                     [onResolveWerewolfTrumpSwap]="resolveWerewolfTrumpSwapFn"
                     [onResolveShapeShifter]="resolveShapeShifterFn"
@@ -730,6 +734,36 @@ export class GamePageComponent {
     }
 
     this.facade.resolveCloudAdjustment(state.lobbyCode, delta)
+  }
+
+  shouldShowCloudAdjustmentScorePreview(): boolean {
+    const state = this.store.gameState()
+
+    if (
+      !state?.pendingDecision ||
+      state.pendingDecision.type !== 'cloudPredictionAdjustment'
+    ) {
+      return true
+    }
+
+    if (state.config.cloudRuleTiming === 'endOfRound') {
+      return true
+    }
+
+    const round = state.currentRound
+
+    if (!round) {
+      return true
+    }
+
+    const isLastTrickResolved =
+      round.completedTricks.length >= round.roundNumber
+
+    return isLastTrickResolved
+  }
+
+  cloudAdjustmentRoundNumber(): number {
+    return this.store.gameState()?.currentRound?.roundNumber ?? 0
   }
 
   resolveJugglerSuit(suit: Suit) {

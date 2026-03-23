@@ -14,19 +14,55 @@ import { mapLobbyToSummary } from './lobby-mapper.js'
 
 const normalizeCode = (code: string) => code.trim().toUpperCase()
 
-const parseIncludedSpecialCards = (value: string | null): SpecialCardKey[] => {
-  if (value === null) return [...SPECIAL_CARD_KEYS]
+const parseSpecialCardSettings = (
+  value: string | null,
+): {
+  includedSpecialCards: SpecialCardKey[]
+  cloudRuleTiming: GameConfig['cloudRuleTiming']
+} => {
+  const fallback = {
+    includedSpecialCards: [...SPECIAL_CARD_KEYS],
+    cloudRuleTiming: 'endOfRound' as const,
+  }
+
+  if (value === null) return fallback
+
   try {
     const parsed = JSON.parse(value)
-    if (Array.isArray(parsed)) return parsed as SpecialCardKey[]
-    return [...SPECIAL_CARD_KEYS]
+
+    if (Array.isArray(parsed)) {
+      return {
+        includedSpecialCards: parsed as SpecialCardKey[],
+        cloudRuleTiming: fallback.cloudRuleTiming,
+      }
+    }
+
+    if (parsed && typeof parsed === 'object') {
+      const maybeCards = (parsed as { includedSpecialCards?: unknown })
+        .includedSpecialCards
+      const maybeTiming = (parsed as { cloudRuleTiming?: unknown })
+        .cloudRuleTiming
+
+      return {
+        includedSpecialCards: Array.isArray(maybeCards)
+          ? (maybeCards as SpecialCardKey[])
+          : fallback.includedSpecialCards,
+        cloudRuleTiming:
+          maybeTiming === 'immediateAfterTrick'
+            ? 'immediateAfterTrick'
+            : 'endOfRound',
+      }
+    }
+
+    return fallback
   } catch {
-    return [...SPECIAL_CARD_KEYS]
+    return fallback
   }
 }
 
-const serializeIncludedSpecialCards = (keys: SpecialCardKey[]): string =>
-  JSON.stringify(keys)
+const serializeSpecialCardSettings = (
+  settings: Pick<GameConfig, 'includedSpecialCards' | 'cloudRuleTiming'>,
+): string => JSON.stringify(settings)
 
 const CODE_LENGTH = 6
 const lobbyPasswordHashes = new Map<string, string>()
@@ -104,9 +140,7 @@ const getLastKnownHostedConfig = async (
           : 'none',
     readLogEnabledByDefault: previousLobby.readLogEnabledByDefault,
     languageDefault: previousLobby.languageDefault === 'de' ? 'de' : 'en',
-    includedSpecialCards: parseIncludedSpecialCards(
-      previousLobby.includedSpecialCards,
-    ),
+    ...parseSpecialCardSettings(previousLobby.includedSpecialCards),
   }
 }
 
@@ -284,9 +318,10 @@ export class LobbyService {
         ),
         readLogEnabledByDefault: mergedConfig.readLogEnabledByDefault,
         languageDefault: mergedConfig.languageDefault,
-        includedSpecialCards: serializeIncludedSpecialCards(
-          mergedConfig.includedSpecialCards,
-        ),
+        includedSpecialCards: serializeSpecialCardSettings({
+          includedSpecialCards: mergedConfig.includedSpecialCards,
+          cloudRuleTiming: mergedConfig.cloudRuleTiming,
+        }),
         players: {
           create: {
             name: input.playerName.trim(),
@@ -582,6 +617,10 @@ export class LobbyService {
       throw new Error('error.onlyHostCanUpdateConfig')
     }
 
+    const previousSpecialCardSettings = parseSpecialCardSettings(
+      lobby.includedSpecialCards,
+    )
+
     const updated = await prisma.lobby.update({
       where: { id: lobby.id },
       data: {
@@ -593,9 +632,17 @@ export class LobbyService {
           : undefined,
         readLogEnabledByDefault: input.config.readLogEnabledByDefault,
         languageDefault: input.config.languageDefault,
-        includedSpecialCards: input.config.includedSpecialCards
-          ? serializeIncludedSpecialCards(input.config.includedSpecialCards)
-          : undefined,
+        includedSpecialCards:
+          input.config.includedSpecialCards || input.config.cloudRuleTiming
+            ? serializeSpecialCardSettings({
+                includedSpecialCards:
+                  input.config.includedSpecialCards ??
+                  previousSpecialCardSettings.includedSpecialCards,
+                cloudRuleTiming:
+                  input.config.cloudRuleTiming ??
+                  previousSpecialCardSettings.cloudRuleTiming,
+              })
+            : undefined,
       },
       include: includePlayersByJoinOrder(),
     })

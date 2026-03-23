@@ -13,9 +13,14 @@ export const OPEN_PREDICTION_RESTRICTIONS = [
 export type OpenPredictionRestriction =
   (typeof OPEN_PREDICTION_RESTRICTIONS)[number]
 
+export const CLOUD_RULE_TIMINGS = ['endOfRound', 'immediateAfterTrick'] as const
+
+export type CloudRuleTiming = (typeof CLOUD_RULE_TIMINGS)[number]
+
 export interface GameConfig {
   predictionVisibility: PredictionVisibility
   openPredictionRestriction: OpenPredictionRestriction
+  cloudRuleTiming: CloudRuleTiming
   readLogEnabledByDefault: boolean
   languageDefault: 'en' | 'de'
   includedSpecialCards: SpecialCardKey[]

@@ -32,6 +32,7 @@ export const translations = {
     spectators: 'Spectators',
     noSpectators: 'No spectators',
     rules: 'Rules',
+    rulesFooterTrigger: 'Rulebook',
     settings: 'Settings',
     back: 'Back',
     home: 'Home',
@@ -202,6 +203,12 @@ export const translations = {
     openRestrictionLabel: 'Open restriction',
     openRestrictionInfo:
       'This setting is only available when Prediction visibility is set to Open predictions.',
+    cloudRuleTimingLabel: 'Cloud timing',
+    cloudRuleTimingInfo:
+      '25-year mode: prediction changes at end of round.\n30-year mode: prediction changes immediately after the won cloud trick.',
+    cloudRuleTimingEndOfRound: '25-year mode (end of round)',
+    cloudRuleTimingImmediateAfterTrick:
+      '30-year mode (immediately after trick)',
     specialCardsLabel: 'Special cards',
     specialCardsInfo:
       'Click cards to enable or disable them for the game. Grayed-out cards are excluded.',
@@ -385,7 +392,8 @@ export const translations = {
     players: 'Spieler',
     spectators: 'Zuschauer',
     noSpectators: 'Keine Zuschauer',
-    rules: 'Regelwerk',
+    rules: 'Regeln',
+    rulesFooterTrigger: 'Regelwerk',
     settings: 'Einstellungen',
     back: 'Zurück',
     home: 'Startseite',
@@ -554,6 +562,12 @@ export const translations = {
     openRestrictionLabel: 'Einschränkung bei offenen Ansagen',
     openRestrictionInfo:
       'Diese Einstellung ist nur erlaubt, wenn der Ansagemodus auf Offene Ansagen steht.',
+    cloudRuleTimingLabel: 'Wolken-Zeitpunkt',
+    cloudRuleTimingInfo:
+      '25-Jahre-Modus: Anpassung der Ansage am Rundenende.\n30-Jahre-Modus: Anpassung direkt nach dem gewonnenen Wolken-Stich.',
+    cloudRuleTimingEndOfRound: '25-Jahre-Modus (Rundenende)',
+    cloudRuleTimingImmediateAfterTrick:
+      '30-Jahre-Modus (direkt nach dem Stich)',
     specialCardsLabel: 'Sonderkarten',
     specialCardsInfo:
       'Karten anklicken, um sie für das Spiel zu aktivieren oder deaktivieren. Ausgegraute Karten sind ausgeschlossen.',

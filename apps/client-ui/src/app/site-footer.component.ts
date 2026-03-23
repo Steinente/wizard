@@ -42,7 +42,9 @@ import { TPipe } from './shared/pipes/t.pipe'
               aria-hidden="true"
               class="site-rules-logo"
             />
-            <span class="site-rules-trigger-text">{{ 'rules' | t }}</span>
+            <span class="site-rules-trigger-text">
+              {{ 'rulesFooterTrigger' | t }}
+            </span>
           </button>
         </div>
 

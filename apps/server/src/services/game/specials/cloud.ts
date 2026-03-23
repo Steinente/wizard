@@ -21,7 +21,35 @@ interface ResolveCloudAdjustmentContext {
   state: WizardGameState
   playerId: string
   delta: 1 | -1
-  finishRoundAndAdvance: () => Promise<void> | void
+  continueAfterAdjustment: () => Promise<void> | void
+}
+
+export const enqueueCloudPredictionAdjustmentDecision = (context: {
+  state: WizardGameState
+  playerId: string
+  cardId?: string
+}): boolean => {
+  const roundPlayer = context.state.currentRound?.players.find(
+    (entry) => entry.playerId === context.playerId,
+  )
+
+  if (!roundPlayer?.prediction) {
+    return false
+  }
+
+  roundPlayer.pendingCloudAdjustment = true
+
+  context.state.pendingDecision = {
+    id: createDecisionId(),
+    type: 'cloudPredictionAdjustment',
+    playerId: context.playerId,
+    createdAt: nowIso(),
+    ...(context.cardId ? { cardId: context.cardId } : {}),
+    special: 'cloud',
+    currentPrediction: roundPlayer.prediction.value,
+  }
+
+  return true
 }
 
 export const handleCloudBeforePlay = (
@@ -122,5 +150,5 @@ export const resolveCloudAdjustmentDecision = async (
     },
   })
 
-  await context.finishRoundAndAdvance()
+  await context.continueAfterAdjustment()
 }

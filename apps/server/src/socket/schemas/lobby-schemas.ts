@@ -20,6 +20,7 @@ export const createLobbySchema = z.object({
       openPredictionRestriction: z
         .enum(['none', 'mustEqualTricks', 'mustNotEqualTricks'])
         .optional(),
+      cloudRuleTiming: z.enum(['endOfRound', 'immediateAfterTrick']).optional(),
       languageDefault: z.enum(['en', 'de']).optional(),
       includedSpecialCards: z.array(specialCardKeySchema).optional(),
     })
@@ -55,6 +56,7 @@ export const updateConfigSchema = z.object({
     openPredictionRestriction: z
       .enum(['none', 'mustEqualTricks', 'mustNotEqualTricks'])
       .optional(),
+    cloudRuleTiming: z.enum(['endOfRound', 'immediateAfterTrick']).optional(),
     languageDefault: z.enum(['en', 'de']).optional(),
     includedSpecialCards: z.array(specialCardKeySchema).optional(),
   }),

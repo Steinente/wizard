@@ -27,10 +27,17 @@ const SPECIAL_TRUMP_REASON_CARDS = new Set([
   template: `
     <div class="panel">
       <div class="spread">
-        <div>
+        <div class="header-meta">
           <h2 style="margin: 0;">{{ 'gameTable' | t }}</h2>
           <div class="muted">{{ 'lobby' | t }} {{ state.lobbyCode }}</div>
-          <div class="muted">{{ 'rules' | t }}: {{ rulesText }}</div>
+          <div class="header-rules" aria-label="Game rules summary">
+            <span class="header-rules-label">{{ 'rules' | t }}</span>
+            <div class="header-rules-list">
+              @for (rule of ruleItems; track rule) {
+                <span class="header-rule-chip">{{ rule }}</span>
+              }
+            </div>
+          </div>
         </div>
 
         <div class="row" style="flex-wrap: wrap; justify-content: flex-end;">
@@ -97,6 +104,65 @@ const SPECIAL_TRUMP_REASON_CARDS = new Set([
       }
     </div>
   `,
+  styles: [
+    `
+      .header-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        min-width: 0;
+      }
+
+      .header-rules {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        min-width: 0;
+      }
+
+      .header-rules-label {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        padding-top: 4px;
+        flex: 0 0 auto;
+      }
+
+      .header-rules-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        min-width: 0;
+      }
+
+      .header-rule-chip {
+        display: inline-flex;
+        align-items: center;
+        min-height: 28px;
+        padding: 4px 10px;
+        border: 1px solid rgb(148 163 184 / 0.24);
+        border-radius: 999px;
+        background: rgb(15 23 42 / 0.5);
+        color: var(--text);
+        font-size: 12px;
+        line-height: 1.25;
+        white-space: normal;
+      }
+
+      @media (max-width: 900px) {
+        .header-rules {
+          flex-direction: column;
+          gap: 6px;
+        }
+
+        .header-rules-label {
+          padding-top: 0;
+        }
+      }
+    `,
+  ],
 })
 export class GameHeaderComponent {
   private readonly i18n = inject(I18nService)
@@ -144,12 +210,37 @@ export class GameHeaderComponent {
     return this.i18n.t(key as TranslationKey)
   }
 
-  get rulesText() {
+  get cloudRuleTimingText() {
+    const key =
+      this.state.config.cloudRuleTiming === 'immediateAfterTrick'
+        ? 'cloudRuleTimingImmediateAfterTrick'
+        : 'cloudRuleTimingEndOfRound'
+
+    return this.i18n.t(key as TranslationKey)
+  }
+
+  get isCloudEnabled() {
+    return this.state.config.includedSpecialCards.includes('cloud')
+  }
+
+  get ruleItems() {
+    const rules = [this.predictionVisibilityText]
+
     if (this.state.config.predictionVisibility !== 'open') {
-      return this.predictionVisibilityText
+      if (this.isCloudEnabled) {
+        rules.push(this.cloudRuleTimingText)
+      }
+
+      return rules
     }
 
-    return `${this.predictionVisibilityText} | ${this.openRestrictionText}`
+    rules.push(this.openRestrictionText)
+
+    if (this.isCloudEnabled) {
+      rules.push(this.cloudRuleTimingText)
+    }
+
+    return rules
   }
 
   private getTranslatedCardReason() {

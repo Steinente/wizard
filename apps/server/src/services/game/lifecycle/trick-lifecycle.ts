@@ -11,6 +11,7 @@ import {
   type LobbyWithPlayers,
 } from '../game-service-support.js'
 import { logBombCancelledTrick } from '../specials/index.js'
+import { enqueueCloudPredictionAdjustmentDecision } from '../specials/index.js'
 import { finishRoundAndAdvance } from './round-lifecycle.js'
 
 export async function continueOrResolveCurrentTrick(
@@ -88,6 +89,7 @@ export async function resolveCompletedTrick(
   const playedCloud = resolvedTrick.plays.find(
     (play) => play.card.type === 'special' && play.card.special === 'cloud',
   )
+  const cloudTimingMode = state.config.cloudRuleTiming
 
   const hypotheticalLeaderPlayerId = getHypotheticalNextLeaderPlayerId(
     trick,
@@ -131,6 +133,7 @@ export async function resolveCompletedTrick(
         (entry) => entry.playerId === resolvedTrick.winnerPlayerId,
       )
       if (cloudWinner) {
+        // Keep the cloud indicator visible from trick end until adjustment is resolved.
         cloudWinner.pendingCloudAdjustment = true
       }
     }
@@ -142,41 +145,41 @@ export async function resolveCompletedTrick(
     state.currentRound.completedTricks.length >= state.currentRound.roundNumber
 
   if (isLastTrick) {
-    // Look for cloud in ANY completed trick of this round, not just the last one
-    let cloudTrickWinner: string | null = null
-    let cloudCardId: string | null = null
+    if (cloudTimingMode === 'immediateAfterTrick') {
+      if (playedCloud && resolvedTrick.winnerPlayerId) {
+        const enqueued = enqueueCloudPredictionAdjustmentDecision({
+          state,
+          playerId: resolvedTrick.winnerPlayerId,
+          cardId: playedCloud.card.id,
+        })
 
-    for (const completedTrick of state.currentRound.completedTricks) {
-      const cloud = completedTrick.plays.find(
-        (play) => play.card.type === 'special' && play.card.special === 'cloud',
-      )
-
-      if (cloud && completedTrick.winnerPlayerId) {
-        cloudTrickWinner = completedTrick.winnerPlayerId
-        cloudCardId = cloud.card.id
-        break
+        if (enqueued) {
+          await persistState(lobby.id, state)
+          return
+        }
       }
-    }
+    } else {
+      // End-of-round mode: check for a won cloud trick once the round is complete.
+      for (const completedTrick of state.currentRound.completedTricks) {
+        const cloud = completedTrick.plays.find(
+          (play) =>
+            play.card.type === 'special' && play.card.special === 'cloud',
+        )
 
-    if (cloudTrickWinner && cloudCardId) {
-      const winnerState = state.currentRound.players.find(
-        (entry) => entry.playerId === cloudTrickWinner,
-      )
-
-      if (winnerState?.prediction) {
-        state.pendingDecision = {
-          id: crypto.randomUUID(),
-          type: 'cloudPredictionAdjustment',
-          playerId: cloudTrickWinner,
-          createdAt: nowIso(),
-          cardId: cloudCardId,
-          special: 'cloud',
-          currentPrediction: winnerState.prediction.value,
+        if (!cloud || !completedTrick.winnerPlayerId) {
+          continue
         }
 
-        // Keep the current phase as 'playing' but with pending decision
-        await persistState(lobby.id, state)
-        return
+        const enqueued = enqueueCloudPredictionAdjustmentDecision({
+          state,
+          playerId: completedTrick.winnerPlayerId,
+          cardId: cloud.card.id,
+        })
+
+        if (enqueued) {
+          await persistState(lobby.id, state)
+          return
+        }
       }
     }
 
@@ -191,6 +194,24 @@ export async function resolveCompletedTrick(
 
   if (playedJuggler) {
     beginJugglerPassDecision(state)
+  }
+
+  if (
+    cloudTimingMode === 'immediateAfterTrick' &&
+    playedCloud &&
+    resolvedTrick.winnerPlayerId &&
+    !playedJuggler
+  ) {
+    const enqueued = enqueueCloudPredictionAdjustmentDecision({
+      state,
+      playerId: resolvedTrick.winnerPlayerId,
+      cardId: playedCloud.card.id,
+    })
+
+    if (enqueued) {
+      await persistState(lobby.id, state)
+      return
+    }
   }
 
   await persistState(lobby.id, state)

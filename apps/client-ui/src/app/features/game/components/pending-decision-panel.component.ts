@@ -91,15 +91,19 @@ const NO_TRUMP_SPECIALS = new Set([
             @case ('cloudPredictionAdjustment') {
               <p class="muted">{{ 'chooseCloudAdjustment' | t }}</p>
               <div class="row">
-                <button class="btn" (click)="pickCloudAdjustment(-1)">
-                  {{ cloudAdjustmentButtonLabel(-1) }}
-                </button>
-                <button
-                  class="btn btn-primary"
-                  (click)="pickCloudAdjustment(1)"
-                >
-                  {{ cloudAdjustmentButtonLabel(1) }}
-                </button>
+                @if (canSelectCloudAdjustment(-1)) {
+                  <button class="btn" (click)="pickCloudAdjustment(-1)">
+                    {{ cloudAdjustmentButtonLabel(-1) }}
+                  </button>
+                }
+                @if (canSelectCloudAdjustment(1)) {
+                  <button
+                    class="btn btn-primary"
+                    (click)="pickCloudAdjustment(1)"
+                  >
+                    {{ cloudAdjustmentButtonLabel(1) }}
+                  </button>
+                }
               </div>
             }
 
@@ -121,6 +125,8 @@ export class PendingDecisionPanelComponent {
 
   @Input() decision: PendingDecision | null = null
   @Input() cloudAdjustmentWonTricks = 0
+  @Input() cloudAdjustmentRoundNumber = 0
+  @Input() cloudAdjustmentShowScorePreview = true
   @Input({ required: true }) onSelectTrump!: (suit: Suit | null) => void
   @Input({ required: true }) onResolveWerewolfTrumpSwap!: (
     suit: Suit | null,
@@ -157,12 +163,28 @@ export class PendingDecisionPanelComponent {
       return delta > 0 ? '+1' : '-1'
     }
 
+    if (!this.cloudAdjustmentShowScorePreview) {
+      return delta > 0 ? '+1' : '-1'
+    }
+
     const projectedScore = calculateRoundScore(
       this.decision.currentPrediction + delta,
       this.cloudAdjustmentWonTricks,
     )
 
     return `${delta > 0 ? '+1' : '-1'} (${projectedScore})`
+  }
+
+  canSelectCloudAdjustment(delta: 1 | -1): boolean {
+    if (this.decision?.type !== 'cloudPredictionAdjustment') {
+      return false
+    }
+
+    const nextPrediction = this.decision.currentPrediction + delta
+
+    return (
+      nextPrediction >= 0 && nextPrediction <= this.cloudAdjustmentRoundNumber
+    )
   }
 
   pickJugglerSuit(suit: Suit) {

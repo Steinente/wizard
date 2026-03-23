@@ -33,6 +33,7 @@ import {
   resolveCompletedTrick,
 } from './lifecycle/index.js'
 import {
+  enqueueCloudPredictionAdjustmentDecision,
   resolveCloudAdjustmentDecision,
   handleCloudBeforePlay,
   handleJugglerBeforePlay,
@@ -374,7 +375,23 @@ export class GameService {
       state,
       playerId: player.id,
       delta: input.delta,
-      finishRoundAndAdvance: () => finishRoundAndAdvance(lobby, state),
+      continueAfterAdjustment: async () => {
+        if (!state.currentRound) {
+          await persistState(lobby.id, state)
+          return
+        }
+
+        const isRoundComplete =
+          state.currentRound.completedTricks.length >=
+          state.currentRound.roundNumber
+
+        if (isRoundComplete) {
+          await finishRoundAndAdvance(lobby, state)
+          return
+        }
+
+        await persistState(lobby.id, state)
+      },
     })
 
     return state
@@ -426,6 +443,20 @@ export class GameService {
 
     if (!result.completed) {
       return state
+    }
+
+    if (state.config.cloudRuleTiming === 'immediateAfterTrick') {
+      const roundPlayerWithPendingCloud = state.currentRound?.players.find(
+        (entry) => entry.pendingCloudAdjustment,
+      )
+
+      if (roundPlayerWithPendingCloud) {
+        enqueueCloudPredictionAdjustmentDecision({
+          state,
+          playerId: roundPlayerWithPendingCloud.playerId,
+        })
+        await persistState(lobby.id, state)
+      }
     }
 
     return state

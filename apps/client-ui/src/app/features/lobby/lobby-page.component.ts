@@ -217,6 +217,46 @@ import { TPipe } from '../../shared/pipes/t.pipe'
                     {{ 'predictionRestrictionMustNotEqual' | t }}
                   </option>
                 </select>
+
+                <label
+                  class="label"
+                  style="margin-top: 14px;"
+                  [style.opacity]="
+                    !isHost() ? 1 : isSpecialCardEnabled('cloud') ? 1 : 0.55
+                  "
+                >
+                  {{ 'cloudRuleTimingLabel' | t }}
+                  <button
+                    type="button"
+                    class="info-icon"
+                    [attr.aria-label]="i18n.t('cloudRuleTimingInfo')"
+                    (click)="toggleRuleInfo('cloudRuleTiming')"
+                  >
+                    ?
+                  </button>
+                </label>
+                @if (activeRuleInfo() === 'cloudRuleTiming') {
+                  <div class="rule-info-box">
+                    {{ i18n.t('cloudRuleTimingInfo') }}
+                  </div>
+                }
+
+                <select
+                  class="select"
+                  [style.opacity]="
+                    !isHost() ? 1 : isSpecialCardEnabled('cloud') ? 1 : 0.55
+                  "
+                  [disabled]="!isHost() || !isSpecialCardEnabled('cloud')"
+                  [ngModel]="store.lobby()!.config.cloudRuleTiming"
+                  (ngModelChange)="setCloudRuleTiming($event)"
+                >
+                  <option value="endOfRound">
+                    {{ 'cloudRuleTimingEndOfRound' | t }}
+                  </option>
+                  <option value="immediateAfterTrick">
+                    {{ 'cloudRuleTimingImmediateAfterTrick' | t }}
+                  </option>
+                </select>
               </div>
             </div>
 
@@ -320,7 +360,11 @@ export class LobbyPageComponent {
 
   protected readonly store = this.appStore
   private readonly activeRuleInfoState = signal<
-    'predictionVisibility' | 'openRestriction' | 'specialCards' | null
+    | 'predictionVisibility'
+    | 'openRestriction'
+    | 'cloudRuleTiming'
+    | 'specialCards'
+    | null
   >(null)
   copied = false
   private copiedTimeoutId: ReturnType<typeof setTimeout> | null = null
@@ -355,7 +399,11 @@ export class LobbyPageComponent {
   }
 
   toggleRuleInfo(
-    key: 'predictionVisibility' | 'openRestriction' | 'specialCards',
+    key:
+      | 'predictionVisibility'
+      | 'openRestriction'
+      | 'cloudRuleTiming'
+      | 'specialCards',
   ) {
     this.activeRuleInfoState.update((current) => (current === key ? null : key))
   }
@@ -468,6 +516,16 @@ export class LobbyPageComponent {
     }
 
     this.facade.updateConfig(lobby.code, { openPredictionRestriction })
+  }
+
+  setCloudRuleTiming(cloudRuleTiming: 'endOfRound' | 'immediateAfterTrick') {
+    const lobby = this.store.lobby()
+
+    if (!lobby || !this.isHost()) {
+      return
+    }
+
+    this.facade.updateConfig(lobby.code, { cloudRuleTiming })
   }
 
   isSpecialCardEnabled(key: SpecialCardKey): boolean {
