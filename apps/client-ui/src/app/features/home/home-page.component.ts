@@ -227,6 +227,17 @@ const PLAYER_NAME_EMOJI_PATTERN =
     `
       .title {
         font-family: 'Frances Uncial Std', serif;
+        font-size: 3rem;
+        background: linear-gradient(
+          to bottom,
+          #ffffff 0%,
+          #ffffff 30%,
+          #d4a017 100%
+        );
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        color: transparent;
       }
 
       .home-actions-grid {
