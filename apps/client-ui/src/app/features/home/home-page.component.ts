@@ -209,6 +209,10 @@ import { TPipe } from '../../shared/pipes/t.pipe'
   `,
   styles: [
     `
+      .title {
+        font-family: 'Frances Uncial Std', serif;
+      }
+
       .home-actions-grid {
         grid-template-columns: 1fr 1fr;
       }
