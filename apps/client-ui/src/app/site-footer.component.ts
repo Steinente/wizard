@@ -179,6 +179,7 @@ import { TPipe } from './shared/pipes/t.pipe'
         );
         box-shadow: 0 22px 48px rgb(0 0 0 / 0.28);
         backdrop-filter: blur(12px);
+        z-index: 1002;
       }
 
       .site-donate-popover::after {
