@@ -301,5 +301,23 @@ export class SpeechAnnouncementService {
       once: true,
       passive: true,
     })
+
+    // Mobile browsers (iOS Safari, Chrome on Android) silently interrupt
+    // SpeechSynthesis when the screen locks or the app goes to the background,
+    // without ever firing onend/onerror.  This leaves this.speaking stuck at
+    // true forever so nothing gets spoken after returning to the foreground.
+    // Reset the speaking flag whenever the page is hidden so the queue can
+    // resume normally once the user is active again.
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.cancel()
+        }
+        this.speaking = false
+      } else {
+        // Resume any queued items when the user returns to the page.
+        this.trySpeakNext()
+      }
+    })
   }
 }
