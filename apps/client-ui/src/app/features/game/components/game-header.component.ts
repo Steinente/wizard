@@ -18,6 +18,7 @@ const SPECIAL_TRUMP_REASON_CARDS = new Set([
   'shapeShifter',
   'dragon',
   'fairy',
+  'werewolf',
 ])
 
 @Component({
@@ -284,14 +285,6 @@ export class GameHeaderComponent {
     let base = translatedSuit
     if (card && card.type === 'number') {
       base = `${translatedSuit} ${card.value}`
-    }
-
-    const hasWerewolfEffect = this.state.resolvedCardEffects.some(
-      (effect) => effect.special === 'werewolf',
-    )
-
-    if (hasWerewolfEffect) {
-      base = this.appendReason(base, this.i18n.t('card.special.werewolf'))
     }
 
     // Check if trump card is a special card that required suit selection
