@@ -78,6 +78,11 @@ const SPECIAL_CARD_ARTWORK: Record<string, string> = {
           {{ middleLabel }}
         </div>
       }
+      @if (showArtwork && artworkDetailLabel) {
+        <div class="wiz-card-artwork-detail">
+          {{ artworkDetailLabel }}
+        </div>
+      }
       @if (!showArtwork || !artworkSrc) {
         <div class="wiz-card-title" [class.wiz-card-title-top]="pinTitleTop">
           {{ title }}
@@ -253,6 +258,27 @@ const SPECIAL_CARD_ARTWORK: Record<string, string> = {
         backdrop-filter: blur(4px);
       }
 
+      .wiz-card-artwork-detail {
+        position: absolute;
+        left: 50%;
+        bottom: 10px;
+        transform: translateX(-50%);
+        width: max-content;
+        max-width: calc(100% - 14px);
+        padding: 4px 8px;
+        border-radius: 999px;
+        background: rgb(15 23 42 / 0.82);
+        border: 1px solid rgb(229 238 252 / 0.18);
+        color: #f8fafc;
+        font-size: 11px;
+        font-weight: 700;
+        line-height: 1.1;
+        text-align: center;
+        text-shadow: none;
+        backdrop-filter: blur(4px);
+        z-index: 1;
+      }
+
       @media (max-width: 700px) {
         .wiz-card {
           width: 92px;
@@ -274,6 +300,11 @@ const SPECIAL_CARD_ARTWORK: Record<string, string> = {
         }
 
         .wiz-card-middle-label {
+          font-size: 10px;
+        }
+
+        .wiz-card-artwork-detail {
+          bottom: 8px;
           font-size: 10px;
         }
       }
@@ -299,6 +330,13 @@ const SPECIAL_CARD_ARTWORK: Record<string, string> = {
 
         .wiz-card-middle-label {
           font-size: 9px;
+        }
+
+        .wiz-card-artwork-detail {
+          bottom: 7px;
+          font-size: 9px;
+          max-width: calc(100% - 10px);
+          padding: 3px 6px;
         }
 
         .wiz-card-title-top {
@@ -366,7 +404,12 @@ export class CardComponent {
   }
 
   get cardAriaLabel() {
-    return [this.title, this.primaryText, this.subtitle]
+    return [
+      this.title,
+      this.primaryText,
+      this.subtitle,
+      this.artworkDetailLabel,
+    ]
       .filter((value) => value.trim().length > 0)
       .join(' ')
   }
@@ -408,6 +451,32 @@ export class CardComponent {
         : 'card.jester'
     }
     return null
+  }
+
+  get artworkDetailLabel(): string {
+    if (
+      this.resolvedEffect?.special === 'shapeShifter' &&
+      this.resolvedEffect.shapeShifterMode
+    ) {
+      return this.i18n.t(
+        this.resolvedEffect.shapeShifterMode === 'wizard'
+          ? 'card.wizard'
+          : 'card.jester',
+      )
+    }
+
+    if (
+      this.resolvedEffect &&
+      (this.resolvedEffect.special === 'cloud' ||
+        this.resolvedEffect.special === 'juggler') &&
+      this.resolvedEffect.chosenSuit
+    ) {
+      return this.i18n.t(
+        `suit.${this.resolvedEffect.chosenSuit}` as TranslationKey,
+      )
+    }
+
+    return ''
   }
 
   get pinTitleTop(): boolean {
