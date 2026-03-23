@@ -591,10 +591,24 @@ export class SiteFooterComponent {
   }
 
   private renderMarkdown(markdown: string) {
+    const renderer = new marked.Renderer()
+
+    renderer.link = ({ href, title, tokens }) => {
+      const text = this.parseInlineMarkdownTokens(tokens)
+      const titleAttribute = title ? ` title="${title}"` : ''
+
+      return `<a href="${href}" target="_blank" rel="noreferrer noopener"${titleAttribute}>${text}</a>`
+    }
+
     return marked.parse(markdown, {
       gfm: true,
       breaks: true,
+      renderer,
     }) as string
+  }
+
+  private parseInlineMarkdownTokens(tokens: unknown[]) {
+    return marked.parser(tokens as Parameters<typeof marked.parser>[0])
   }
 
   private async fetchRulesForLanguage(language: TranslationLanguage) {
