@@ -373,6 +373,12 @@ export class GameHeaderComponent {
       return
     }
 
+    if (this.state.phase === 'finished') {
+      this.facade.setInGame(this.state.lobbyCode, false)
+      this.router.navigateByUrl('/')
+      return
+    }
+
     const confirmed = window.confirm(this.i18n.t('confirmLeaveGame'))
 
     if (confirmed) {
