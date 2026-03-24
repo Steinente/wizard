@@ -1,4 +1,5 @@
 import type { GameConfig } from './game-config.js'
+import type { Suit } from './cards.js'
 import type { WizardGameViewState } from './game/state-view.js'
 import type { LobbySummary } from './lobby.js'
 export interface ClientToServerEvents {
@@ -46,7 +47,7 @@ export interface ClientToServerEvents {
   'game:selectTrumpSuit': (payload: {
     code: string
     sessionToken: string
-    suit: 'red' | 'yellow' | 'green' | 'blue' | null
+    suit: Suit | null
   }) => void
   'player:setReadLogEnabled': (payload: {
     code: string

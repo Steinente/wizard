@@ -1,3 +1,5 @@
+import type { Suit } from '../cards.js'
+
 export interface MakePredictionAction {
   type: 'makePrediction'
   playerId: string
@@ -11,7 +13,7 @@ export interface PlayCardAction {
 export interface SelectTrumpSuitAction {
   type: 'selectTrumpSuit'
   playerId: string
-  suit: 'red' | 'yellow' | 'green' | 'blue'
+  suit: Suit | null
 }
 export interface ToggleReadLogAction {
   type: 'toggleReadLog'

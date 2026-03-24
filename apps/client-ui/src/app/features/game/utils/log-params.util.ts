@@ -1,4 +1,4 @@
-import type { WizardGameViewState } from '@wizard/shared'
+import { SUITS, type Suit, type WizardGameViewState } from '@wizard/shared'
 import type { TranslationKey } from '../../../core/i18n/translations'
 
 type TranslateFn = (key: TranslationKey) => string
@@ -13,19 +13,30 @@ type NormalizeLogParamsOptions = {
   includeSpecial?: boolean
 }
 
-const CARD_SPECIAL_MAP: Record<string, TranslationKey> = {
-  shapeshifter: 'card.special.shapeShifter',
-  bomb: 'card.special.bomb',
-  werewolf: 'card.special.werewolf',
-  cloud: 'card.special.cloud',
-  juggler: 'card.special.juggler',
-  dragon: 'card.special.dragon',
-  fairy: 'card.special.fairy',
-  witch: 'card.special.witch',
+const KNOWN_SPECIALS = new Set([
+  'shapeshifter',
+  'bomb',
+  'werewolf',
+  'cloud',
+  'juggler',
+  'dragon',
+  'fairy',
+  'witch',
+])
+
+const getSpecialCardTranslationKey = (value: string): TranslationKey | null => {
+  const lower = value.toLowerCase()
+
+  if (!KNOWN_SPECIALS.has(lower)) {
+    return null
+  }
+
+  const keySegment = lower === 'shapeshifter' ? 'shapeShifter' : lower
+  return `card.special.${keySegment}` as TranslationKey
 }
 
-const isSuit = (value: string): value is 'red' | 'yellow' | 'green' | 'blue' =>
-  value === 'red' || value === 'yellow' || value === 'green' || value === 'blue'
+const isSuit = (value: string): value is Suit =>
+  (SUITS as readonly string[]).includes(value)
 
 export const translateCardLabel = (value: string, t: TranslateFn): string => {
   const lower = value.toLowerCase()
@@ -38,7 +49,7 @@ export const translateCardLabel = (value: string, t: TranslateFn): string => {
     return t('card.jester')
   }
 
-  const specialKey = CARD_SPECIAL_MAP[lower]
+  const specialKey = getSpecialCardTranslationKey(lower)
   if (specialKey) {
     return t(specialKey)
   }
@@ -166,7 +177,9 @@ export const addDerivedCardLabelForSpecialPlay = (
     : messageKey
   const specialMatch = /^special\.([a-zA-Z]+)\.played$/.exec(canonical)
   const special = specialMatch?.[1]?.toLowerCase()
-  const cardTranslationKey = special ? CARD_SPECIAL_MAP[special] : undefined
+  const cardTranslationKey = special
+    ? getSpecialCardTranslationKey(special)
+    : null
 
   if (!cardTranslationKey) {
     return params
