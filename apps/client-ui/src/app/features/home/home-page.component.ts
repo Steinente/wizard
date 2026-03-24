@@ -228,6 +228,7 @@ const PLAYER_NAME_EMOJI_PATTERN =
       .title {
         font-family: 'Frances Uncial Std', serif;
         font-size: 3rem;
+        margin: 20px 0;
         background: linear-gradient(
           to bottom,
           #ffffff 0%,
