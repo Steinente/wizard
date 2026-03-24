@@ -493,20 +493,8 @@ export class CardComponent {
       return ''
     }
 
-    const keyMap: Record<string, TranslationKey> = {
-      shapeShifter: 'specialInfo.shapeShifter',
-      bomb: 'specialInfo.bomb',
-      werewolf: 'specialInfo.werewolf',
-      cloud: 'specialInfo.cloud',
-      juggler: 'specialInfo.juggler',
-      dragon: 'specialInfo.dragon',
-      fairy: 'specialInfo.fairy',
-      witch: 'specialInfo.witch',
-    }
-
-    const key = keyMap[this.card.special]
-
-    return key ? this.i18n.t(key) : ''
+    const key = `card.special.${this.card.special}.info` as TranslationKey
+    return this.i18n.t(key)
   }
 
   get background() {

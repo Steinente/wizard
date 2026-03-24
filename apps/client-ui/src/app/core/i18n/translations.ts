@@ -363,19 +363,21 @@ export const translations = {
     'card.special.dragon': 'Dragon',
     'card.special.fairy': 'Fairy',
     'card.special.witch': 'Witch',
-    'specialInfo.shapeShifter':
+    'card.special.shapeShifter.info':
       'Choose whether this card behaves like Wizard or Jester.',
-    'specialInfo.bomb':
+    'card.special.bomb.info':
       'If played in a trick, the trick is canceled and nobody wins it.',
-    'specialInfo.werewolf':
+    'card.special.werewolf.info':
       'When drawn into a hand, it swaps with the current trump card; its owner then chooses the new trump suit (or no trump).',
-    'specialInfo.cloud':
+    'card.special.cloud.info':
       'Choose a suit; if this card wins a trick, the winner must adjust their prediction by +1 or -1.',
-    'specialInfo.juggler':
+    'card.special.juggler.info':
       'Choose a suit; after the trick, each player passes one card to the next player.',
-    'specialInfo.fairy':
-      'Second lowest card; wins only when Dragon is in the trick.',
-    'specialInfo.witch':
+    'card.special.dragon.info':
+      'Highest card; wins every trick unless Fairy is in the same trick.',
+    'card.special.fairy.info':
+      'Second lowest card; wins only when Dragon is in the same trick.',
+    'card.special.witch.info':
       'Weakest card; after all other effects, you must put one hand card into the trick and take one other trick card (except Witch) into your hand.',
   },
   de: {
@@ -750,19 +752,21 @@ export const translations = {
     'card.special.dragon': 'Drache',
     'card.special.fairy': 'Fee',
     'card.special.witch': 'Hexe',
-    'specialInfo.shapeShifter':
+    'card.special.shapeShifter.info':
       'Wähle, ob diese Karte als Zauberer oder Narr gilt.',
-    'specialInfo.bomb':
+    'card.special.bomb.info':
       'Wird sie in einen Stich gespielt, wird der Stich annulliert und niemand gewinnt ihn.',
-    'specialInfo.werewolf':
+    'card.special.werewolf.info':
       'Wird er auf die Hand gezogen, tauscht er mit der aktiven Trumpfkarte; sein Besitzer bestimmt danach die neue Trumpffarbe (oder kein Trumpf).',
-    'specialInfo.cloud':
+    'card.special.cloud.info':
       'Wähle eine Farbe; gewinnt diese Karte einen Stich, muss der Gewinner seine Ansage um +1 oder -1 anpassen.',
-    'specialInfo.juggler':
+    'card.special.juggler.info':
       'Wähle eine Farbe; nach dem Stich gibt jeder Spieler eine Karte an den nächsten Spieler weiter.',
-    'specialInfo.fairy':
-      'Zweitniedrigste Karte; gewinnt nur, wenn der Drache im Stich liegt.',
-    'specialInfo.witch':
+    'card.special.dragon.info':
+      'Höchste Karte; gewinnt jeden Stich, außer wenn im selben Stich eine Fee liegt.',
+    'card.special.fairy.info':
+      'Zweitniedrigste Karte; gewinnt nur, wenn der Drache im selben Stich liegt.',
+    'card.special.witch.info':
       'Schwächste Karte; nach allen anderen Effekten musst du eine Handkarte in den Stich legen und eine andere Stichkarte (außer Hexe) auf die Hand nehmen.',
   },
 } as const
