@@ -7,7 +7,10 @@ import type {
   WizardGameViewState,
 } from '@wizard/shared'
 import { getLogTranslationKey } from '../../features/game/utils/log-label.util'
-import { normalizeLogParams } from '../../features/game/utils/log-params.util'
+import {
+  addDerivedCardLabelForSpecialPlay,
+  normalizeLogParams,
+} from '../../features/game/utils/log-params.util'
 import { I18nService } from '../i18n/i18n.service'
 import type { TranslationKey } from '../i18n/translations'
 import { AppStore } from '../state/app.store'
@@ -277,10 +280,11 @@ export class GameFacadeService {
   }
 
   private replaceParamsForSpeech(
+    messageKey: string,
     params: Record<string, string | number | boolean | null> | undefined,
     state: WizardGameViewState,
   ) {
-    return normalizeLogParams(
+    const normalized = normalizeLogParams(
       params,
       state.players,
       (key) => this.i18n.t(key),
@@ -289,6 +293,10 @@ export class GameFacadeService {
         includeSwappedCardLabel: true,
         includeSpecial: true,
       },
+    )
+
+    return addDerivedCardLabelForSpecialPlay(messageKey, normalized, (key) =>
+      this.i18n.t(key),
     )
   }
 
@@ -406,7 +414,11 @@ export class GameFacadeService {
 
       const text = this.i18n.format(
         translationKey,
-        this.replaceParamsForSpeech(entry.messageParams, state),
+        this.replaceParamsForSpeech(
+          entry.messageKey,
+          entry.messageParams,
+          state,
+        ),
       )
 
       this.audio.speak(text)

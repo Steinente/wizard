@@ -322,12 +322,12 @@ export const translations = {
       '{playerId} selected trump by {special} - {suit}',
     'log.game.prediction.made': '{playerId} bid {value}',
     'log.game.card.played': '{playerId} played {cardLabel}',
+    'log.game.card.played.asSuit': '{playerId} played {cardLabel} as {suit}',
     'log.game.trick.won': '{playerId} won the trick',
     'log.game.trick.canceledByBomb': 'Bomb exploded - nobody wins the trick',
     'log.special.shapeShifter.resolved':
       '{playerId} resolved Shape Shifter as {mode}',
     'log.special.cloud.applied': 'Cloud affected {targetPlayerId}',
-    'log.special.cloud.played': '{playerId} played Cloud as {suit}',
     'log.special.cloud.wonTrickNineThreeQuarters':
       '{playerId} floats on cloud 9 3/4',
     'log.special.cloud.noLongerFloatingNineThreeQuarters':
@@ -336,16 +336,11 @@ export const translations = {
       '{playerId} adjusted prediction by {delta}',
     'log.special.juggler.applied':
       'Juggler effect triggered by {sourcePlayerId}',
-    'log.special.juggler.played': '{playerId} played Juggler as {suit}',
     'log.special.juggler.pass.started': 'Everyone must choose a card to pass',
     'log.special.juggler.pass.completed': 'Juggler shuffled the cards',
     'log.special.juggler.pass.receivedCard': 'You received {cardLabel}',
-    'log.special.bomb.played': '{playerId} played Bomb',
     'log.special.werewolf.pendingTrumpEffect':
       '{playerId} swapped Werewolf with {swappedCardLabel} and chose trump {suit}',
-    'log.special.dragon.played': '{playerId} played Dragon',
-    'log.special.fairy.played': '{playerId} played Fairy',
-    'log.special.witch.played': '{playerId} played Witch',
     'log.special.witch.noHandCard':
       '{playerId} cannot use Witch effect because no hand card is left',
     'log.special.witch.exchange.started':
@@ -713,13 +708,13 @@ export const translations = {
       '{playerId} wählt Trumpf durch {special} - {suit}',
     'log.game.prediction.made': '{playerId} sagt {value} an',
     'log.game.card.played': '{playerId} spielt {cardLabel}',
+    'log.game.card.played.asSuit': '{playerId} spielt {cardLabel} als {suit}',
     'log.game.trick.won': '{playerId} gewinnt den Stich',
     'log.game.trick.canceledByBomb':
       'Bombe explodiert - niemand gewinnt den Stich',
     'log.special.shapeShifter.resolved':
       '{playerId} hat Gestaltenwandler als {mode} gewählt',
     'log.special.cloud.applied': 'Wolke beeinflusst {targetPlayerId}',
-    'log.special.cloud.played': '{playerId} spielt Wolke als {suit}',
     'log.special.cloud.wonTrickNineThreeQuarters':
       '{playerId} schwebt auf Wolke 9 3/4',
     'log.special.cloud.noLongerFloatingNineThreeQuarters':
@@ -728,18 +723,13 @@ export const translations = {
       '{playerId} passt Vorhersage um {delta} an',
     'log.special.juggler.applied':
       'Jongleur-Effekt ausgelöst von {sourcePlayerId}',
-    'log.special.juggler.played': '{playerId} spielt Jongleur als {suit}',
     'log.special.juggler.pass.started':
       'Jeder muss eine Karte zum Weitergeben auswählen',
     'log.special.juggler.pass.completed':
       'Jongleur hat die Karten durcheinander gemischt',
     'log.special.juggler.pass.receivedCard': 'Du hast {cardLabel} erhalten',
-    'log.special.bomb.played': '{playerId} hat Bombe gespielt',
     'log.special.werewolf.pendingTrumpEffect':
       '{playerId} tauscht den Werwolf mit {swappedCardLabel} und wählt {suit} als Trumpf',
-    'log.special.dragon.played': '{playerId} hat Drache gespielt',
-    'log.special.fairy.played': '{playerId} hat Fee gespielt',
-    'log.special.witch.played': '{playerId} hat Hexe gespielt',
     'log.special.witch.noHandCard':
       '{playerId} kann den Hexen-Effekt nicht nutzen, da keine Handkarte mehr vorhanden ist',
     'log.special.witch.exchange.started':

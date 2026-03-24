@@ -10,7 +10,10 @@ import type { WizardGameViewState } from '@wizard/shared'
 import { I18nService } from '../../../core/i18n/i18n.service'
 import { TPipe } from '../../../shared/pipes/t.pipe'
 import { getLogTranslationKey } from '../utils/log-label.util'
-import { normalizeLogParams } from '../utils/log-params.util'
+import {
+  addDerivedCardLabelForSpecialPlay,
+  normalizeLogParams,
+} from '../utils/log-params.util'
 
 @Component({
   selector: 'wiz-log-panel',
@@ -103,7 +106,11 @@ export class LogPanelComponent implements OnChanges {
     messageKey: string,
     params?: Record<string, string | number | boolean | null>,
   ) {
-    const normalized = this.replacePlayerIds(params)
+    const normalized = addDerivedCardLabelForSpecialPlay(
+      messageKey,
+      this.replacePlayerIds(params),
+      (key) => this.i18n.t(key),
+    )
 
     if (!normalized) {
       return normalized

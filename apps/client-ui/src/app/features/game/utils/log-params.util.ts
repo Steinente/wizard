@@ -155,3 +155,28 @@ export const normalizeLogParams = (
 
   return next
 }
+
+export const addDerivedCardLabelForSpecialPlay = (
+  messageKey: string,
+  params: LogParams | undefined,
+  t: TranslateFn,
+) => {
+  const canonical = messageKey.startsWith('log.')
+    ? messageKey.slice(4)
+    : messageKey
+  const specialMatch = /^special\.([a-zA-Z]+)\.played$/.exec(canonical)
+  const special = specialMatch?.[1]?.toLowerCase()
+  const cardTranslationKey = special ? CARD_SPECIAL_MAP[special] : undefined
+
+  if (!cardTranslationKey) {
+    return params
+  }
+
+  const next = { ...(params ?? {}) }
+
+  if (typeof next.cardLabel !== 'string') {
+    next.cardLabel = t(cardTranslationKey)
+  }
+
+  return next
+}
