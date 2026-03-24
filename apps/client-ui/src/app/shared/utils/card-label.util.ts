@@ -32,11 +32,11 @@ export const getCardPrimaryText = (card: Card): string => {
   }
 
   if (card.type === 'special' && card.special === 'juggler') {
-    return '7 1/2'
+    return '7 ½'
   }
 
   if (card.type === 'special' && card.special === 'cloud') {
-    return '9 3/4'
+    return '9 ¾'
   }
 
   return ''

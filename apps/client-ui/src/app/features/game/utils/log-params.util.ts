@@ -17,6 +17,7 @@ const KNOWN_SPECIALS = new Set([
   'shapeshifter',
   'bomb',
   'werewolf',
+  'vampire',
   'cloud',
   'juggler',
   'dragon',
@@ -133,6 +134,10 @@ export const normalizeLogParams = (
 
   if (typeof next.takenCardLabel === 'string') {
     next.takenCardLabel = translateCardLabel(next.takenCardLabel, t)
+  }
+
+  if (typeof next.copiedCardLabel === 'string') {
+    next.copiedCardLabel = translateCardLabel(next.copiedCardLabel, t)
   }
 
   if (

@@ -10,21 +10,63 @@ import type { TrickPlay, TrickState } from './trick.js'
 export const isBombCard = (card: Card): boolean =>
   card.type === 'special' && card.special === 'bomb'
 
+const isEffectiveBombCard = (
+  card: Card,
+  effect: ResolvedCardRuntimeEffect | null,
+): boolean => {
+  if (isBombCard(card)) {
+    return true
+  }
+
+  return !!(
+    card.type === 'special' &&
+    card.special === 'vampire' &&
+    effect?.copiedCard &&
+    isBombCard(effect.copiedCard)
+  )
+}
+
 export const filterOutBombPlays = (
   plays: ReadonlyArray<TrickPlay>,
-): TrickPlay[] => plays.filter((play) => !isBombCard(play.card))
+  effects: ReadonlyArray<ResolvedCardRuntimeEffect> = [],
+): TrickPlay[] =>
+  plays.filter(
+    (play) =>
+      !isEffectiveBombCard(play.card, getEffectForCard(effects, play.card.id)),
+  )
 
 const getEffectForCard = (
   effects: ReadonlyArray<ResolvedCardRuntimeEffect>,
   cardId: string,
 ) => effects.find((entry) => entry.cardId === cardId) ?? null
 
+const getEffectiveSpecial = (
+  card: Card,
+  effect: ResolvedCardRuntimeEffect | null,
+): string | null => {
+  if (card.type !== 'special') {
+    return null
+  }
+
+  if (card.special !== 'vampire') {
+    return card.special
+  }
+
+  if (effect?.copiedCard?.type === 'special') {
+    return effect.copiedCard.special
+  }
+
+  return null
+}
+
 export const resolveTrickWinner = (
   trick: Omit<TrickState, 'winnerPlayerId' | 'winningCard'>,
   trumpSuit: TrickState['leadSuit'],
   effects: ReadonlyArray<ResolvedCardRuntimeEffect> = [],
 ): TrickState => {
-  const bombPlay = trick.plays.find((play) => isBombCard(play.card))
+  const bombPlay = trick.plays.find((play) =>
+    isEffectiveBombCard(play.card, getEffectForCard(effects, play.card.id)),
+  )
 
   const derivedLeadSuit =
     trick.leadSuit ??
@@ -42,6 +84,31 @@ export const resolveTrickWinner = (
       winnerPlayerId: null,
       winningCard: null,
       cancelledByBomb: true,
+    }
+  }
+
+  const fairyPlay = trick.plays.find(
+    (play) =>
+      getEffectiveSpecial(
+        play.card,
+        getEffectForCard(effects, play.card.id),
+      ) === 'fairy',
+  )
+  const dragonPlay = trick.plays.find(
+    (play) =>
+      getEffectiveSpecial(
+        play.card,
+        getEffectForCard(effects, play.card.id),
+      ) === 'dragon',
+  )
+
+  if (fairyPlay && dragonPlay) {
+    return {
+      ...trick,
+      leadSuit: derivedLeadSuit,
+      winnerPlayerId: fairyPlay.playerId,
+      winningCard: fairyPlay.card,
+      cancelledByBomb: false,
     }
   }
 

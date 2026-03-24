@@ -4,6 +4,7 @@ import type {
   BeforePlaySpecialResult,
 } from './special-types.js'
 import { createDecisionId, nowIso } from './special-utils.js'
+import { createVampireCopiedCard } from './vampire.js'
 
 interface ResolveJugglerContext {
   state: WizardGameState
@@ -54,13 +55,29 @@ export const resolveJugglerDecision = (context: ResolveJugglerContext) => {
     throw new Error('No matching juggler decision pending')
   }
 
+  const roundPlayer = context.state.currentRound?.players.find(
+    (entry) => entry.playerId === context.playerId,
+  )
+  const pendingCard = roundPlayer?.hand.find(
+    (entry) => entry.id === context.cardId,
+  )
+  const isVampireJugglerCopy =
+    pendingCard?.type === 'special' && pendingCard.special === 'vampire'
+
   context.registerResolvedEffect({
     cardId: context.cardId,
     ownerPlayerId: context.playerId,
-    special: 'juggler',
+    special: isVampireJugglerCopy ? 'vampire' : 'juggler',
+    ...(isVampireJugglerCopy
+      ? {
+          copiedCard: createVampireCopiedCard(context.cardId, 'juggler'),
+        }
+      : {}),
     chosenSuit: context.suit,
     chosenValue: 7.5,
-    note: 'juggler suit chosen',
+    note: isVampireJugglerCopy
+      ? 'vampire copied juggler suit chosen'
+      : 'juggler suit chosen',
   })
 
   context.state.pendingDecision = null
@@ -68,16 +85,18 @@ export const resolveJugglerDecision = (context: ResolveJugglerContext) => {
   const card = context.removeCardFromHand(context.playerId, context.cardId)
   context.appendCardToCurrentTrick(context.playerId, card)
 
-  context.state.logs.push({
-    id: createDecisionId(),
-    createdAt: nowIso(),
-    type: 'specialEffect',
-    messageKey: 'special.juggler.played',
-    messageParams: {
-      playerId: context.playerId,
-      suit: context.suit,
-    },
-  })
+  if (!isVampireJugglerCopy) {
+    context.state.logs.push({
+      id: createDecisionId(),
+      createdAt: nowIso(),
+      type: 'specialEffect',
+      messageKey: 'special.juggler.played',
+      messageParams: {
+        playerId: context.playerId,
+        suit: context.suit,
+      },
+    })
+  }
 }
 
 export const selectJugglerPassCardSelection = (

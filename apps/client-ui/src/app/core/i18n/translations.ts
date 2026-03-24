@@ -339,6 +339,10 @@ export const translations = {
     'log.special.juggler.pass.started': 'Everyone must choose a card to pass',
     'log.special.juggler.pass.completed': 'Juggler shuffled the cards',
     'log.special.juggler.pass.receivedCard': 'You received {cardLabel}',
+    'log.special.vampire.played':
+      '{playerId} played Vampire which transforms into {copiedCardLabel}',
+    'log.special.vampire.played.werewolfTrumpRevealed':
+      '{playerId} played Vampire. Because trump is Werewolf, a new trump is revealed. Vampire transforms into {copiedCardLabel}',
     'log.special.werewolf.pendingTrumpEffect':
       '{playerId} swapped Werewolf with {swappedCardLabel} and chose trump {suit}',
     'log.special.witch.noHandCard':
@@ -358,6 +362,7 @@ export const translations = {
     'card.special.shapeShifter': 'Shape Shifter',
     'card.special.bomb': 'Bomb',
     'card.special.werewolf': 'Werewolf',
+    'card.special.vampire': 'Vampire',
     'card.special.cloud': 'Cloud',
     'card.special.juggler': 'Juggler',
     'card.special.dragon': 'Dragon',
@@ -369,6 +374,8 @@ export const translations = {
       'If played in a trick, the trick is canceled and nobody wins it.',
     'card.special.werewolf.info':
       'When drawn into a hand, it swaps with the current trump card; its owner then chooses the new trump suit (or no trump).',
+    'card.special.vampire.info':
+      'When played in a trick, it copies the current trump card (including effects). If trump is Werewolf, a new trump card is revealed first and Vampire copies that card instead.',
     'card.special.cloud.info':
       'Choose a suit; if this card wins a trick, the winner must adjust their prediction by +1 or -1.',
     'card.special.juggler.info':
@@ -728,6 +735,10 @@ export const translations = {
     'log.special.juggler.pass.completed':
       'Jongleur hat die Karten durcheinander gemischt',
     'log.special.juggler.pass.receivedCard': 'Du hast {cardLabel} erhalten',
+    'log.special.vampire.played':
+      '{playerId} spielt Vampir, der sich in {copiedCardLabel} verwandelt',
+    'log.special.vampire.played.werewolfTrumpRevealed':
+      '{playerId} spielt Vampir. Da der Trumpf Werwolf ist, wird ein neuer Trumpf aufgedeckt. Der Vampir verwandelt sich in {copiedCardLabel}',
     'log.special.werewolf.pendingTrumpEffect':
       '{playerId} tauscht den Werwolf mit {swappedCardLabel} und wählt {suit} als Trumpf',
     'log.special.witch.noHandCard':
@@ -747,6 +758,7 @@ export const translations = {
     'card.special.shapeShifter': 'Gestaltenwandler',
     'card.special.bomb': 'Bombe',
     'card.special.werewolf': 'Werwolf',
+    'card.special.vampire': 'Vampir',
     'card.special.cloud': 'Wolke',
     'card.special.juggler': 'Jongleur',
     'card.special.dragon': 'Drache',
@@ -758,6 +770,8 @@ export const translations = {
       'Wird sie in einen Stich gespielt, wird der Stich annulliert und niemand gewinnt ihn.',
     'card.special.werewolf.info':
       'Wird er auf die Hand gezogen, tauscht er mit der aktiven Trumpfkarte; sein Besitzer bestimmt danach die neue Trumpffarbe (oder kein Trumpf).',
+    'card.special.vampire.info':
+      'Wird er im Stich gespielt, kopiert er die aktuelle Trumpfkarte (inklusive Effekten). Ist der Trumpf ein Werwolf, wird zuerst eine neue Trumpfkarte aufgedeckt; der Vampir kopiert dann diese neue Karte.',
     'card.special.cloud.info':
       'Wähle eine Farbe; gewinnt diese Karte einen Stich, muss der Gewinner seine Ansage um +1 oder -1 anpassen.',
     'card.special.juggler.info':

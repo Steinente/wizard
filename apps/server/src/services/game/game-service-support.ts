@@ -137,6 +137,10 @@ export const fromJson = (value: unknown): WizardGameState => {
     state.chatMessages = []
   }
 
+  if (state.currentRound && !Array.isArray(state.currentRound.drawPile)) {
+    state.currentRound.drawPile = []
+  }
+
   return state as WizardGameState
 }
 
@@ -225,22 +229,31 @@ export const disablesFollowSuitAsLeadCard = (
   card: Card,
   state: WizardGameState,
 ): boolean => {
-  if (card.type === 'wizard') {
+  const resolvedEffect = getResolvedEffectForCard(state, card.id)
+  const effectiveCard =
+    card.type === 'special' &&
+    card.special === 'vampire' &&
+    resolvedEffect?.copiedCard
+      ? resolvedEffect.copiedCard
+      : card
+
+  if (effectiveCard.type === 'wizard') {
     return true
   }
 
-  if (disablesFollowSuitForDragonLead(card)) {
+  if (disablesFollowSuitForDragonLead(effectiveCard)) {
     return true
   }
 
-  if (disablesFollowSuitForWitchLead(card)) {
+  if (disablesFollowSuitForWitchLead(effectiveCard)) {
     return true
   }
 
-  if (card.type === 'special' && card.special === 'shapeShifter') {
-    return (
-      getResolvedEffectForCard(state, card.id)?.shapeShifterMode === 'wizard'
-    )
+  if (
+    effectiveCard.type === 'special' &&
+    effectiveCard.special === 'shapeShifter'
+  ) {
+    return resolvedEffect?.shapeShifterMode === 'wizard'
   }
 
   return false
@@ -268,36 +281,24 @@ export const getHypotheticalNextLeaderPlayerId = (
     return null
   }
 
-  const filteredPlays = filterOutBombPlays(trick.plays)
+  const filteredPlaysWithEffects = filterOutBombPlays(
+    trick.plays,
+    resolvedEffects,
+  )
 
-  if (!filteredPlays.length) {
+  if (!filteredPlaysWithEffects.length) {
     return trick.leadPlayerId
   }
 
   const simulated = resolveTrickWinner(
     {
       ...trick,
-      plays: filteredPlays,
+      plays: filteredPlaysWithEffects,
       cancelledByBomb: false,
     },
     trumpSuit,
     resolvedEffects,
   )
-
-  const fairyPlay = filteredPlays.find(
-    (play) => play.card.type === 'special' && play.card.special === 'fairy',
-  )
-  const dragonPlay = filteredPlays.find(
-    (play) => play.card.type === 'special' && play.card.special === 'dragon',
-  )
-
-  if (fairyPlay && dragonPlay) {
-    return fairyPlay.playerId
-  }
-
-  if (!fairyPlay && dragonPlay) {
-    return dragonPlay.playerId
-  }
 
   return simulated.winnerPlayerId
 }
@@ -322,6 +323,7 @@ export const SPECIAL_TRUMP_CARDS = [
   'shapeShifter',
   'dragon',
   'werewolf',
+  'vampire',
   'juggler',
   'cloud',
 ] as const

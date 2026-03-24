@@ -17,6 +17,7 @@ const specialCardKeySchema = z.enum([
   'shapeShifter',
   'bomb',
   'werewolf',
+  'vampire',
   'cloud',
   'juggler',
   'dragon',

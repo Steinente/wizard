@@ -67,6 +67,7 @@ export const setupRound = (input: SetupRoundInput): RoundState => {
     roundLeaderPlayerId,
     trumpSuit: getTrumpSuit(dealResult.trumpCard),
     trumpCard: dealResult.trumpCard,
+    drawPile: dealResult.remainingDeck,
     deckRemainderCount: dealResult.remainingDeck.length,
     players,
     currentTrick: null,

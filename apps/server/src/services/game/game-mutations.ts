@@ -16,6 +16,13 @@ import {
   logWitchPlayed,
 } from './specials/index.js'
 
+const SPECIAL_CARDS_WITH_OWN_PLAY_LOG: ReadonlySet<string> = new Set([
+  'shapeShifter',
+  'vampire',
+  'juggler',
+  'cloud',
+] as const)
+
 export function registerResolvedEffect(
   state: WizardGameState,
   effect: WizardGameState['resolvedCardEffects'][number],
@@ -90,9 +97,7 @@ export function appendCardToCurrentTrick(
   // Don't log shape shifter, juggler or cloud plays here - the detailed logs are created when resolving special effects
   if (
     card.type !== 'special' ||
-    (card.special !== 'shapeShifter' &&
-      card.special !== 'juggler' &&
-      card.special !== 'cloud')
+    !SPECIAL_CARDS_WITH_OWN_PLAY_LOG.has(card.special)
   ) {
     if (isBombCard(card)) {
       logBombPlayed(state, playerId)

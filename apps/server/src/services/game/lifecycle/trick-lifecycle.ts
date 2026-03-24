@@ -1,4 +1,4 @@
-import type { WizardGameState } from '@wizard/shared'
+import type { Card, WizardGameState } from '@wizard/shared'
 import { resolveTrickWinner } from '@wizard/shared'
 import crypto from 'node:crypto'
 import { beginJugglerPassDecision } from '../game-mutations.js'
@@ -27,6 +27,27 @@ const clearPendingCloudWinnerMarkers = (state: WizardGameState) => {
   for (const player of state.currentRound.players) {
     player.pendingCloudAdjustment = false
   }
+}
+
+const getEffectiveSpecial = (
+  state: WizardGameState,
+  cardId: string,
+  card: Card,
+): string | null => {
+  if (card.type !== 'special') {
+    return null
+  }
+
+  if (card.special !== 'vampire') {
+    return card.special ?? null
+  }
+
+  const effect = state.resolvedCardEffects.find(
+    (entry) => entry.cardId === cardId,
+  )
+  return effect?.copiedCard?.type === 'special'
+    ? effect.copiedCard.special
+    : null
 }
 
 export async function continueOrResolveCurrentTrick(
@@ -72,40 +93,17 @@ export async function resolveCompletedTrick(
     state.resolvedCardEffects,
   )
 
-  if (!resolvedTrick.cancelledByBomb) {
-    const fairyPlay = resolvedTrick.plays.find(
-      (play) => play.card.type === 'special' && play.card.special === 'fairy',
-    )
-    const dragonPlay = resolvedTrick.plays.find(
-      (play) => play.card.type === 'special' && play.card.special === 'dragon',
-    )
-
-    if (fairyPlay && dragonPlay) {
-      resolvedTrick = {
-        ...resolvedTrick,
-        winnerPlayerId: fairyPlay.playerId,
-        winningCard: fairyPlay.card,
-      }
-    } else if (!fairyPlay && dragonPlay) {
-      resolvedTrick = {
-        ...resolvedTrick,
-        winnerPlayerId: dragonPlay.playerId,
-        winningCard: dragonPlay.card,
-      }
-    }
-  }
-
   state.currentRound.currentTrick = null
   state.currentRound.completedTricks.push(resolvedTrick)
 
   const playedJuggler = resolvedTrick.plays.find(
-    (play) => play.card.type === 'special' && play.card.special === 'juggler',
+    (play) => getEffectiveSpecial(state, play.card.id, play.card) === 'juggler',
   )
   const playedCloud = resolvedTrick.plays.find(
-    (play) => play.card.type === 'special' && play.card.special === 'cloud',
+    (play) => getEffectiveSpecial(state, play.card.id, play.card) === 'cloud',
   )
   const playedWitch = resolvedTrick.plays.find(
-    (play) => play.card.type === 'special' && play.card.special === 'witch',
+    (play) => getEffectiveSpecial(state, play.card.id, play.card) === 'witch',
   )
   const cloudTimingMode = state.config.cloudRuleTiming
   const justCompletedTrickIndex = state.currentRound.completedTricks.length - 1

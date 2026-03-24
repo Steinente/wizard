@@ -23,6 +23,7 @@ const SPECIAL_CARD_ARTWORK: Record<string, string> = {
   shapeShifter: 'shape_shifter',
   bomb: 'bomb',
   werewolf: 'werewolf',
+  vampire: 'vampire',
   cloud: 'cloud',
   juggler: 'juggler',
   dragon: 'dragon',
@@ -69,7 +70,12 @@ const SPECIAL_CARD_ARTWORK: Record<string, string> = {
       @if (showArtwork && artworkSrc) {
         <img class="wiz-card-artwork-image" [src]="artworkSrc" alt="" />
       } @else {
-        <div class="wiz-card-value">{{ primaryText }}</div>
+        <div
+          class="wiz-card-value"
+          [class.wiz-card-value-compact]="isCompactSpecialValue"
+        >
+          {{ primaryText }}
+        </div>
       }
       @if (middleLabel) {
         <div
@@ -85,24 +91,50 @@ const SPECIAL_CARD_ARTWORK: Record<string, string> = {
         </div>
       }
       @if (!showArtwork || !artworkSrc) {
-        <div class="wiz-card-title" [class.wiz-card-title-top]="pinTitleTop">
-          {{ title }}
-        </div>
-        @if (subtitle) {
-          <div class="wiz-card-subtitle">{{ subtitle }}</div>
-        }
-        @if (shapeShifterMode) {
+        <div
+          class="wiz-card-bottom-text"
+          [class.wiz-card-bottom-text-centered]="shouldCenterBottomText"
+        >
           <div
-            class="wiz-card-subtitle"
-            style="margin-top: 4px; font-size: 11px; font-weight: 600;"
+            class="wiz-card-title"
+            [class.wiz-card-title-top]="pinTitleTop"
+            [class.wiz-card-title-top-left]="isTopTitleLeftAligned"
           >
-            ({{
-              shapeShifterMode === 'card.wizard'
-                ? ('card.wizard' | t)
-                : ('card.jester' | t)
-            }})
+            {{ title }}
           </div>
-        }
+          @if (pinTitleTop && vampireCopiedValueLabel) {
+            <div class="wiz-card-top-value">{{ vampireCopiedValueLabel }}</div>
+          }
+          @if (subtitle) {
+            <div class="wiz-card-subtitle">
+              {{ subtitle }}
+            </div>
+          }
+          @if (selectedOptionLabel) {
+            <div
+              class="wiz-card-subtitle"
+              style="margin-top: 4px; font-size: 11px; font-weight: 600;"
+            >
+              ({{ selectedOptionLabel }})
+            </div>
+          }
+          @if (vampireCopiedBaseLabel) {
+            <div
+              class="wiz-card-title wiz-card-copied-title"
+              style="margin-top: 4px;"
+            >
+              {{ vampireCopiedBaseLabel }}
+            </div>
+          }
+          @if (vampireCopiedOptionLabel) {
+            <div
+              class="wiz-card-subtitle"
+              style="margin-top: 2px; font-size: 11px; font-weight: 600;"
+            >
+              ({{ vampireCopiedOptionLabel }})
+            </div>
+          }
+        </div>
       }
     </button>
   `,
@@ -147,6 +179,10 @@ const SPECIAL_CARD_ARTWORK: Record<string, string> = {
         font-size: 28px;
         font-weight: 700;
         line-height: 1;
+      }
+
+      .wiz-card-value-compact {
+        font-size: 24px;
       }
 
       .wiz-card-info {
@@ -220,6 +256,21 @@ const SPECIAL_CARD_ARTWORK: Record<string, string> = {
         right: 10px;
       }
 
+      .wiz-card-top-value {
+        position: absolute;
+        top: 26px;
+        left: 10px;
+        right: 10px;
+        font-size: 16px;
+        font-weight: 600;
+        line-height: 1.1;
+        text-align: left;
+      }
+
+      .wiz-card-title-top-left {
+        text-align: left;
+      }
+
       .wiz-card-subtitle {
         font-size: 12px;
         line-height: 1.1;
@@ -227,6 +278,14 @@ const SPECIAL_CARD_ARTWORK: Record<string, string> = {
         hyphens: auto;
         overflow-wrap: break-word;
         word-break: normal;
+      }
+
+      .wiz-card-bottom-text {
+        margin-top: auto;
+      }
+
+      .wiz-card-bottom-text-centered {
+        text-align: center;
       }
 
       .wiz-card-middle-label {
@@ -275,6 +334,10 @@ const SPECIAL_CARD_ARTWORK: Record<string, string> = {
         font-weight: 700;
         line-height: 1.1;
         text-align: center;
+        white-space: normal;
+        hyphens: auto;
+        overflow-wrap: break-word;
+        word-break: normal;
         text-shadow: none;
         backdrop-filter: blur(4px);
         z-index: 1;
@@ -290,6 +353,10 @@ const SPECIAL_CARD_ARTWORK: Record<string, string> = {
 
         .wiz-card-value {
           font-size: 23px;
+        }
+
+        .wiz-card-value-compact {
+          font-size: 20px;
         }
 
         .wiz-card-title {
@@ -321,6 +388,10 @@ const SPECIAL_CARD_ARTWORK: Record<string, string> = {
           font-size: 19px;
         }
 
+        .wiz-card-value-compact {
+          font-size: 17px;
+        }
+
         .wiz-card-title {
           font-size: 11px;
         }
@@ -344,6 +415,13 @@ const SPECIAL_CARD_ARTWORK: Record<string, string> = {
           top: 8px;
           left: 8px;
           right: 8px;
+        }
+
+        .wiz-card-top-value {
+          top: 22px;
+          left: 8px;
+          right: 8px;
+          font-size: 14px;
         }
 
         .wiz-card-info {
@@ -392,6 +470,13 @@ export class CardComponent {
 
   get primaryText() {
     return getCardPrimaryText(this.card)
+  }
+
+  get isCompactSpecialValue(): boolean {
+    return (
+      this.card.type === 'special' &&
+      (this.card.special === 'cloud' || this.card.special === 'juggler')
+    )
   }
 
   get title() {
@@ -447,45 +532,178 @@ export class CardComponent {
       this.resolvedEffect.special === 'shapeShifter' &&
       this.resolvedEffect.shapeShifterMode
     ) {
-      return this.resolvedEffect.shapeShifterMode === 'wizard'
-        ? 'card.wizard'
-        : 'card.jester'
+      return this.getShapeShifterModeLabel(this.resolvedEffect.shapeShifterMode)
     }
+
+    if (
+      this.resolvedEffect &&
+      this.resolvedEffect.special === 'vampire' &&
+      this.resolvedEffect.copiedCard?.type === 'special' &&
+      this.resolvedEffect.copiedCard.special === 'shapeShifter' &&
+      this.resolvedEffect.shapeShifterMode
+    ) {
+      return this.getShapeShifterModeLabel(this.resolvedEffect.shapeShifterMode)
+    }
+
     return null
   }
 
   get artworkDetailLabel(): string {
+    if (this.vampireCopiedBaseLabel) {
+      if (this.vampireCopiedOptionLabel) {
+        return `${this.vampireCopiedBaseLabel} (${this.vampireCopiedOptionLabel})`
+      }
+
+      return this.vampireCopiedBaseLabel
+    }
+
     if (
       this.resolvedEffect?.special === 'shapeShifter' &&
       this.resolvedEffect.shapeShifterMode
     ) {
       return this.i18n.t(
-        this.resolvedEffect.shapeShifterMode === 'wizard'
-          ? 'card.wizard'
-          : 'card.jester',
+        this.getShapeShifterModeLabel(
+          this.resolvedEffect.shapeShifterMode,
+        ) as TranslationKey,
       )
     }
 
     if (
       this.resolvedEffect &&
-      (this.resolvedEffect.special === 'cloud' ||
-        this.resolvedEffect.special === 'juggler') &&
+      this.isCloudOrJugglerSpecial(this.resolvedEffect.special) &&
       this.resolvedEffect.chosenSuit
     ) {
-      return this.i18n.t(
-        `suit.${this.resolvedEffect.chosenSuit}` as TranslationKey,
-      )
+      return this.getSuitLabel(this.resolvedEffect.chosenSuit)
     }
 
     return ''
   }
 
-  get pinTitleTop(): boolean {
+  get vampireCopiedLabel(): string | null {
+    if (
+      this.resolvedEffect?.special === 'vampire' &&
+      this.resolvedEffect.copiedCard
+    ) {
+      return this.translateCard(this.resolvedEffect.copiedCard)
+    }
+
+    return null
+  }
+
+  get selectedOptionLabel(): string | null {
+    if (!this.resolvedEffect) {
+      return null
+    }
+
+    if (
+      this.resolvedEffect.special === 'shapeShifter' &&
+      this.resolvedEffect.shapeShifterMode
+    ) {
+      return this.i18n.t(
+        this.getShapeShifterModeLabel(
+          this.resolvedEffect.shapeShifterMode,
+        ) as TranslationKey,
+      )
+    }
+
+    if (
+      this.isCloudOrJugglerSpecial(this.resolvedEffect.special) &&
+      this.resolvedEffect.chosenSuit
+    ) {
+      return this.getSuitLabel(this.resolvedEffect.chosenSuit)
+    }
+
+    return null
+  }
+
+  get vampireCopiedBaseLabel(): string | null {
+    return this.vampireCopiedLabel
+  }
+
+  get vampireCopiedOptionLabel(): string | null {
+    if (this.resolvedEffect?.special !== 'vampire') {
+      return null
+    }
+
+    if (
+      this.vampireCopiedSpecial === 'shapeShifter' &&
+      this.resolvedEffect.shapeShifterMode
+    ) {
+      return this.i18n.t(
+        this.getShapeShifterModeLabel(
+          this.resolvedEffect.shapeShifterMode,
+        ) as TranslationKey,
+      )
+    }
+
+    if (
+      this.isCloudOrJugglerSpecial(this.vampireCopiedSpecial) &&
+      this.resolvedEffect.chosenSuit
+    ) {
+      return this.getSuitLabel(this.resolvedEffect.chosenSuit)
+    }
+
+    return null
+  }
+
+  get vampireCopiedValueLabel(): string | null {
+    if (
+      this.resolvedEffect?.special !== 'vampire' ||
+      this.resolvedEffect.copiedCard?.type !== 'special'
+    ) {
+      return null
+    }
+
+    if (this.isCloudOrJugglerSpecial(this.vampireCopiedSpecial)) {
+      return getCardPrimaryText(this.resolvedEffect.copiedCard)
+    }
+
+    return null
+  }
+
+  get shouldCenterBottomText(): boolean {
+    return !!this.selectedOptionLabel || !!this.vampireCopiedBaseLabel
+  }
+
+  private get vampireCopiedSpecial(): string | null {
+    if (
+      this.resolvedEffect?.special === 'vampire' &&
+      this.resolvedEffect.copiedCard?.type === 'special'
+    ) {
+      return this.resolvedEffect.copiedCard.special
+    }
+
+    return null
+  }
+
+  private isCloudOrJugglerSpecial(special: string | null | undefined): boolean {
+    return special === 'cloud' || special === 'juggler'
+  }
+
+  private getSuitLabel(suit: string): string {
+    return this.i18n.t(`suit.${suit}` as TranslationKey)
+  }
+
+  private getShapeShifterModeLabel(
+    mode: 'wizard' | 'jester',
+  ): 'card.wizard' | 'card.jester' {
+    return mode === 'wizard' ? 'card.wizard' : 'card.jester'
+  }
+
+  get isTopTitleLeftAligned(): boolean {
     return (
-      !!this.middleLabel &&
-      this.card.type === 'special' &&
-      this.card.special === 'shapeShifter'
+      this.pinTitleTop &&
+      ((this.card.type === 'special' && this.card.special === 'shapeShifter') ||
+        !!this.vampireCopiedBaseLabel)
     )
+  }
+
+  get pinTitleTop(): boolean {
+    if (!this.middleLabel || this.card.type !== 'special') {
+      return false
+    }
+
+    return this.card.special === 'shapeShifter' || !!this.vampireCopiedLabel
   }
 
   get specialInfoText(): string {
@@ -501,8 +719,16 @@ export class CardComponent {
     // Check if this is a cloud or juggler card with a chosen suit
     if (
       this.resolvedEffect &&
-      (this.resolvedEffect.special === 'cloud' ||
-        this.resolvedEffect.special === 'juggler') &&
+      this.isCloudOrJugglerSpecial(this.resolvedEffect.special) &&
+      this.resolvedEffect.chosenSuit
+    ) {
+      return SUIT_BACKGROUNDS[this.resolvedEffect.chosenSuit] ?? this.accent
+    }
+
+    // If vampire copied cloud/juggler, use the chosen suit color as well.
+    if (
+      this.resolvedEffect?.special === 'vampire' &&
+      this.isCloudOrJugglerSpecial(this.vampireCopiedSpecial) &&
       this.resolvedEffect.chosenSuit
     ) {
       return SUIT_BACKGROUNDS[this.resolvedEffect.chosenSuit] ?? this.accent
@@ -519,10 +745,19 @@ export class CardComponent {
     // Check if background is the yellow color
     if (
       this.resolvedEffect &&
-      (this.resolvedEffect.special === 'cloud' ||
-        this.resolvedEffect.special === 'juggler')
+      this.isCloudOrJugglerSpecial(this.resolvedEffect.special)
     ) {
       // Yellow needs dark text, other colors need light text
+      if (this.resolvedEffect.chosenSuit === 'yellow') {
+        return '#0f172a'
+      }
+      return '#ffffff'
+    }
+
+    if (
+      this.resolvedEffect?.special === 'vampire' &&
+      this.isCloudOrJugglerSpecial(this.vampireCopiedSpecial)
+    ) {
       if (this.resolvedEffect.chosenSuit === 'yellow') {
         return '#0f172a'
       }
@@ -534,6 +769,22 @@ export class CardComponent {
     }
 
     return '#0f172a'
+  }
+
+  private translateCard(card: Card): string {
+    if (card.type === 'number') {
+      return `${this.i18n.t(`suit.${card.suit}` as TranslationKey)} ${card.value}`
+    }
+
+    if (card.type === 'wizard') {
+      return this.i18n.t('card.wizard')
+    }
+
+    if (card.type === 'jester') {
+      return this.i18n.t('card.jester')
+    }
+
+    return this.i18n.t(`card.special.${card.special}` as TranslationKey)
   }
 
   private cardVariantFromId(cardId: string) {

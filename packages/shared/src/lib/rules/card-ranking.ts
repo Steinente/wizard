@@ -8,6 +8,7 @@ import {
 import { compareDragonFairyDuel } from './special-duels.js'
 
 export interface RuntimeCardEffectLookup {
+  copiedCard?: Card
   chosenSuit?: Suit | null
   chosenValue?: number | null
   shapeShifterMode?: 'wizard' | 'jester' | null
@@ -36,6 +37,14 @@ export const getLeadSuitFromCard = (
   card: Card,
   runtimeEffect?: RuntimeCardEffectLookup | null,
 ): Suit | null => {
+  if (
+    isSpecialCard(card) &&
+    card.special === 'vampire' &&
+    runtimeEffect?.copiedCard
+  ) {
+    return getLeadSuitFromCard(runtimeEffect.copiedCard, runtimeEffect)
+  }
+
   if (isNumberCard(card)) {
     return card.suit
   }
@@ -61,6 +70,19 @@ export const classifyCard = (
   trumpSuit: Suit | null,
   runtimeEffect?: RuntimeCardEffectLookup | null,
 ): ClassifiedCard => {
+  if (
+    isSpecialCard(card) &&
+    card.special === 'vampire' &&
+    runtimeEffect?.copiedCard
+  ) {
+    return classifyCard(
+      runtimeEffect.copiedCard,
+      leadSuit,
+      trumpSuit,
+      runtimeEffect,
+    )
+  }
+
   if (isWizardCard(card)) {
     return {
       card,

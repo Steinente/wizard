@@ -4,6 +4,7 @@ import type {
   BeforePlaySpecialResult,
 } from './special-types.js'
 import { createDecisionId, nowIso } from './special-utils.js'
+import { createVampireCopiedCard } from './vampire.js'
 
 interface ResolveShapeShifterContext {
   state: WizardGameState
@@ -48,12 +49,28 @@ export const resolveShapeShifterDecision = (
     throw new Error('No matching shape shifter decision pending')
   }
 
+  const roundPlayer = context.state.currentRound?.players.find(
+    (entry) => entry.playerId === context.playerId,
+  )
+  const pendingCard = roundPlayer?.hand.find(
+    (entry) => entry.id === context.cardId,
+  )
+  const isVampireShapeShifterCopy =
+    pendingCard?.type === 'special' && pendingCard.special === 'vampire'
+
   context.registerResolvedEffect({
     cardId: context.cardId,
     ownerPlayerId: context.playerId,
-    special: 'shapeShifter',
+    special: isVampireShapeShifterCopy ? 'vampire' : 'shapeShifter',
+    ...(isVampireShapeShifterCopy
+      ? {
+          copiedCard: createVampireCopiedCard(context.cardId, 'shapeShifter'),
+        }
+      : {}),
     shapeShifterMode: context.mode,
-    note: 'chosen by player',
+    note: isVampireShapeShifterCopy
+      ? 'vampire copied shape shifter mode chosen by player'
+      : 'chosen by player',
   })
 
   context.state.pendingDecision = null

@@ -20,6 +20,7 @@ export interface RoundState {
   roundLeaderPlayerId: string | null
   trumpSuit: Suit | null
   trumpCard: Card | null
+  drawPile: Card[]
   deckRemainderCount: number
   players: RoundPlayerState[]
   currentTrick: TrickState | null

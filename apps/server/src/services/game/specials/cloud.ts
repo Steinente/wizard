@@ -4,6 +4,7 @@ import type {
   BeforePlaySpecialResult,
 } from './special-types.js'
 import { createDecisionId, nowIso } from './special-utils.js'
+import { createVampireCopiedCard } from './vampire.js'
 
 interface ResolveCloudContext {
   state: WizardGameState
@@ -81,13 +82,29 @@ export const resolveCloudDecision = (context: ResolveCloudContext) => {
     throw new Error('No matching cloud decision pending')
   }
 
+  const roundPlayer = context.state.currentRound?.players.find(
+    (entry) => entry.playerId === context.playerId,
+  )
+  const pendingCard = roundPlayer?.hand.find(
+    (entry) => entry.id === context.cardId,
+  )
+  const isVampireCloudCopy =
+    pendingCard?.type === 'special' && pendingCard.special === 'vampire'
+
   context.registerResolvedEffect({
     cardId: context.cardId,
     ownerPlayerId: context.playerId,
-    special: 'cloud',
+    special: isVampireCloudCopy ? 'vampire' : 'cloud',
+    ...(isVampireCloudCopy
+      ? {
+          copiedCard: createVampireCopiedCard(context.cardId, 'cloud'),
+        }
+      : {}),
     chosenSuit: context.suit,
     chosenValue: 9.75,
-    note: 'cloud suit chosen',
+    note: isVampireCloudCopy
+      ? 'vampire copied cloud suit chosen'
+      : 'cloud suit chosen',
   })
 
   context.state.pendingDecision = null
@@ -95,16 +112,18 @@ export const resolveCloudDecision = (context: ResolveCloudContext) => {
   const card = context.removeCardFromHand(context.playerId, context.cardId)
   context.appendCardToCurrentTrick(context.playerId, card)
 
-  context.state.logs.push({
-    id: createDecisionId(),
-    createdAt: nowIso(),
-    type: 'specialEffect',
-    messageKey: 'special.cloud.played',
-    messageParams: {
-      playerId: context.playerId,
-      suit: context.suit,
-    },
-  })
+  if (!isVampireCloudCopy) {
+    context.state.logs.push({
+      id: createDecisionId(),
+      createdAt: nowIso(),
+      type: 'specialEffect',
+      messageKey: 'special.cloud.played',
+      messageParams: {
+        playerId: context.playerId,
+        suit: context.suit,
+      },
+    })
+  }
 }
 
 export const resolveCloudAdjustmentDecision = async (

@@ -53,6 +53,13 @@ export const SPECIAL_CARD_DEFINITIONS: Record<
     isPlayableAnytime: true,
     resolveBeforeTrickWinner: true,
   },
+  vampire: {
+    key: 'vampire',
+    labelKey: 'card.special.vampire',
+    descriptionKey: 'card.special.vampire.description',
+    isPlayableAnytime: true,
+    resolveBeforeTrickWinner: true,
+  },
   cloud: {
     key: 'cloud',
     labelKey: 'card.special.cloud',

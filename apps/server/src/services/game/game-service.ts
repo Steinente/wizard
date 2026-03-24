@@ -45,6 +45,7 @@ import {
   resolveCloudDecision,
   resolveJugglerDecision,
   resolveShapeShifterDecision,
+  handleVampireBeforePlay,
   resolveWitchExchangeDecision,
   resolveWerewolfTrumpSwapDecision,
   selectJugglerPassCardSelection,
@@ -611,6 +612,22 @@ export class GameService {
     }
 
     if (card.type === 'special') {
+      if (card.special === 'vampire') {
+        const before = handleVampireBeforePlay({
+          state,
+          playerId: player.id,
+          card,
+          registerResolvedEffect: (effect) =>
+            registerResolvedEffect(state, effect),
+          getReadableCardLabel,
+        })
+
+        if (before.requiresDecision) {
+          await persistState(lobby.id, state)
+          return state
+        }
+      }
+
       if (card.special === 'shapeShifter') {
         const before = handleShapeShifterBeforePlay({
           state,

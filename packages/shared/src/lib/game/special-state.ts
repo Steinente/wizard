@@ -1,4 +1,4 @@
-import type { SpecialCardKey, Suit } from '../cards.js'
+import type { Card, SpecialCardKey, Suit } from '../cards.js'
 
 export type PendingDecisionType =
   | 'selectTrumpSuit'
@@ -81,6 +81,7 @@ export interface ResolvedCardRuntimeEffect {
   cardId: string
   ownerPlayerId: string
   special: SpecialCardKey
+  copiedCard?: Card
   chosenSuit?: Suit | null
   chosenValue?: number | null
   shapeShifterMode?: 'wizard' | 'jester' | null
