@@ -375,10 +375,9 @@ export const translations = {
       'Choose a suit; after the trick, each player passes one card to the next player.',
     'specialInfo.dragon':
       'Strongest card, wins against every card except Fairy.',
-    'specialInfo.fairy':
-      'Weakest card, loses against every card except Dragon.',
+    'specialInfo.fairy': 'Loses against every card except Dragon and Witch.',
     'specialInfo.witch':
-      'Lower than Jester and Fairy. After all other effects, you must put one hand card into the trick and take one other trick card (except Witch) into your hand.',
+      'Weakest card; after all other effects, you must put one hand card into the trick and take one other trick card (except Witch) into your hand.',
   },
   de: {
     homeTitle: 'Wizard',
@@ -765,9 +764,9 @@ export const translations = {
     'specialInfo.dragon':
       'Stärkste Karte, gewinnt gegen jede Karte außer gegen die Fee.',
     'specialInfo.fairy':
-      'Schwächste Karte, verliert gegen jede Karte außer gegen den Drachen.',
+      'Verliert gegen jede Karte außer gegen den Drachen und die Hexe.',
     'specialInfo.witch':
-      'Niedriger als Narr und Fee. Nach allen anderen Effekten musst du eine Handkarte in den Stich legen und eine andere Stichkarte (außer Hexe) auf die Hand nehmen.',
+      'Schwächste Karte; nach allen anderen Effekten musst du eine Handkarte in den Stich legen und eine andere Stichkarte (außer Hexe) auf die Hand nehmen.',
   },
 } as const
 
