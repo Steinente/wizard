@@ -6,6 +6,8 @@ Wizard ist ein Stichspiel mit Vorhersage: In jeder Runde schätzt du vorab exakt
 
 Die Jubiläums- und Sondereditionen ergänzen diesen Kern um Sonderkarten, die entweder die Stichhierarchie (z. B. Drache/Fee) oder die Planbarkeit (z. B. Bombe, Wolke, Jongleur) gezielt stören.
 
+---
+
 ## Quellenbasis und Versionsabgrenzung
 
 Dieses Regelwerk priorisiert offizielle Quellen der AMIGO Spiel + Freizeit GmbH, insbesondere Spielanleitungen/Regel-PDFs und Produktseiten; ergänzend wurden offizielle Blog-Regelhilfen und offizielle Turnier-Richtlinien herangezogen.
@@ -25,6 +27,8 @@ Dieses Regelwerk priorisiert offizielle Quellen der AMIGO Spiel + Freizeit GmbH,
 **Turnierquellen (offiziell, aber nur für Turniere bindend):**
 
 - AMIGO Organized Play Turnierrichtlinien 2025 (definiert u. a. eine verpflichtende Plus/Minus-Regel als Turnier-Sonderregel und eine von der Normalpartie abweichende Rundenzahl).
+
+---
 
 ## Standardregelwerk für Wizard (60 Karten)
 
@@ -115,6 +119,8 @@ Praktische Entscheidungsreihenfolge (kompatibel mit der Anleitung):
 3. Sonst, wenn Trumpf existiert: Höchster Trumpf gewinnt.
 4. Sonst: Höchste Karte der bedienten Farbe gewinnt.
 
+---
+
 ## Jubiläums-Sonderkarten und Das Schwarze Auge
 
 ### Editionsüberblick und Karten-Sets
@@ -134,11 +140,15 @@ In den Jubiläumseditionen werden Sonderkarten (in unterschiedlicher Anzahl) **i
 
 ### Regeln je Sonderkarte mit Versionsunterschieden
 
+---
+
 #### Gestaltenwandler
 
 |                                                                                                                                                                                                                                 |                                               |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
 | **Trumpfbestimmung:** Wird der Gestaltenwandler aufgedeckt, bestimmt der Kartengeber eine Trumpffarbe.<br>**Im Stich:** Beim Ausspielen sagst du an, ob er **Narr oder Zauberer** sein soll; danach wird er exakt so behandelt. | ![Gestaltenwandler](/cards/shape_shifter.png) |
+
+---
 
 #### Drache
 
@@ -146,11 +156,15 @@ In den Jubiläumseditionen werden Sonderkarten (in unterschiedlicher Anzahl) **i
 | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
 | **Trumpfbestimmung:** Aufgedeckt: Kartengeber bestimmt Trumpf.<br>**Im Stich:** Drache ist die **höchste Karte** und gewinnt jeden Stich, **außer** wenn gleichzeitig eine Fee im Stich liegt (dann gewinnt die Fee).<br>Eröffnest du mit dem Drachen, gelten die Bedienregeln wie beim Eröffnen mit einem Zauberer (alle dürfen beliebig ablegen). | ![Drache](/cards/dragon.png) |
 
+---
+
 #### Fee
 
 |                                                                                                                                                                                                                                                                                                                                                        |                          |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------ |
 | **Trumpfbestimmung:** Aufgedeckt: **kein Trumpf** in dieser Runde.<br>**Im Stich:** Fee ist die **niedrigste Karte**, sogar niedriger als ein Narr, verliert also grundsätzlich jeden Stich - Ausnahme: Liegen Fee und Drache im selben Stich, gewinnt die Fee.<br>Eröffnest du mit der Fee, gelten die Bedienregeln wie beim Eröffnen mit einem Narr. | ![Fee](/cards/fairy.png) |
+
+---
 
 #### Bombe
 
@@ -158,11 +172,15 @@ In den Jubiläumseditionen werden Sonderkarten (in unterschiedlicher Anzahl) **i
 | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
 | **Trumpfbestimmung:** Aufgedeckt: **kein Trumpf**.<br>**Im Stich (Kerneffekt):** Liegt eine Bombe im Stich, gewinnt **niemand** diesen Stich; er zählt zu **keiner** Stichvorhersage.<br>**Bombe als Eröffnungskarte:** Eröffnest du mit einer Bombe, gelten Bedienregeln wie beim Narr (also zunächst frei, bis eine Zahlenkarte Farbe setzt oder ein Zauberer fällt).<br>**Wer eröffnet danach?** Eröffnet wird durch die Person, **die den Stich gewonnen hätte, wenn die Bombe nicht gespielt worden wäre**. | ![Bombe](/cards/bomb.png) |
 
+---
+
 #### Werwolf
 
 |                                                                                                                                                                                                                                                                                                                                                                          |                                 |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------- |
 | **Trumpfbestimmung (aufgedeckt):** Wird der Werwolf aufgedeckt, bestimmt der Kartengeber eine Trumpffarbe.<br>**Rundenstart (auf der Hand):** Wenn du den Werwolf auf der Hand hast, tauschst du ihn **vor den Vorhersagen** gegen die aufgedeckte Trumpfkarte aus, nimmst diese auf die Hand und bestimmst dann Trumpf oder Kein Trumpf. Erst danach wird vorhergesagt. | ![Werwolf](/cards/werewolf.png) |
+
+---
 
 #### Jongleur
 
@@ -170,11 +188,15 @@ In den Jubiläumseditionen werden Sonderkarten (in unterschiedlicher Anzahl) **i
 | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
 | **Trumpfbestimmung:** Aufgedeckt: Kartengeber bestimmt Trumpf.<br>**Im Stich:** Jongleur hat Wert **7 1/2**. Beim Ausspielen wählst du eine Farbe (auch Trumpf), die er annimmt, und sagst sie an.<br>**Nach dem Stich:** Nach einem Stich mit Jongleur geben alle gleichzeitig eine Handkarte verdeckt an den linken Nachbarn (Spielrichtung) weiter und nehmen die neue Karte auf die Hand.<br>**Jongleur + Bombe:** Wenn die Bombe im Stich liegt, wird trotzdem weitergegeben; im letzten Stich wird nicht weitergegeben.<br>**Wenn Jongleur eröffnet:** Die angesagte Farbe muss nach Möglichkeit bedient werden. | ![Jongleur](/cards/juggler.png) |
 
+---
+
 #### Wolke
 
 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |                            |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
 | **Trumpfbestimmung:** Aufgedeckt: Kartengeber bestimmt Trumpf.<br>**Im Stich:** Wolke hat Wert **9 3/4**. Beim Ausspielen wählst du (wie beim Jongleur) eine Farbe (auch Trumpf), die sie annimmt, und sagst sie an.<br>**Großer Versionsunterschied (Zeitpunkt der Vorhersageänderung):** 6-Sonderkarten-Variante (bis 2016) und 25-Jahre-Edition (2021): Liegt die Wolke am **Ende der Stichrunde** in den Stichen einer Person, muss diese ihre Vorhersage um +1 erhöhen oder um -1 verringern.<br>30-Jahre-Edition (2026): Wer den Stich gewinnt, in dem die Wolke liegt, muss die Vorhersage **direkt am Ende dieses Stichs** um +1 oder -1 verändern (AMIGO benennt das als geänderte Funktionsweise).<br>**Wolke + Bombe:** Liegen Wolke und Bombe in einem Stich, ändert sich die Stichvorhersage nicht.<br>**Wenn Wolke eröffnet:** Die angesagte Farbe muss bedient werden. | ![Wolke](/cards/cloud.png) |
+
+---
 
 #### Vampir
 
@@ -182,11 +204,15 @@ In den Jubiläumseditionen werden Sonderkarten (in unterschiedlicher Anzahl) **i
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
 | **Trumpfbestimmung:** Wird der Vampir aufgedeckt, bestimmt der Kartengeber eine Trumpffarbe.<br>**Im Stich (Kerneffekt):** Vampir kopiert die Karte, die zur Bestimmung der Trumpffarbe aufgedeckt wurde (inkl. Effekten, falls das eine Sonderkarte ist).<br>**Sonderfall Trumpfkarte ist Werwolf:** Liegt dort der Werwolf, wird sofort eine neue Karte aufgedeckt, die Trumpf bestimmt; der Vampir kopiert diese neue Karte samt Effekten. Dadurch kann sich Trumpf sofort ändern und bleibt dann bis Rundenende gültig.<br>**Eröffnung mit Vampir:** Es gelten die Bedienregeln der kopierten Karte.<br>**Wichtige Klarstellung:** Selbst wenn der Vampir eine Trumpfkarte kopieren würde, musst du nicht mit Vampir bedienen, wenn jemand Trumpf spielt. | ![Vampir](/cards/vampire.png) |
 
+---
+
 #### Hexe
 
 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |                           |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------- |
 | **Trumpfbestimmung:** Wird die Hexe aufgedeckt, gibt es in dieser Runde **keine Trumpffarbe**.<br>**Im Stich:** Hexe ist niedriger als Narr und Fee. Zuerst werden alle Effekte anderer Sonderkarten abgehandelt und es wird bestimmt, wer den Stich gewinnt; **danach** darfst du (als Hexen-Spieler) eine Handkarte in den Stich legen und dir eine beliebige Karte aus dem Stich auf die Hand nehmen (auch eine Sonderkarte), aber nicht die Hexe. Die eingelegte Handkarte hat keinen Effekt auf den Stichgewinner.<br>**Wenn Hexe eröffnet:** Bedienregeln wie beim Narr. | ![Hexe](/cards/witch.png) |
+
+---
 
 #### Das Schwarze Auge (Sonderedition 2024)
 
@@ -195,6 +221,8 @@ Diese Karte ist keine Jubiläums-Mehrkarten-Erweiterung, sondern eine **einzelne
 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |                                               |
 | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
 | **Trumpfbestimmung:** Wird Das Schwarze Auge zur Trumpfbestimmung aufgedeckt, ziehst du drei Karten, wählst eine davon als Trumpfbestimmer und legst die übrigen zwei verdeckt zurück.<br>**Im Stich:** Du legst die Karte **beiseite** statt in den Stich. Dann ziehst du drei Karten, wählst eine davon und spielst diese in den Stich; die übrigen zwei legst du verdeckt zurück.<br>**Letzte Runde:** Spielst du in dieser Runde Das Schwarze Auge und im Kartenstapel befinden sich weniger Karten als 3, ziehst du die übrigen Karten vom Nachziehstapel und fährst regulär fort. | ![Das Schwarze Auge](/cards/the_dark_eye.png) |
+
+---
 
 ### Effekt-Reihenfolge bei mehreren Sonderkarten in einem Stich
 

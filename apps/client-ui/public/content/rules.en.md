@@ -6,6 +6,8 @@ Wizard is a trick-taking prediction game: in every round you predict exactly how
 
 Anniversary and special editions extend this core with special cards that intentionally disrupt either trick hierarchy (for example Dragon/Fairy) or planning stability (for example Bomb, Cloud, Juggler).
 
+---
+
 ## Source Basis and Version Scope
 
 This rulebook prioritizes official AMIGO Spiel + Freizeit GmbH sources, especially rule PDFs and product pages; official blog clarifications and official tournament guidelines were used as supplementary sources.
@@ -25,6 +27,8 @@ This rulebook prioritizes official AMIGO Spiel + Freizeit GmbH sources, especial
 **Tournament sources (official, but binding only for tournaments):**
 
 - AMIGO Organized Play Tournament Guidelines 2025 (includes, among other points, a mandatory plus/minus rule as a tournament-only special rule, and a round count that differs from normal casual play).
+
+---
 
 ## Standard Rule Set for Wizard (60 cards)
 
@@ -116,6 +120,8 @@ Practical resolution sequence (consistent with the rules):
 3. Otherwise, if trump exists: highest trump wins.
 4. Otherwise: highest card of the followed suit wins.
 
+---
+
 ## Anniversary Special Cards and The Dark Eye
 
 ### Edition Overview and Card Sets
@@ -135,11 +141,15 @@ In anniversary editions, special cards (in varying counts) are shuffled into the
 
 ### Card-by-Card Rules and Version Differences
 
+---
+
 #### Shape Shifter
 
 |                                                                                                                                                                                             |                                            |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
 | **Trump reveal:** if Shape Shifter is revealed, dealer chooses trump suit.<br>**In trick:** when played, declare whether it acts as **Jester or Wizard**; then resolve exactly as declared. | ![Shape Shifter](/cards/shape_shifter.png) |
+
+---
 
 #### Dragon
 
@@ -147,11 +157,15 @@ In anniversary editions, special cards (in varying counts) are shuffled into the
 | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
 | **Trump reveal:** if revealed, dealer chooses trump.<br>**In trick:** Dragon is the **highest card** and wins every trick, **except** when a Fairy is also in the same trick (then Fairy wins).<br>If Dragon leads, follow-suit behavior is like a Wizard lead (free play). | ![Dragon](/cards/dragon.png) |
 
+---
+
 #### Fairy
 
 |                                                                                                                                                                                                                                                                               |                            |
 | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
 | **Trump reveal:** if revealed, there is **no trump** this round.<br>**In trick:** Fairy is the **lowest card**, even below Jester, so it normally loses every trick - except against Dragon in the same trick.<br>If Fairy leads, follow-suit behavior is like a Jester lead. | ![Fairy](/cards/fairy.png) |
+
+---
 
 #### Bomb
 
@@ -159,11 +173,15 @@ In anniversary editions, special cards (in varying counts) are shuffled into the
 | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ |
 | **Trump reveal:** if revealed, **no trump**.<br>**In trick (core effect):** if Bomb is in the trick, **nobody wins** that trick; it counts for **no player's** prediction.<br>**Bomb as lead card:** if Bomb leads, follow-suit behavior starts like Jester lead.<br>**Who leads next?** The next lead goes to the player who **would have won that trick if Bomb had not been played**. | ![Bomb](/cards/bomb.png) |
 
+---
+
 #### Werewolf
 
 |                                                                                                                                                                                                                                                                           |                                  |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
 | **Trump reveal (if face-up):** dealer chooses trump suit.<br>**Round start (if in hand):** if you hold Werewolf, you swap it **before bidding** with the revealed trump card, take that card into your hand, and then choose trump or no-trump. Bidding starts afterward. | ![Werewolf](/cards/werewolf.png) |
+
+---
 
 #### Juggler
 
@@ -171,11 +189,15 @@ In anniversary editions, special cards (in varying counts) are shuffled into the
 | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
 | **Trump reveal:** if revealed, dealer chooses trump.<br>**In trick:** Juggler has value **7 1/2**. When played, choose and announce a suit (including trump).<br>**After trick:** after a trick containing Juggler, all players simultaneously pass one hand card face down to the player on their left, then take the received card.<br>**Juggler + Bomb:** passing still happens even if Bomb is in that trick, except in the final trick.<br>**If Juggler leads:** the declared suit must be followed when possible. | ![Juggler](/cards/juggler.png) |
 
+---
+
 #### Cloud
 
 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |                            |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
 | **Trump reveal:** if revealed, dealer chooses trump.<br>**In trick:** Cloud has value **9 3/4**. When played, choose and announce a suit (including trump), similar to Juggler.<br>**Major version difference (timing of prediction adjustment):** 6-card anniversary variant (up to 2016) and 25-year edition (2021): if Cloud is among a player's won tricks at **end of round**, that player must adjust prediction by +1 or -1.<br>30-year edition (2026): the winner of the trick containing Cloud must adjust prediction **immediately after that trick** by +1 or -1.<br>**Cloud + Bomb:** if both appear in the same trick, no prediction adjustment is applied.<br>**If Cloud leads:** the declared suit must be followed when possible. | ![Cloud](/cards/cloud.png) |
+
+---
 
 #### Vampire
 
@@ -183,11 +205,15 @@ In anniversary editions, special cards (in varying counts) are shuffled into the
 | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
 | **Trump reveal:** if revealed, dealer chooses trump.<br>**In trick (core effect):** Vampire copies the card that was revealed for trump determination (including effects, if that card is special).<br>**Special case when revealed trump card is Werewolf:** reveal a new card immediately to determine trump; Vampire copies that new card and its effects. Trump may therefore change immediately and then remains active for the round.<br>**Vampire lead:** follow-suit behavior follows the copied card behavior.<br>**Important clarification:** even if Vampire copied a trump card, you are not required to follow with Vampire when trump is led. | ![Vampire](/cards/vampire.png) |
 
+---
+
 #### Witch
 
 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |                            |
 | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
 | **Trump reveal:** if revealed, there is **no trump** this round.<br>**In trick:** Witch is lower than Jester and Fairy. First resolve all other special-card effects and determine trick winner. **After that**, the Witch player may place one card from hand into the trick and take any one card from that trick back into hand (including special cards), except Witch itself. The inserted card does not change trick winner.<br>**If Witch leads:** follow-suit behavior is like a Jester lead. | ![Witch](/cards/witch.png) |
+
+---
 
 #### The Dark Eye (Special Edition 2024)
 
@@ -195,6 +221,8 @@ This is not part of the anniversary multi-card set, but a **single** special car
 | | |
 | ----------------------------------------------------------------------------------------------------- | -------------------------------------------- |
 | **Trump reveal:** if The Dark Eye is revealed for trump, draw three cards, choose one as trump decider, and return the other two face down.<br>**In trick:** set The Dark Eye aside (do not play it directly into trick). Draw three cards, choose one to play into the trick, return the other two face down.<br>**Final round:** if The Dark Eye is played and fewer than three cards remain in draw stack, draw what remains and continue normally. | ![The Dark Eye](/cards/the_dark_eye.png) |
+
+---
 
 ### Effect Order with Multiple Special Cards in One Trick
 
