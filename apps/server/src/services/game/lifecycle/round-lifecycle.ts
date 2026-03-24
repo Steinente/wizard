@@ -28,6 +28,44 @@ export function applyRoundStartState(state: WizardGameState) {
   const round = state.currentRound
   const werewolfOwnerPlayerId = getWerewolfOwnerPlayerId(state)
 
+  const pushSystemLog = (
+    messageKey: WizardGameState['logs'][number]['messageKey'],
+    messageParams?: Record<string, string | number | null>,
+  ) => {
+    state.logs.push({
+      id: crypto.randomUUID(),
+      createdAt: nowIso(),
+      type: 'system',
+      messageKey,
+      ...(messageParams ? { messageParams } : {}),
+    })
+  }
+
+  const beginSelectTrumpSuitDecision = (
+    special: string,
+    pendingLogKey: WizardGameState['logs'][number]['messageKey'],
+    pendingLogParams?: Record<string, string>,
+  ) => {
+    state.phase = 'trumpSelection'
+    round.activePlayerId = getPlayerBeforeRoundLeader(state)
+    state.pendingDecision = round.activePlayerId
+      ? {
+          id: crypto.randomUUID(),
+          type: 'selectTrumpSuit',
+          playerId: round.activePlayerId,
+          createdAt: nowIso(),
+          special,
+        }
+      : null
+
+    if (round.activePlayerId) {
+      pushSystemLog(pendingLogKey, {
+        playerId: round.activePlayerId,
+        ...(pendingLogParams ?? {}),
+      })
+    }
+  }
+
   if (werewolfOwnerPlayerId && round.trumpCard) {
     state.phase = 'trumpSelection'
     round.activePlayerId = werewolfOwnerPlayerId
@@ -39,42 +77,14 @@ export function applyRoundStartState(state: WizardGameState) {
       allowedSuits: ['red', 'yellow', 'green', 'blue', null],
     }
 
-    state.logs.push({
-      id: crypto.randomUUID(),
-      createdAt: nowIso(),
-      type: 'system',
-      messageKey: 'game.trump.selection.pending.werewolfInHand',
-      messageParams: {
-        playerId: werewolfOwnerPlayerId,
-      },
+    pushSystemLog('game.trump.selection.pending.werewolfInHand', {
+      playerId: werewolfOwnerPlayerId,
     })
     return
   }
 
   if (round.trumpCard?.type === 'wizard') {
-    state.phase = 'trumpSelection'
-    round.activePlayerId = getPlayerBeforeRoundLeader(state)
-    state.pendingDecision = round.activePlayerId
-      ? {
-          id: crypto.randomUUID(),
-          type: 'selectTrumpSuit',
-          playerId: round.activePlayerId,
-          createdAt: nowIso(),
-          special: 'wizard',
-        }
-      : null
-
-    if (round.activePlayerId) {
-      state.logs.push({
-        id: crypto.randomUUID(),
-        createdAt: nowIso(),
-        type: 'system',
-        messageKey: 'game.trump.selection.pending',
-        messageParams: {
-          playerId: round.activePlayerId,
-        },
-      })
-    }
+    beginSelectTrumpSuitDecision('wizard', 'game.trump.selection.pending')
     return
   }
 
@@ -85,34 +95,15 @@ export function applyRoundStartState(state: WizardGameState) {
     const trumpSpecialCard = round.trumpCard
     const isWerewolfRevealed = trumpSpecialCard.special === 'werewolf'
 
-    state.phase = 'trumpSelection'
-    round.activePlayerId = getPlayerBeforeRoundLeader(state)
-    state.pendingDecision = round.activePlayerId
-      ? {
-          id: crypto.randomUUID(),
-          type: 'selectTrumpSuit',
-          playerId: round.activePlayerId,
-          createdAt: nowIso(),
-          special: trumpSpecialCard.special,
-        }
-      : null
-
-    if (round.activePlayerId) {
-      state.logs.push({
-        id: crypto.randomUUID(),
-        createdAt: nowIso(),
-        type: 'system',
-        messageKey: isWerewolfRevealed
-          ? 'game.trump.selection.pending.werewolfRevealed'
-          : 'game.trump.selection.pending',
-        messageParams: {
-          playerId: round.activePlayerId,
-          ...(isWerewolfRevealed
-            ? { currentTrump: getReadableCardLabel(trumpSpecialCard) }
-            : {}),
-        },
-      })
-    }
+    beginSelectTrumpSuitDecision(
+      trumpSpecialCard.special,
+      isWerewolfRevealed
+        ? 'game.trump.selection.pending.werewolfRevealed'
+        : 'game.trump.selection.pending',
+      isWerewolfRevealed
+        ? { currentTrump: getReadableCardLabel(trumpSpecialCard) }
+        : undefined,
+    )
     return
   }
 
@@ -121,32 +112,23 @@ export function applyRoundStartState(state: WizardGameState) {
   state.pendingDecision = null
 
   if (round.trumpSuit === null && round.trumpCard !== null) {
-    state.logs.push({
-      id: crypto.randomUUID(),
-      createdAt: nowIso(),
-      type: 'system',
-      messageKey: 'game.trump.noTrumpDueToCard',
-      messageParams: {
-        cardLabel: getReadableCardLabel(round.trumpCard),
-      },
+    pushSystemLog('game.trump.noTrumpDueToCard', {
+      cardLabel: getReadableCardLabel(round.trumpCard),
     })
   } else {
     const trumpNumberValue =
       round.trumpCard?.type === 'number' ? round.trumpCard.value : null
     const hasTrumpNumber = typeof trumpNumberValue === 'number'
 
-    state.logs.push({
-      id: crypto.randomUUID(),
-      createdAt: nowIso(),
-      type: 'system',
-      messageKey: hasTrumpNumber
+    pushSystemLog(
+      hasTrumpNumber
         ? 'game.trump.roundStart.withValue'
         : 'game.trump.roundStart',
-      messageParams: {
+      {
         suit: round.trumpSuit ?? 'none',
         ...(hasTrumpNumber ? { value: trumpNumberValue } : {}),
       },
-    })
+    )
   }
 }
 
