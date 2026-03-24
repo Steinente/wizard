@@ -373,9 +373,8 @@ export const translations = {
       'Choose a suit; if this card wins a trick, the winner must adjust their prediction by +1 or -1.',
     'specialInfo.juggler':
       'Choose a suit; after the trick, each player passes one card to the next player.',
-    'specialInfo.dragon':
-      'Strongest card, wins against every card except Fairy.',
-    'specialInfo.fairy': 'Loses against every card except Dragon and Witch.',
+    'specialInfo.fairy':
+      'Second lowest card; wins only when Dragon is in the trick.',
     'specialInfo.witch':
       'Weakest card; after all other effects, you must put one hand card into the trick and take one other trick card (except Witch) into your hand.',
   },
@@ -761,10 +760,8 @@ export const translations = {
       'Wähle eine Farbe; gewinnt diese Karte einen Stich, muss der Gewinner seine Ansage um +1 oder -1 anpassen.',
     'specialInfo.juggler':
       'Wähle eine Farbe; nach dem Stich gibt jeder Spieler eine Karte an den nächsten Spieler weiter.',
-    'specialInfo.dragon':
-      'Stärkste Karte, gewinnt gegen jede Karte außer gegen die Fee.',
     'specialInfo.fairy':
-      'Verliert gegen jede Karte außer gegen den Drachen und die Hexe.',
+      'Zweitniedrigste Karte; gewinnt nur, wenn der Drache im Stich liegt.',
     'specialInfo.witch':
       'Schwächste Karte; nach allen anderen Effekten musst du eine Handkarte in den Stich legen und eine andere Stichkarte (außer Hexe) auf die Hand nehmen.',
   },
