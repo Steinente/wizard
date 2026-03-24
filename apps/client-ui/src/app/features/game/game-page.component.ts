@@ -34,6 +34,7 @@ const SPECIAL_SORT_PRIORITY: Record<string, number> = {
   bomb: 30,
   jester: 20,
   fairy: 10,
+  witch: 5,
 }
 
 const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
@@ -180,6 +181,7 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
                     [onResolveCloudSuit]="resolveCloudSuitFn"
                     [onResolveCloudAdjustment]="resolveCloudAdjustmentFn"
                     [onResolveJugglerSuit]="resolveJugglerSuitFn"
+                    [onResolveWitch]="resolveWitchFn"
                   />
                 } @else if (foreignPendingDecisionText()) {
                   <div class="panel">
@@ -376,6 +378,10 @@ export class GamePageComponent {
   readonly resolveCloudAdjustmentFn = (delta: 1 | -1) =>
     this.resolveCloudAdjustment(delta)
   readonly resolveJugglerSuitFn = (suit: Suit) => this.resolveJugglerSuit(suit)
+  readonly resolveWitchFn = (payload: {
+    handCardId: string
+    trickCardId: string
+  }) => this.resolveWitch(payload)
   readonly toggleReadLogFn = (enabled: boolean) => this.toggleAudio(enabled)
   readonly toggleBingFn = (enabled: boolean) =>
     this.session.setBingEnabled(enabled)
@@ -781,6 +787,19 @@ export class GamePageComponent {
       state.pendingDecision.cardId ?? '',
       suit,
     )
+  }
+
+  resolveWitch(payload: { handCardId: string; trickCardId: string }) {
+    const state = this.store.gameState()
+
+    if (
+      !state?.pendingDecision ||
+      state.pendingDecision.type !== 'witchExchange'
+    ) {
+      return
+    }
+
+    this.facade.resolveWitch(state.lobbyCode, payload)
   }
 
   toggleAudio(enabled: boolean) {

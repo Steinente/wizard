@@ -21,6 +21,7 @@ const CARD_SPECIAL_MAP: Record<string, TranslationKey> = {
   juggler: 'card.special.juggler',
   dragon: 'card.special.dragon',
   fairy: 'card.special.fairy',
+  witch: 'card.special.witch',
 }
 
 const isSuit = (value: string): value is 'red' | 'yellow' | 'green' | 'blue' =>
@@ -113,6 +114,14 @@ export const normalizeLogParams = (
 
   if (typeof next.cardLabel === 'string') {
     next.cardLabel = translateCardLabel(next.cardLabel, t)
+  }
+
+  if (typeof next.givenCardLabel === 'string') {
+    next.givenCardLabel = translateCardLabel(next.givenCardLabel, t)
+  }
+
+  if (typeof next.takenCardLabel === 'string') {
+    next.takenCardLabel = translateCardLabel(next.takenCardLabel, t)
   }
 
   if (

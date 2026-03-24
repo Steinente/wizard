@@ -14,12 +14,22 @@ export const SPECIAL_CARD_KEYS = [
   'juggler',
   'dragon',
   'fairy',
+  'witch',
 ] as const
 
 export type SpecialCardKey = (typeof SPECIAL_CARD_KEYS)[number]
 
 export const ANNIVERSARY_SPECIALS_ENABLED_BY_DEFAULT: ReadonlyArray<SpecialCardKey> =
-  ['shapeShifter', 'bomb', 'werewolf', 'cloud', 'juggler', 'dragon', 'fairy']
+  [
+    'shapeShifter',
+    'bomb',
+    'werewolf',
+    'cloud',
+    'juggler',
+    'dragon',
+    'fairy',
+    'witch',
+  ]
 
 export interface BaseCard {
   id: string

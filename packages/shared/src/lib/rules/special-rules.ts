@@ -81,6 +81,13 @@ export const SPECIAL_CARD_DEFINITIONS: Record<
     isPlayableAnytime: true,
     resolveBeforeTrickWinner: true,
   },
+  witch: {
+    key: 'witch',
+    labelKey: 'card.special.witch',
+    descriptionKey: 'card.special.witch.description',
+    isPlayableAnytime: true,
+    resolveBeforeTrickWinner: false,
+  },
 }
 
 export const getSpecialCardDefinition = (card: Card) =>

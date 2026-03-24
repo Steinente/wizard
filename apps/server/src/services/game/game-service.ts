@@ -37,6 +37,7 @@ import {
 } from './lifecycle/index.js'
 import {
   enqueueCloudPredictionAdjustmentDecision,
+  enqueuePendingWitchExchangeDecision,
   resolveCloudAdjustmentDecision,
   handleCloudBeforePlay,
   handleJugglerBeforePlay,
@@ -44,6 +45,7 @@ import {
   resolveCloudDecision,
   resolveJugglerDecision,
   resolveShapeShifterDecision,
+  resolveWitchExchangeDecision,
   resolveWerewolfTrumpSwapDecision,
   selectJugglerPassCardSelection,
 } from './specials/index.js'
@@ -415,6 +417,16 @@ export class GameService {
           state.currentRound.completedTricks.length >=
           state.currentRound.roundNumber
 
+        const enqueuedWitch = enqueuePendingWitchExchangeDecision({
+          state,
+          getReadableCardLabel,
+        })
+
+        if (enqueuedWitch) {
+          await persistState(lobby.id, state)
+          return
+        }
+
         if (isRoundComplete) {
           await finishRoundAndAdvance(lobby, state)
           return
@@ -489,6 +501,52 @@ export class GameService {
       }
     }
 
+    const enqueuedWitch = enqueuePendingWitchExchangeDecision({
+      state,
+      getReadableCardLabel,
+    })
+
+    if (enqueuedWitch) {
+      await persistState(lobby.id, state)
+      return state
+    }
+
+    return state
+  }
+
+  async resolveWitch(input: {
+    code: string
+    sessionToken: string
+    handCardId: string
+    trickCardId: string
+  }) {
+    const { lobby, state } = await loadStateOrThrow(input.code)
+    const player = getPlayerBySessionToken(lobby, input.sessionToken)
+
+    resolveWitchExchangeDecision({
+      state,
+      playerId: player.id,
+      handCardId: input.handCardId,
+      trickCardId: input.trickCardId,
+      removeCardFromHand: (targetPlayerId, cardId) =>
+        removeCardFromHand(state, targetPlayerId, cardId),
+    })
+
+    if (!state.currentRound) {
+      await persistState(lobby.id, state)
+      return state
+    }
+
+    const isRoundComplete =
+      state.currentRound.completedTricks.length >=
+      state.currentRound.roundNumber
+
+    if (isRoundComplete) {
+      await finishRoundAndAdvance(lobby, state)
+      return state
+    }
+
+    await persistState(lobby.id, state)
     return state
   }
 

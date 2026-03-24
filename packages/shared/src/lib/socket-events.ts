@@ -92,6 +92,13 @@ export interface ClientToServerEvents {
     suit: Suit
   }) => void
 
+  'game:resolveWitch': (payload: {
+    code: string
+    sessionToken: string
+    handCardId: string
+    trickCardId: string
+  }) => void
+
   'game:selectJugglerPassCard': (payload: {
     code: string
     sessionToken: string

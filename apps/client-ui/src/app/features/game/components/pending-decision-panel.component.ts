@@ -1,10 +1,12 @@
-import { Component, Input } from '@angular/core'
+import { Component, Input, inject } from '@angular/core'
 import {
   calculateRoundScore,
   type PendingDecision,
   type Suit,
 } from '@wizard/shared'
+import { I18nService } from '../../../core/i18n/i18n.service'
 import type { TranslationKey } from '../../../core/i18n/translations'
+import { translateCardLabel } from '../utils/log-params.util'
 import { TPipe } from '../../../shared/pipes/t.pipe'
 import {
   ALL_SUITS,
@@ -51,68 +53,116 @@ const NO_TRUMP_SPECIALS = new Set([
             }
           </div>
         } @else {
-          @switch (decision.type) {
-            @case ('werewolfTrumpSwap') {
-              <p class="muted">{{ 'chooseWerewolfTrump' | t }}</p>
-              <div class="row" style="flex-wrap: wrap;">
-                @for (suit of suits; track suit) {
+          @if (isWitchExchangeDecision(decision)) {
+            <p class="muted">{{ 'chooseWitchHandCard' | t }}</p>
+            <div class="row" style="flex-wrap: wrap; margin-bottom: 8px;">
+              @for (
+                option of witchHandCardOptions(decision);
+                track option.cardId
+              ) {
+                <button
+                  class="btn"
+                  [class.btn-primary]="
+                    selectedWitchHandCardId === option.cardId
+                  "
+                  (click)="selectWitchHandCard(option.cardId)"
+                >
+                  {{ translateWitchCardLabel(option.cardLabel) }}
+                </button>
+              }
+            </div>
+
+            <p class="muted">{{ 'chooseWitchTrickCard' | t }}</p>
+            <div class="row" style="flex-wrap: wrap; margin-bottom: 8px;">
+              @for (
+                option of witchTrickCardOptions(decision);
+                track option.cardId
+              ) {
+                <button
+                  class="btn"
+                  [class.btn-primary]="
+                    selectedWitchTrickCardId === option.cardId
+                  "
+                  (click)="selectWitchTrickCard(option.cardId)"
+                >
+                  {{ translateWitchCardLabel(option.cardLabel) }}
+                </button>
+              }
+            </div>
+
+            <div class="row" style="margin-top: 20px;">
+              <button
+                class="btn btn-primary"
+                [disabled]="!canConfirmWitchExchange()"
+                (click)="confirmWitchExchange()"
+              >
+                {{ 'applyWitchExchange' | t }}
+              </button>
+            </div>
+          } @else {
+            @switch (decision.type) {
+              @case ('werewolfTrumpSwap') {
+                <p class="muted">{{ 'chooseWerewolfTrump' | t }}</p>
+                <div class="row" style="flex-wrap: wrap;">
+                  @for (suit of suits; track suit) {
+                    <button
+                      class="btn"
+                      [style.background]="getSuitColor(suit)"
+                      [style.color]="getTextColorForSuit(suit)"
+                      (click)="pickWerewolfTrump(suit)"
+                    >
+                      {{ suitKey(suit) | t }}
+                    </button>
+                  }
                   <button
-                    class="btn"
-                    [style.background]="getSuitColor(suit)"
-                    [style.color]="getTextColorForSuit(suit)"
-                    (click)="pickWerewolfTrump(suit)"
+                    class="btn btn-outline"
+                    (click)="pickWerewolfTrump(null)"
                   >
-                    {{ suitKey(suit) | t }}
+                    {{ 'noTrump' | t }}
                   </button>
-                }
-                <button
-                  class="btn btn-outline"
-                  (click)="pickWerewolfTrump(null)"
-                >
-                  {{ 'noTrump' | t }}
-                </button>
-              </div>
-            }
+                </div>
+              }
 
-            @case ('shapeShifterChoice') {
-              <div class="row">
-                <button class="btn" (click)="pickShapeShifter('jester')">
-                  {{ 'asJester' | t }}
-                </button>
-                <button
-                  class="btn btn-primary"
-                  (click)="pickShapeShifter('wizard')"
-                >
-                  {{ 'asWizard' | t }}
-                </button>
-              </div>
-            }
-
-            @case ('cloudPredictionAdjustment') {
-              <p class="muted">{{ 'chooseCloudAdjustment' | t }}</p>
-              <div class="row">
-                @if (canSelectCloudAdjustment(-1)) {
-                  <button class="btn" (click)="pickCloudAdjustment(-1)">
-                    {{ cloudAdjustmentButtonLabel(-1) }}
+              @case ('shapeShifterChoice') {
+                <div class="row">
+                  <button class="btn" (click)="pickShapeShifter('jester')">
+                    {{ 'asJester' | t }}
                   </button>
-                }
-                @if (canSelectCloudAdjustment(1)) {
                   <button
                     class="btn btn-primary"
-                    (click)="pickCloudAdjustment(1)"
+                    (click)="pickShapeShifter('wizard')"
                   >
-                    {{ cloudAdjustmentButtonLabel(1) }}
+                    {{ 'asWizard' | t }}
                   </button>
-                }
-              </div>
-            }
+                </div>
+              }
 
-            @case ('jugglerPassCard') {
-              <p class="muted">{{ 'choosePassCard' | t }}</p>
-            }
+              @case ('cloudPredictionAdjustment') {
+                <p class="muted">{{ 'chooseCloudAdjustment' | t }}</p>
+                <div class="row">
+                  @if (canSelectCloudAdjustment(-1)) {
+                    <button class="btn" (click)="pickCloudAdjustment(-1)">
+                      {{ cloudAdjustmentButtonLabel(-1) }}
+                    </button>
+                  }
+                  @if (canSelectCloudAdjustment(1)) {
+                    <button
+                      class="btn btn-primary"
+                      (click)="pickCloudAdjustment(1)"
+                    >
+                      {{ cloudAdjustmentButtonLabel(1) }}
+                    </button>
+                  }
+                </div>
+              }
 
-            @default {
-              <p class="muted">{{ 'unsupportedDecision' | t }}</p>
+              @case ('jugglerPassCard') {
+                <p class="muted">{{ 'choosePassCard' | t }}</p>
+              }
+
+              @default {
+                <p class="muted">{{ 'unsupportedDecision' | t }}</p>
+              }
             }
           }
         }
@@ -122,6 +172,9 @@ const NO_TRUMP_SPECIALS = new Set([
 })
 export class PendingDecisionPanelComponent {
   readonly suits = ALL_SUITS
+  private readonly i18n = inject(I18nService)
+  protected selectedWitchHandCardId: string | null = null
+  protected selectedWitchTrickCardId: string | null = null
 
   @Input() decision: PendingDecision | null = null
   @Input() cloudAdjustmentWonTricks = 0
@@ -137,6 +190,10 @@ export class PendingDecisionPanelComponent {
   @Input({ required: true }) onResolveCloudSuit!: (suit: Suit) => void
   @Input({ required: true }) onResolveCloudAdjustment!: (delta: 1 | -1) => void
   @Input({ required: true }) onResolveJugglerSuit!: (suit: Suit) => void
+  @Input({ required: true }) onResolveWitch!: (payload: {
+    handCardId: string
+    trickCardId: string
+  }) => void
 
   pickTrump(suit: Suit | null) {
     this.onSelectTrump(suit)
@@ -211,6 +268,71 @@ export class PendingDecisionPanelComponent {
     }
   }
 
+  selectWitchHandCard(cardId: string) {
+    this.selectedWitchHandCardId = cardId
+  }
+
+  selectWitchTrickCard(cardId: string) {
+    this.selectedWitchTrickCardId = cardId
+  }
+
+  canConfirmWitchExchange() {
+    if (this.decision?.type !== 'witchExchange') {
+      return false
+    }
+
+    if (!this.selectedWitchHandCardId || !this.selectedWitchTrickCardId) {
+      return false
+    }
+
+    const isHandSelectionValid = this.decision.handCardOptions.some(
+      (entry) => entry.cardId === this.selectedWitchHandCardId,
+    )
+    const isTrickSelectionValid = this.decision.trickCardOptions.some(
+      (entry) => entry.cardId === this.selectedWitchTrickCardId,
+    )
+
+    return isHandSelectionValid && isTrickSelectionValid
+  }
+
+  isWitchExchangeDecision(decision: PendingDecision): boolean {
+    return (decision as { type?: string }).type === 'witchExchange'
+  }
+
+  witchHandCardOptions(decision: PendingDecision) {
+    const maybeDecision = decision as {
+      handCardOptions?: Array<{ cardId: string; cardLabel: string }>
+    }
+
+    return maybeDecision.handCardOptions ?? []
+  }
+
+  witchTrickCardOptions(decision: PendingDecision) {
+    const maybeDecision = decision as {
+      trickCardOptions?: Array<{ cardId: string; cardLabel: string }>
+    }
+
+    return maybeDecision.trickCardOptions ?? []
+  }
+
+  confirmWitchExchange() {
+    if (!this.canConfirmWitchExchange()) {
+      return
+    }
+
+    const handCardId = this.selectedWitchHandCardId
+    const trickCardId = this.selectedWitchTrickCardId
+
+    if (!handCardId || !trickCardId) {
+      return
+    }
+
+    this.onResolveWitch({
+      handCardId,
+      trickCardId,
+    })
+  }
+
   canSelectNoTrump(decision: PendingDecision) {
     return (
       decision.type === 'selectTrumpSuit' &&
@@ -245,5 +367,9 @@ export class PendingDecisionPanelComponent {
 
   getTextColorForSuit(suit: Suit): string {
     return suit === 'yellow' ? '#111827' : 'var(--text)'
+  }
+
+  translateWitchCardLabel(label: string): string {
+    return translateCardLabel(label, (key) => this.i18n.t(key))
   }
 }

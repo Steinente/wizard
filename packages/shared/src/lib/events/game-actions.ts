@@ -44,6 +44,13 @@ export interface ResolveJugglerAction {
   targetPlayerId: string
 }
 
+export interface ResolveWitchAction {
+  type: 'resolveWitch'
+  playerId: string
+  handCardId: string
+  trickCardId: string
+}
+
 export type GameAction =
   | MakePredictionAction
   | PlayCardAction
@@ -52,3 +59,4 @@ export type GameAction =
   | ResolveShapeShifterAction
   | ResolveCloudAction
   | ResolveJugglerAction
+  | ResolveWitchAction

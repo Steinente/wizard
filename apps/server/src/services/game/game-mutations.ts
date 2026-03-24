@@ -13,6 +13,7 @@ import {
   logBombPlayed,
   logDragonPlayed,
   logFairyPlayed,
+  logWitchPlayed,
 } from './specials/index.js'
 
 export function registerResolvedEffect(
@@ -105,6 +106,11 @@ export function appendCardToCurrentTrick(
 
     if (isFairyCard(card)) {
       logFairyPlayed(state, playerId)
+      return
+    }
+
+    if (card.type === 'special' && card.special === 'witch') {
+      logWitchPlayed(state, playerId)
       return
     }
 

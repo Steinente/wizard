@@ -176,6 +176,9 @@ export const translations = {
     chooseSuit: 'Choose suit',
     chooseCloudAdjustment: 'Adjust prediction by +1 or -1',
     choosePassCard: 'Choose a card to pass',
+    chooseWitchHandCard: 'Choose a hand card to place into the trick',
+    chooseWitchTrickCard: 'Choose a trick card to take into your hand',
+    applyWitchExchange: 'Apply Witch exchange',
     chooseWerewolfTrump: 'Choose the new trump for Werewolf',
     noTrump: 'No trump',
     plusOne: '+1',
@@ -296,6 +299,7 @@ export const translations = {
     'error.cloudAdjustmentFailed': 'Cloud adjustment failed',
     'error.jugglerResolutionFailed': 'Juggler resolution failed',
     'error.jugglerPassFailed': 'Juggler pass selection failed',
+    'error.witchResolutionFailed': 'Witch resolution failed',
     'error.werewolfTrumpSwapFailed': 'Werewolf trump swap failed',
     'error.playerNameRequired': 'Player name is required',
     'error.playerNameTooLong': 'Player name must be 15 characters or fewer',
@@ -326,6 +330,8 @@ export const translations = {
     'log.special.cloud.played': '{playerId} played Cloud as {suit}',
     'log.special.cloud.wonTrickNineThreeQuarters':
       '{playerId} floats on cloud 9 3/4',
+    'log.special.cloud.noLongerFloatingNineThreeQuarters':
+      '{playerId} no longer floats on cloud 9 3/4',
     'log.special.cloud.predictionAdjusted':
       '{playerId} adjusted prediction by {delta}',
     'log.special.juggler.applied':
@@ -339,6 +345,13 @@ export const translations = {
       '{playerId} swapped Werewolf with {swappedCardLabel} and chose trump {suit}',
     'log.special.dragon.played': '{playerId} played Dragon',
     'log.special.fairy.played': '{playerId} played Fairy',
+    'log.special.witch.played': '{playerId} played Witch',
+    'log.special.witch.noHandCard':
+      '{playerId} cannot use Witch effect because no hand card is left',
+    'log.special.witch.exchange.started':
+      '{playerId} is now performing a Witch exchange',
+    'log.special.witch.exchanged':
+      '{playerId} gave away {givenCardLabel} and picked up {takenCardLabel}',
 
     'suit.red': 'Red',
     'suit.yellow': 'Yellow',
@@ -354,6 +367,7 @@ export const translations = {
     'card.special.juggler': 'Juggler',
     'card.special.dragon': 'Dragon',
     'card.special.fairy': 'Fairy',
+    'card.special.witch': 'Witch',
     'specialInfo.shapeShifter':
       'Choose whether this card behaves like Wizard or Jester.',
     'specialInfo.bomb':
@@ -368,6 +382,8 @@ export const translations = {
       'Strongest card, wins against every card except Fairy.',
     'specialInfo.fairy':
       'Weakest card, loses against every card except Dragon.',
+    'specialInfo.witch':
+      'Lower than Jester and Fairy. After all other effects, you must put one hand card into the trick and take one other trick card (except Witch) into your hand.',
   },
   de: {
     homeTitle: 'Wizard',
@@ -544,6 +560,9 @@ export const translations = {
     chooseSuit: 'Farbe wählen',
     chooseCloudAdjustment: 'Ansage um +1 oder -1 anpassen',
     choosePassCard: 'Karte zum Weitergeben wählen',
+    chooseWitchHandCard: 'Handkarte wählen, die in den Stich gelegt wird',
+    chooseWitchTrickCard: 'Stichkarte wählen, die auf die Hand genommen wird',
+    applyWitchExchange: 'Hexen-Tausch ausführen',
     chooseWerewolfTrump: 'Neuen Trumpf für den Werwolf wählen',
     noTrump: 'Kein Trumpf',
     plusOne: '+1',
@@ -670,6 +689,7 @@ export const translations = {
     'error.cloudAdjustmentFailed': 'Wolken-Anpassung fehlgeschlagen',
     'error.jugglerResolutionFailed': 'Jongleur-Auflösung fehlgeschlagen',
     'error.jugglerPassFailed': 'Jongleur-Weitergabe fehlgeschlagen',
+    'error.witchResolutionFailed': 'Hexen-Auflösung fehlgeschlagen',
     'error.werewolfTrumpSwapFailed': 'Werwolf-Trumpftausch fehlgeschlagen',
     'error.playerNameRequired': 'Spielername ist erforderlich',
     'error.playerNameTooLong':
@@ -702,6 +722,8 @@ export const translations = {
     'log.special.cloud.played': '{playerId} spielt Wolke als {suit}',
     'log.special.cloud.wonTrickNineThreeQuarters':
       '{playerId} schwebt auf Wolke 9 3/4',
+    'log.special.cloud.noLongerFloatingNineThreeQuarters':
+      '{playerId} schwebt nicht mehr auf Wolke 9 3/4',
     'log.special.cloud.predictionAdjusted':
       '{playerId} passt Vorhersage um {delta} an',
     'log.special.juggler.applied':
@@ -717,6 +739,13 @@ export const translations = {
       '{playerId} tauscht den Werwolf mit {swappedCardLabel} und wählt {suit} als Trumpf',
     'log.special.dragon.played': '{playerId} hat Drache gespielt',
     'log.special.fairy.played': '{playerId} hat Fee gespielt',
+    'log.special.witch.played': '{playerId} hat Hexe gespielt',
+    'log.special.witch.noHandCard':
+      '{playerId} kann den Hexen-Effekt nicht nutzen, da keine Handkarte mehr vorhanden ist',
+    'log.special.witch.exchange.started':
+      '{playerId} führt jetzt einen Hexen-Tausch durch',
+    'log.special.witch.exchanged':
+      '{playerId} gibt {givenCardLabel} ab und hebt {takenCardLabel} auf',
 
     'suit.red': 'Rot',
     'suit.yellow': 'Gelb',
@@ -732,6 +761,7 @@ export const translations = {
     'card.special.juggler': 'Jongleur',
     'card.special.dragon': 'Drache',
     'card.special.fairy': 'Fee',
+    'card.special.witch': 'Hexe',
     'specialInfo.shapeShifter':
       'Wähle, ob diese Karte als Zauberer oder Narr gilt.',
     'specialInfo.bomb':
@@ -746,6 +776,8 @@ export const translations = {
       'Stärkste Karte, gewinnt gegen jede Karte außer gegen die Fee.',
     'specialInfo.fairy':
       'Schwächste Karte, verliert gegen jede Karte außer gegen den Drachen.',
+    'specialInfo.witch':
+      'Niedriger als Narr und Fee. Nach allen anderen Effekten musst du eine Handkarte in den Stich legen und eine andere Stichkarte (außer Hexe) auf die Hand nehmen.',
   },
 } as const
 

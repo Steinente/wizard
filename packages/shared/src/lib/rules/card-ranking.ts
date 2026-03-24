@@ -22,6 +22,7 @@ export type CardClass =
   | 'number'
   | 'jester'
   | 'fairy'
+  | 'witch'
   | 'otherSpecial'
 
 export interface ClassifiedCard {
@@ -93,6 +94,15 @@ export const classifyCard = (
         card,
         className: 'fairy',
         numericStrength: -10,
+        effectiveSuit: null,
+      }
+    }
+
+    if (card.special === 'witch') {
+      return {
+        card,
+        className: 'witch',
+        numericStrength: -20,
         effectiveSuit: null,
       }
     }

@@ -4,6 +4,7 @@ import crypto from 'node:crypto'
 import { beginJugglerPassDecision } from '../game-mutations.js'
 import { persistState } from '../game-persistence.js'
 import {
+  getReadableCardLabel,
   getHypotheticalNextLeaderPlayerId,
   getNextPlayerId,
   getSeatOrderedPlayerIds,
@@ -12,7 +13,21 @@ import {
 } from '../game-service-support.js'
 import { logBombCancelledTrick } from '../specials/index.js'
 import { enqueueCloudPredictionAdjustmentDecision } from '../specials/index.js'
+import {
+  enqueuePendingWitchExchangeDecision,
+  markPendingWitchExchange,
+} from '../specials/index.js'
 import { finishRoundAndAdvance } from './round-lifecycle.js'
+
+const clearPendingCloudWinnerMarkers = (state: WizardGameState) => {
+  if (!state.currentRound) {
+    return
+  }
+
+  for (const player of state.currentRound.players) {
+    player.pendingCloudAdjustment = false
+  }
+}
 
 export async function continueOrResolveCurrentTrick(
   lobby: NonNullable<LobbyWithPlayers>,
@@ -89,7 +104,20 @@ export async function resolveCompletedTrick(
   const playedCloud = resolvedTrick.plays.find(
     (play) => play.card.type === 'special' && play.card.special === 'cloud',
   )
+  const playedWitch = resolvedTrick.plays.find(
+    (play) => play.card.type === 'special' && play.card.special === 'witch',
+  )
   const cloudTimingMode = state.config.cloudRuleTiming
+  const justCompletedTrickIndex = state.currentRound.completedTricks.length - 1
+
+  if (playedWitch) {
+    markPendingWitchExchange({
+      state,
+      playerId: playedWitch.playerId,
+      witchCardId: playedWitch.card.id,
+      trickIndex: justCompletedTrickIndex,
+    })
+  }
 
   const hypotheticalLeaderPlayerId = getHypotheticalNextLeaderPlayerId(
     trick,
@@ -133,6 +161,11 @@ export async function resolveCompletedTrick(
         (entry) => entry.playerId === resolvedTrick.winnerPlayerId,
       )
       if (cloudWinner) {
+        if (cloudTimingMode === 'endOfRound') {
+          // 25-year mode: only the latest Cloud trick winner remains marked.
+          clearPendingCloudWinnerMarkers(state)
+        }
+
         // Keep the cloud indicator visible from trick end until adjustment is resolved.
         cloudWinner.pendingCloudAdjustment = true
       }
@@ -159,21 +192,15 @@ export async function resolveCompletedTrick(
         }
       }
     } else {
-      // End-of-round mode: check for a won cloud trick once the round is complete.
-      for (const completedTrick of state.currentRound.completedTricks) {
-        const cloud = completedTrick.plays.find(
-          (play) =>
-            play.card.type === 'special' && play.card.special === 'cloud',
-        )
+      // End-of-round mode: only the latest marked Cloud winner may adjust.
+      const latestCloudWinner = state.currentRound.players.find(
+        (entry) => entry.pendingCloudAdjustment,
+      )
 
-        if (!cloud || !completedTrick.winnerPlayerId) {
-          continue
-        }
-
+      if (latestCloudWinner) {
         const enqueued = enqueueCloudPredictionAdjustmentDecision({
           state,
-          playerId: completedTrick.winnerPlayerId,
-          cardId: cloud.card.id,
+          playerId: latestCloudWinner.playerId,
         })
 
         if (enqueued) {
@@ -181,6 +208,16 @@ export async function resolveCompletedTrick(
           return
         }
       }
+    }
+
+    if (
+      enqueuePendingWitchExchangeDecision({
+        state,
+        getReadableCardLabel,
+      })
+    ) {
+      await persistState(lobby.id, state)
+      return
     }
 
     await finishRoundAndAdvance(lobby, state)
@@ -213,6 +250,11 @@ export async function resolveCompletedTrick(
       return
     }
   }
+
+  enqueuePendingWitchExchangeDecision({
+    state,
+    getReadableCardLabel,
+  })
 
   await persistState(lobby.id, state)
 }

@@ -24,6 +24,7 @@ const INTERACTION_EVENTS = [
   'game:resolveCloud',
   'game:resolveCloudAdjustment',
   'game:resolveJuggler',
+  'game:resolveWitch',
   'game:selectJugglerPassCard',
 ] as const
 
@@ -252,6 +253,7 @@ export class GameFacadeService {
       | 'game:resolveCloud'
       | 'game:resolveCloudAdjustment'
       | 'game:resolveJuggler'
+      | 'game:resolveWitch'
       | 'game:selectJugglerPassCard'
       | 'game:sendChatMessage'
       | 'player:setReadLogEnabled'
@@ -537,6 +539,16 @@ export class GameFacadeService {
       cardId,
       suit,
     })
+  }
+
+  resolveWitch(
+    code: string,
+    payload: {
+      handCardId: string
+      trickCardId: string
+    },
+  ) {
+    this.emitCodeScoped('game:resolveWitch', code, payload)
   }
 
   selectJugglerPassCard(code: string, cardId: string) {

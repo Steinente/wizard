@@ -21,6 +21,7 @@ const specialCardKeySchema = z.enum([
   'juggler',
   'dragon',
   'fairy',
+  'witch',
 ])
 
 export const createLobbySchema = z.object({

@@ -16,7 +16,10 @@ import {
   OpenPredictionRestriction,
   PredictionVisibility,
 } from '../../generated/prisma/client.js'
-import { disablesFollowSuitForDragonLead } from './specials/index.js'
+import {
+  disablesFollowSuitForDragonLead,
+  disablesFollowSuitForWitchLead,
+} from './specials/index.js'
 
 export const normalizeCode = (code: string) => code.trim().toUpperCase()
 
@@ -210,6 +213,7 @@ export const NO_TRUMP_SELECTABLE_SPECIALS = new Set([
   'cloud',
   'dragon',
   'werewolf',
+  'witch',
 ])
 
 export const getResolvedEffectForCard = (
@@ -226,6 +230,10 @@ export const disablesFollowSuitAsLeadCard = (
   }
 
   if (disablesFollowSuitForDragonLead(card)) {
+    return true
+  }
+
+  if (disablesFollowSuitForWitchLead(card)) {
     return true
   }
 

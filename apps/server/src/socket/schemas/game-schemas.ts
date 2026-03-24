@@ -50,6 +50,13 @@ export const resolveJugglerSchema = z.object({
   suit: z.enum(['red', 'yellow', 'green', 'blue']),
 })
 
+export const resolveWitchSchema = z.object({
+  code: z.string().trim().min(4).max(12),
+  sessionToken: z.string().trim().min(1).max(200),
+  handCardId: z.string().trim().min(1),
+  trickCardId: z.string().trim().min(1),
+})
+
 export const selectJugglerPassCardSchema = z.object({
   code: z.string().trim().min(4).max(12),
   sessionToken: z.string().trim().min(1).max(200),

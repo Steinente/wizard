@@ -6,6 +6,7 @@ import {
   resolveCloudSchema,
   resolveJugglerSchema,
   resolveShapeShifterSchema,
+  resolveWitchSchema,
   resolveWerewolfTrumpSwapSchema,
   sendChatMessageSchema,
   selectJugglerPassCardSchema,
@@ -143,6 +144,19 @@ export const registerGameHandlers = ({
           : 'error.jugglerResolutionFailed',
       )
     }
+  })
+
+  socket.on('game:resolveWitch', async (payload) => {
+    await runSocketAction(
+      socket,
+      payload,
+      resolveWitchSchema.parse,
+      async (input) => {
+        await gameService.resolveWitch(input)
+        await emitStateForCode(io, input.code, sessionStore, gameService)
+      },
+      'error.witchResolutionFailed',
+    )
   })
 
   socket.on('game:selectJugglerPassCard', async (payload) => {

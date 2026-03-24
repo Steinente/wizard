@@ -8,6 +8,9 @@ export interface RoundPlayerState {
   tricksWon: number
   prediction: PlayerPrediction | null
   pendingCloudAdjustment?: boolean
+  pendingWitchExchange?: boolean
+  pendingWitchCardId?: string
+  pendingWitchTrickIndex?: number
 }
 
 export interface RoundState {

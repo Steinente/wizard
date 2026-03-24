@@ -1,4 +1,4 @@
-export type DuelCardClass = 'dragon' | 'fairy' | 'other'
+export type DuelCardClass = 'dragon' | 'fairy' | 'witch' | 'other'
 
 const toDuelCardClass = (className: string): DuelCardClass => {
   if (className === 'dragon') {
@@ -7,6 +7,10 @@ const toDuelCardClass = (className: string): DuelCardClass => {
 
   if (className === 'fairy') {
     return 'fairy'
+  }
+
+  if (className === 'witch') {
+    return 'witch'
   }
 
   return 'other'
@@ -19,8 +23,12 @@ export const compareDragonFairyDuel = (
   const left = toDuelCardClass(leftClassName)
   const right = toDuelCardClass(rightClassName)
 
-  // Fairy beats Dragon only.
+  // Fairy beats Dragon and Witch.
   if (left === 'fairy' && right === 'dragon') {
+    return 1
+  }
+
+  if (left === 'fairy' && right === 'witch') {
     return 1
   }
 
@@ -29,13 +37,27 @@ export const compareDragonFairyDuel = (
     return -1
   }
 
-  // Fairy loses against everything except Dragon.
-  if (left === 'fairy' && right !== 'dragon') {
+  // Witch loses to Fairy.
+  if (left === 'witch' && right === 'fairy') {
     return -1
   }
 
-  // Everything except Dragon beats Fairy.
-  if (right === 'fairy' && left !== 'dragon') {
+  // Witch loses against everything.
+  if (left === 'witch' && right !== 'witch') {
+    return -1
+  }
+
+  if (right === 'witch' && left !== 'witch') {
+    return 1
+  }
+
+  // Fairy loses against everything except Dragon and Witch.
+  if (left === 'fairy' && right !== 'dragon' && right !== 'witch') {
+    return -1
+  }
+
+  // Everything except Dragon and Witch beats Fairy.
+  if (right === 'fairy' && left !== 'dragon' && left !== 'witch') {
     return 1
   }
 

@@ -7,7 +7,13 @@ export type PendingDecisionType =
   | 'cloudPredictionAdjustment'
   | 'jugglerSuitChoice'
   | 'jugglerPassCard'
+  | 'witchExchange'
   | 'werewolfTrumpSwap'
+
+export interface WitchExchangeOption {
+  cardId: string
+  cardLabel: string
+}
 
 export interface PendingDecisionBase {
   id: string
@@ -49,6 +55,13 @@ export interface JugglerPassCardDecision extends PendingDecisionBase {
   remainingPlayerIds: string[]
 }
 
+export interface WitchExchangeDecision extends PendingDecisionBase {
+  type: 'witchExchange'
+  trickIndex: number
+  handCardOptions: WitchExchangeOption[]
+  trickCardOptions: WitchExchangeOption[]
+}
+
 export interface WerewolfTrumpSwapDecision extends PendingDecisionBase {
   type: 'werewolfTrumpSwap'
   allowedSuits: Array<Suit | null>
@@ -61,6 +74,7 @@ export type PendingDecision =
   | CloudPredictionAdjustmentDecision
   | JugglerSuitChoiceDecision
   | JugglerPassCardDecision
+  | WitchExchangeDecision
   | WerewolfTrumpSwapDecision
 
 export interface ResolvedCardRuntimeEffect {

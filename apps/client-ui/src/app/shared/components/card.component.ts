@@ -27,6 +27,7 @@ const SPECIAL_CARD_ARTWORK: Record<string, string> = {
   juggler: 'juggler',
   dragon: 'dragon',
   fairy: 'fairy',
+  witch: 'witch',
 }
 
 @Component({
@@ -500,6 +501,7 @@ export class CardComponent {
       juggler: 'specialInfo.juggler',
       dragon: 'specialInfo.dragon',
       fairy: 'specialInfo.fairy',
+      witch: 'specialInfo.witch',
     }
 
     const key = keyMap[this.card.special]
