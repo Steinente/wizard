@@ -8,7 +8,6 @@ import {
 import type { Card, ResolvedCardRuntimeEffect } from '@wizard/shared'
 import { I18nService } from '../../core/i18n/i18n.service'
 import type { TranslationKey } from '../../core/i18n/translations'
-import { TPipe } from '../../shared/pipes/t.pipe'
 import {
   getCardAccent,
   getCardPrimaryText,
@@ -34,7 +33,6 @@ const SPECIAL_CARD_ARTWORK: Record<string, string> = {
 @Component({
   selector: 'wiz-card',
   standalone: true,
-  imports: [TPipe],
   template: `
     <button
       class="wiz-card"
