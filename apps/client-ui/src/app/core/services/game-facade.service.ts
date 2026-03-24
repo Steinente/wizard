@@ -561,6 +561,10 @@ export class GameFacadeService {
     })
   }
 
+  clearReconnectLobbyCode() {
+    this.session.clearLastLobbyCode()
+  }
+
   private applyReadLogEnabled(code: string, enabled: boolean, silent: boolean) {
     this.session.setReadLogEnabled(enabled)
 

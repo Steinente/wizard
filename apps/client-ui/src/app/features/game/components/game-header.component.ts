@@ -375,6 +375,7 @@ export class GameHeaderComponent {
 
     if (this.state.phase === 'finished') {
       this.facade.setInGame(this.state.lobbyCode, false)
+      this.facade.clearReconnectLobbyCode()
       this.router.navigateByUrl('/')
       return
     }
