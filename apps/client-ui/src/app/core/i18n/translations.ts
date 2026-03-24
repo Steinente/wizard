@@ -314,12 +314,18 @@ export const translations = {
     'log.game.finished': 'Game finished',
     'log.game.trump.selected': 'Trump selected - {suit}',
     'log.game.trump.selection.pending': '{playerId} chooses trump suit',
+    'log.game.trump.selection.pending.werewolfInHand':
+      '{playerId} chooses trump suit because they drew Werewolf',
+    'log.game.trump.selection.pending.werewolfRevealed':
+      '{playerId} chooses trump suit because {currentTrump} was revealed',
     'log.game.trump.roundStart': 'Trump is {suit}',
     'log.game.trump.roundStart.withValue': 'Trump is {suit} {value}',
     'log.game.trump.noTrumpDueToCard':
       'There is no trump, as {cardLabel} was revealed',
     'log.game.trump.selected.bySpecial':
       '{playerId} selected trump by {special} - {suit}',
+    'log.game.trump.selected.werewolfRevealed':
+      '{playerId} chooses {suit} as trump suit',
     'log.game.prediction.made': '{playerId} bid {value}',
     'log.game.card.played': '{playerId} played {cardLabel}',
     'log.game.card.played.asSuit': '{playerId} played {cardLabel} as {suit}',
@@ -707,12 +713,18 @@ export const translations = {
     'log.game.finished': 'Spiel beendet',
     'log.game.trump.selected': 'Trumpf gewählt - {suit}',
     'log.game.trump.selection.pending': '{playerId} wählt Trumpffarbe',
+    'log.game.trump.selection.pending.werewolfInHand':
+      '{playerId} wählt Trumpffarbe, da er den Werwolf gezogen hat',
+    'log.game.trump.selection.pending.werewolfRevealed':
+      '{playerId} wählt Trumpffarbe, da {currentTrump} aufgedeckt wurde',
     'log.game.trump.roundStart': 'Der Trumpf ist {suit}',
     'log.game.trump.roundStart.withValue': 'Der Trumpf ist {suit} {value}',
     'log.game.trump.noTrumpDueToCard':
       'Es gibt keinen Trumpf, da {cardLabel} aufgedeckt wurde',
     'log.game.trump.selected.bySpecial':
       '{playerId} wählt Trumpf durch {special} - {suit}',
+    'log.game.trump.selected.werewolfRevealed':
+      '{playerId} wählt {suit} als Trumpffarbe',
     'log.game.prediction.made': '{playerId} sagt {value} an',
     'log.game.card.played': '{playerId} spielt {cardLabel}',
     'log.game.card.played.asSuit': '{playerId} spielt {cardLabel} als {suit}',

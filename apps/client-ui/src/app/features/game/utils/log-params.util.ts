@@ -140,6 +140,10 @@ export const normalizeLogParams = (
     next.copiedCardLabel = translateCardLabel(next.copiedCardLabel, t)
   }
 
+  if (typeof next.currentTrump === 'string') {
+    next.currentTrump = translateCardLabel(next.currentTrump, t)
+  }
+
   if (
     options?.includeSwappedCardLabel &&
     typeof next.swappedCardLabel === 'string'

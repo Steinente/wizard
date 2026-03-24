@@ -43,7 +43,7 @@ export function applyRoundStartState(state: WizardGameState) {
       id: crypto.randomUUID(),
       createdAt: nowIso(),
       type: 'system',
-      messageKey: 'game.trump.selection.pending',
+      messageKey: 'game.trump.selection.pending.werewolfInHand',
       messageParams: {
         playerId: werewolfOwnerPlayerId,
       },
@@ -82,6 +82,9 @@ export function applyRoundStartState(state: WizardGameState) {
     round.trumpCard?.type === 'special' &&
     SPECIAL_TRUMP_CARDS.includes(round.trumpCard.special as any)
   ) {
+    const trumpSpecialCard = round.trumpCard
+    const isWerewolfRevealed = trumpSpecialCard.special === 'werewolf'
+
     state.phase = 'trumpSelection'
     round.activePlayerId = getPlayerBeforeRoundLeader(state)
     state.pendingDecision = round.activePlayerId
@@ -90,7 +93,7 @@ export function applyRoundStartState(state: WizardGameState) {
           type: 'selectTrumpSuit',
           playerId: round.activePlayerId,
           createdAt: nowIso(),
-          special: round.trumpCard.special,
+          special: trumpSpecialCard.special,
         }
       : null
 
@@ -99,9 +102,14 @@ export function applyRoundStartState(state: WizardGameState) {
         id: crypto.randomUUID(),
         createdAt: nowIso(),
         type: 'system',
-        messageKey: 'game.trump.selection.pending',
+        messageKey: isWerewolfRevealed
+          ? 'game.trump.selection.pending.werewolfRevealed'
+          : 'game.trump.selection.pending',
         messageParams: {
           playerId: round.activePlayerId,
+          ...(isWerewolfRevealed
+            ? { currentTrump: getReadableCardLabel(trumpSpecialCard) }
+            : {}),
         },
       })
     }
