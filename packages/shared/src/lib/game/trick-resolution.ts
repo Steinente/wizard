@@ -1,4 +1,4 @@
-import type { Card } from '../cards.js'
+import { SPECIAL_CARD_KEY, type Card } from '../cards.js'
 import {
   classifyCard,
   compareCards,
@@ -8,7 +8,7 @@ import type { ResolvedCardRuntimeEffect } from './special-state.js'
 import type { TrickPlay, TrickState } from './trick.js'
 
 export const isBombCard = (card: Card): boolean =>
-  card.type === 'special' && card.special === 'bomb'
+  card.type === 'special' && card.special === SPECIAL_CARD_KEY.bomb
 
 const isEffectiveBombCard = (
   card: Card,
@@ -20,7 +20,7 @@ const isEffectiveBombCard = (
 
   return !!(
     card.type === 'special' &&
-    card.special === 'vampire' &&
+    card.special === SPECIAL_CARD_KEY.vampire &&
     effect?.copiedCard &&
     isBombCard(effect.copiedCard)
   )
@@ -48,7 +48,7 @@ const getEffectiveSpecial = (
     return null
   }
 
-  if (card.special !== 'vampire') {
+  if (card.special !== SPECIAL_CARD_KEY.vampire) {
     return card.special
   }
 
@@ -92,14 +92,14 @@ export const resolveTrickWinner = (
       getEffectiveSpecial(
         play.card,
         getEffectForCard(effects, play.card.id),
-      ) === 'fairy',
+      ) === SPECIAL_CARD_KEY.fairy,
   )
   const dragonPlay = trick.plays.find(
     (play) =>
       getEffectiveSpecial(
         play.card,
         getEffectForCard(effects, play.card.id),
-      ) === 'dragon',
+      ) === SPECIAL_CARD_KEY.dragon,
   )
 
   if (fairyPlay && dragonPlay) {

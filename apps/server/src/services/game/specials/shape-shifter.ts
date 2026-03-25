@@ -1,4 +1,8 @@
-import type { Card, WizardGameState } from '@wizard/shared'
+import {
+  SPECIAL_CARD_KEY,
+  type Card,
+  type WizardGameState,
+} from '@wizard/shared'
 import type {
   BeforePlaySpecialContext,
   BeforePlaySpecialResult,
@@ -50,16 +54,21 @@ export const resolveShapeShifterDecision = (
   }
 
   const isVampireShapeShifterCopy =
-    context.state.pendingDecision.special === 'vampire'
+    context.state.pendingDecision.special === SPECIAL_CARD_KEY.vampire
   const stagedCard = context.state.pendingDecision.playCard
 
   context.registerResolvedEffect({
     cardId: context.cardId,
     ownerPlayerId: context.playerId,
-    special: isVampireShapeShifterCopy ? 'vampire' : 'shapeShifter',
+    special: isVampireShapeShifterCopy
+      ? SPECIAL_CARD_KEY.vampire
+      : SPECIAL_CARD_KEY.shapeShifter,
     ...(isVampireShapeShifterCopy
       ? {
-          copiedCard: createVampireCopiedCard(context.cardId, 'shapeShifter'),
+          copiedCard: createVampireCopiedCard(
+            context.cardId,
+            SPECIAL_CARD_KEY.shapeShifter,
+          ),
         }
       : {}),
     shapeShifterMode: context.mode,

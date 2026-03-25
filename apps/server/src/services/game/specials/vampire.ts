@@ -1,4 +1,9 @@
-import type { Card, Suit, WizardGameState } from '@wizard/shared'
+import {
+  SPECIAL_CARD_KEY,
+  type Card,
+  type Suit,
+  type WizardGameState,
+} from '@wizard/shared'
 import type {
   BeforePlaySpecialContext,
   BeforePlaySpecialResult,
@@ -22,7 +27,10 @@ const getTrumpSuitFromCard = (card: Card | null): Suit | null => {
 
 const asCopiedSpecialCard = (
   cardId: string,
-  special: 'shapeShifter' | 'cloud' | 'juggler',
+  special:
+    | typeof SPECIAL_CARD_KEY.shapeShifter
+    | typeof SPECIAL_CARD_KEY.cloud
+    | typeof SPECIAL_CARD_KEY.juggler,
 ): Card => ({
   id: `${cardId}-copied-${special}`,
   type: 'special',
@@ -41,7 +49,8 @@ export const handleVampireBeforePlay = (
 
   let copiedCard = round.trumpCard
   const trumpWasWerewolf =
-    copiedCard?.type === 'special' && copiedCard.special === 'werewolf'
+    copiedCard?.type === 'special' &&
+    copiedCard.special === SPECIAL_CARD_KEY.werewolf
 
   if (trumpWasWerewolf && round.drawPile.length > 0) {
     const replacementCard = round.drawPile.shift() ?? null
@@ -75,7 +84,7 @@ export const handleVampireBeforePlay = (
     context.registerResolvedEffect({
       cardId: context.card.id,
       ownerPlayerId: context.playerId,
-      special: 'vampire',
+      special: SPECIAL_CARD_KEY.vampire,
       note: 'no trump card available to copy',
     })
 
@@ -84,14 +93,17 @@ export const handleVampireBeforePlay = (
     }
   }
 
-  if (copiedCard.type === 'special' && copiedCard.special === 'shapeShifter') {
+  if (
+    copiedCard.type === 'special' &&
+    copiedCard.special === SPECIAL_CARD_KEY.shapeShifter
+  ) {
     context.state.pendingDecision = {
       id: createDecisionId(),
       type: 'shapeShifterChoice',
       playerId: context.playerId,
       createdAt: nowIso(),
       cardId: context.card.id,
-      special: 'vampire',
+      special: SPECIAL_CARD_KEY.vampire,
       modeOptions: ['wizard', 'jester'],
     }
 
@@ -101,14 +113,17 @@ export const handleVampireBeforePlay = (
     }
   }
 
-  if (copiedCard.type === 'special' && copiedCard.special === 'cloud') {
+  if (
+    copiedCard.type === 'special' &&
+    copiedCard.special === SPECIAL_CARD_KEY.cloud
+  ) {
     context.state.pendingDecision = {
       id: createDecisionId(),
       type: 'cloudSuitChoice',
       playerId: context.playerId,
       createdAt: nowIso(),
       cardId: context.card.id,
-      special: 'vampire',
+      special: SPECIAL_CARD_KEY.vampire,
       allowedSuits: ['red', 'yellow', 'green', 'blue'],
     }
 
@@ -118,14 +133,17 @@ export const handleVampireBeforePlay = (
     }
   }
 
-  if (copiedCard.type === 'special' && copiedCard.special === 'juggler') {
+  if (
+    copiedCard.type === 'special' &&
+    copiedCard.special === SPECIAL_CARD_KEY.juggler
+  ) {
     context.state.pendingDecision = {
       id: createDecisionId(),
       type: 'jugglerSuitChoice',
       playerId: context.playerId,
       createdAt: nowIso(),
       cardId: context.card.id,
-      special: 'vampire',
+      special: SPECIAL_CARD_KEY.vampire,
       allowedSuits: ['red', 'yellow', 'green', 'blue'],
     }
 
@@ -138,7 +156,7 @@ export const handleVampireBeforePlay = (
   context.registerResolvedEffect({
     cardId: context.card.id,
     ownerPlayerId: context.playerId,
-    special: 'vampire',
+    special: SPECIAL_CARD_KEY.vampire,
     copiedCard,
     note: 'vampire copied active trump card',
   })
@@ -150,5 +168,8 @@ export const handleVampireBeforePlay = (
 
 export const createVampireCopiedCard = (
   cardId: string,
-  copiedSpecial: 'shapeShifter' | 'cloud' | 'juggler',
+  copiedSpecial:
+    | typeof SPECIAL_CARD_KEY.shapeShifter
+    | typeof SPECIAL_CARD_KEY.cloud
+    | typeof SPECIAL_CARD_KEY.juggler,
 ): Card => asCopiedSpecialCard(cardId, copiedSpecial)

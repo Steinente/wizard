@@ -7,6 +7,7 @@ import type {
 } from '@wizard/shared'
 import {
   getAllowedPredictionValues,
+  SPECIAL_CARD_KEY,
   isLegalPlay,
   SPECIAL_CARD_KEYS,
   validatePredictionRestriction,
@@ -75,7 +76,7 @@ export class GameService {
     card: Extract<Card, { type: 'special' }>,
     playCardFromPendingChoice?: Card,
   ): boolean {
-    if (card.special === 'vampire') {
+    if (card.special === SPECIAL_CARD_KEY.vampire) {
       const before = handleVampireBeforePlay({
         state,
         playerId,
@@ -96,7 +97,7 @@ export class GameService {
       return before.requiresDecision
     }
 
-    if (card.special === 'shapeShifter') {
+    if (card.special === SPECIAL_CARD_KEY.shapeShifter) {
       const before = handleShapeShifterBeforePlay({
         state,
         playerId,
@@ -114,7 +115,7 @@ export class GameService {
       return before.requiresDecision
     }
 
-    if (card.special === 'cloud') {
+    if (card.special === SPECIAL_CARD_KEY.cloud) {
       const before = handleCloudBeforePlay({
         state,
         playerId,
@@ -132,7 +133,7 @@ export class GameService {
       return before.requiresDecision
     }
 
-    if (card.special === 'juggler') {
+    if (card.special === SPECIAL_CARD_KEY.juggler) {
       const before = handleJugglerBeforePlay({
         state,
         playerId,
@@ -404,7 +405,7 @@ export class GameService {
       createdAt: nowIso(),
       type: 'system',
       messageKey: triggeringSpecial
-        ? triggeringSpecial === 'werewolf'
+        ? triggeringSpecial === SPECIAL_CARD_KEY.werewolf
           ? 'game.trump.selected.werewolfRevealed'
           : 'game.trump.selected.bySpecial'
         : 'game.trump.selected',
@@ -515,7 +516,7 @@ export class GameService {
 
     if (
       selectedCard.type === 'special' &&
-      selectedCard.special === 'werewolf'
+      selectedCard.special === SPECIAL_CARD_KEY.werewolf
     ) {
       const currentTrumpCard = round.trumpCard
 
@@ -526,7 +527,7 @@ export class GameService {
           playerId: player.id,
           createdAt: nowIso(),
           cardId: selectedCard.id,
-          special: 'werewolf',
+          special: SPECIAL_CARD_KEY.werewolf,
           playCard: currentTrumpCard,
           allowedSuits: ['red', 'yellow', 'green', 'blue', null],
         }
@@ -823,7 +824,7 @@ export class GameService {
     }
 
     if (card.type === 'special') {
-      if (card.special === 'darkEye') {
+      if (card.special === SPECIAL_CARD_KEY.darkEye) {
         const playedDarkEye = removeCardFromHand(state, player.id, card.id)
         const drawnCards = enqueueDarkEyePlayChoice({
           state,

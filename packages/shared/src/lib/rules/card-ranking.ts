@@ -1,5 +1,6 @@
 import type { Card, SpecialCardKey, Suit } from '../cards.js'
 import {
+  SPECIAL_CARD_KEY,
   isJesterCard,
   isNumberCard,
   isSpecialCard,
@@ -39,7 +40,7 @@ export const getLeadSuitFromCard = (
 ): Suit | null => {
   if (
     isSpecialCard(card) &&
-    card.special === 'vampire' &&
+    card.special === SPECIAL_CARD_KEY.vampire &&
     runtimeEffect?.copiedCard
   ) {
     return getLeadSuitFromCard(runtimeEffect.copiedCard, runtimeEffect)
@@ -51,7 +52,8 @@ export const getLeadSuitFromCard = (
 
   if (
     isSpecialCard(card) &&
-    (card.special === 'juggler' || card.special === 'cloud') &&
+    (card.special === SPECIAL_CARD_KEY.juggler ||
+      card.special === SPECIAL_CARD_KEY.cloud) &&
     runtimeEffect?.chosenSuit
   ) {
     return runtimeEffect.chosenSuit
@@ -72,7 +74,7 @@ export const classifyCard = (
 ): ClassifiedCard => {
   if (
     isSpecialCard(card) &&
-    card.special === 'vampire' &&
+    card.special === SPECIAL_CARD_KEY.vampire &&
     runtimeEffect?.copiedCard
   ) {
     return classifyCard(
@@ -102,7 +104,7 @@ export const classifyCard = (
   }
 
   if (isSpecialCard(card)) {
-    if (card.special === 'dragon') {
+    if (card.special === SPECIAL_CARD_KEY.dragon) {
       return {
         card,
         className: 'dragon',
@@ -111,7 +113,7 @@ export const classifyCard = (
       }
     }
 
-    if (card.special === 'fairy') {
+    if (card.special === SPECIAL_CARD_KEY.fairy) {
       return {
         card,
         className: 'fairy',
@@ -120,7 +122,7 @@ export const classifyCard = (
       }
     }
 
-    if (card.special === 'witch') {
+    if (card.special === SPECIAL_CARD_KEY.witch) {
       return {
         card,
         className: 'witch',
@@ -129,7 +131,7 @@ export const classifyCard = (
       }
     }
 
-    if (card.special === 'shapeShifter') {
+    if (card.special === SPECIAL_CARD_KEY.shapeShifter) {
       const mode = getShapeShifterMode(runtimeEffect)
 
       if (mode === 'wizard') {
@@ -149,7 +151,7 @@ export const classifyCard = (
       }
     }
 
-    if (card.special === 'juggler') {
+    if (card.special === SPECIAL_CARD_KEY.juggler) {
       const suit = runtimeEffect?.chosenSuit ?? null
       const value = runtimeEffect?.chosenValue ?? 7.5
 
@@ -179,7 +181,7 @@ export const classifyCard = (
       }
     }
 
-    if (card.special === 'cloud') {
+    if (card.special === SPECIAL_CARD_KEY.cloud) {
       const suit = runtimeEffect?.chosenSuit ?? null
       const value = runtimeEffect?.chosenValue ?? 9.75
 

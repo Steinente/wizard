@@ -1,4 +1,8 @@
-import type { Card, WizardGameState } from '@wizard/shared'
+import {
+  SPECIAL_CARD_KEY,
+  type Card,
+  type WizardGameState,
+} from '@wizard/shared'
 import crypto from 'node:crypto'
 import {
   getReadableCardLabel,
@@ -82,9 +86,9 @@ export function appendCardToCurrentTrick(
   // Don't log shape shifter, juggler or cloud plays here - the detailed logs are created when resolving special effects
   if (
     card.type !== 'special' ||
-    (card.special !== 'shapeShifter' &&
-      card.special !== 'juggler' &&
-      card.special !== 'cloud')
+    (card.special !== SPECIAL_CARD_KEY.shapeShifter &&
+      card.special !== SPECIAL_CARD_KEY.juggler &&
+      card.special !== SPECIAL_CARD_KEY.cloud)
   ) {
     state.logs.push({
       id: crypto.randomUUID(),
@@ -128,7 +132,7 @@ export function beginJugglerPassDecision(state: WizardGameState) {
     type: 'jugglerPassCard',
     playerId: eligible[0],
     createdAt: nowIso(),
-    special: 'juggler',
+    special: SPECIAL_CARD_KEY.juggler,
     orderedPlayerIds: eligible,
     selections: {},
     remainingPlayerIds: eligible,

@@ -1,4 +1,9 @@
-import type { Card, Suit, WizardGameState } from '@wizard/shared'
+import {
+  SPECIAL_CARD_KEY,
+  type Card,
+  type Suit,
+  type WizardGameState,
+} from '@wizard/shared'
 import { createDecisionId, nowIso } from './special-utils.js'
 
 interface ResolveWerewolfTrumpSwapContext {
@@ -44,7 +49,7 @@ export const resolveWerewolfTrumpSwapDecision = (
     const werewolfCard: Card = {
       id: stagedWerewolfCardId,
       type: 'special',
-      special: 'werewolf',
+      special: SPECIAL_CARD_KEY.werewolf,
       labelKey: 'card.special.werewolf',
     }
 
@@ -55,7 +60,7 @@ export const resolveWerewolfTrumpSwapDecision = (
     context.registerResolvedEffect({
       cardId: werewolfCard.id,
       ownerPlayerId: context.playerId,
-      special: 'werewolf',
+      special: SPECIAL_CARD_KEY.werewolf,
       note: 'dark eye werewolf swapped trump',
     })
 
@@ -77,7 +82,8 @@ export const resolveWerewolfTrumpSwapDecision = (
   }
 
   const werewolfCard = roundPlayer.hand.find(
-    (entry) => entry.type === 'special' && entry.special === 'werewolf',
+    (entry) =>
+      entry.type === 'special' && entry.special === SPECIAL_CARD_KEY.werewolf,
   )
 
   if (!werewolfCard) {
@@ -105,7 +111,7 @@ export const resolveWerewolfTrumpSwapDecision = (
   context.registerResolvedEffect({
     cardId: werewolfCard.id,
     ownerPlayerId: context.playerId,
-    special: 'werewolf',
+    special: SPECIAL_CARD_KEY.werewolf,
     note: 'trump swapped',
   })
 

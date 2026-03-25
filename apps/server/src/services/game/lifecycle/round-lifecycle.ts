@@ -2,6 +2,7 @@ import type { WizardGameState } from '@wizard/shared'
 import {
   calculateRoundScore,
   createInitialGameState,
+  SPECIAL_CARD_KEY,
   setupRound,
 } from '@wizard/shared'
 import crypto from 'node:crypto'
@@ -70,7 +71,7 @@ export function applyRoundStartState(state: WizardGameState) {
 
   if (
     round.trumpCard?.type === 'special' &&
-    round.trumpCard.special === 'darkEye'
+    round.trumpCard.special === SPECIAL_CARD_KEY.darkEye
   ) {
     const drawnCards = enqueueDarkEyeTrumpChoice({
       state,
@@ -129,7 +130,8 @@ export function applyRoundStartState(state: WizardGameState) {
     SPECIAL_TRUMP_CARDS.includes(round.trumpCard.special as any)
   ) {
     const trumpSpecialCard = round.trumpCard
-    const isWerewolfRevealed = trumpSpecialCard.special === 'werewolf'
+    const isWerewolfRevealed =
+      trumpSpecialCard.special === SPECIAL_CARD_KEY.werewolf
 
     beginSelectTrumpSuitDecision(
       trumpSpecialCard.special,

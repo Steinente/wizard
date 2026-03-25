@@ -1,4 +1,9 @@
-import type { Card, SpecialCard, Suit } from '../cards.js'
+import {
+  SPECIAL_CARD_KEY,
+  type Card,
+  type SpecialCard,
+  type Suit,
+} from '../cards.js'
 import type { RoundState } from '../game/round.js'
 import type { TrickState } from '../game/trick.js'
 
@@ -33,70 +38,70 @@ export const SPECIAL_CARD_DEFINITIONS: Record<
   SpecialCardDefinition
 > = {
   shapeShifter: {
-    key: 'shapeShifter',
+    key: SPECIAL_CARD_KEY.shapeShifter,
     labelKey: 'card.special.shapeShifter',
     descriptionKey: 'card.special.shapeShifter.description',
     isPlayableAnytime: true,
     resolveBeforeTrickWinner: true,
   },
   bomb: {
-    key: 'bomb',
+    key: SPECIAL_CARD_KEY.bomb,
     labelKey: 'card.special.bomb',
     descriptionKey: 'card.special.bomb.description',
     isPlayableAnytime: true,
     resolveBeforeTrickWinner: true,
   },
   werewolf: {
-    key: 'werewolf',
+    key: SPECIAL_CARD_KEY.werewolf,
     labelKey: 'card.special.werewolf',
     descriptionKey: 'card.special.werewolf.description',
     isPlayableAnytime: true,
     resolveBeforeTrickWinner: true,
   },
   vampire: {
-    key: 'vampire',
+    key: SPECIAL_CARD_KEY.vampire,
     labelKey: 'card.special.vampire',
     descriptionKey: 'card.special.vampire.description',
     isPlayableAnytime: true,
     resolveBeforeTrickWinner: true,
   },
   darkEye: {
-    key: 'darkEye',
+    key: SPECIAL_CARD_KEY.darkEye,
     labelKey: 'card.special.darkEye',
     descriptionKey: 'card.special.darkEye.description',
     isPlayableAnytime: true,
     resolveBeforeTrickWinner: true,
   },
   cloud: {
-    key: 'cloud',
+    key: SPECIAL_CARD_KEY.cloud,
     labelKey: 'card.special.cloud',
     descriptionKey: 'card.special.cloud.description',
     isPlayableAnytime: true,
     resolveBeforeTrickWinner: true,
   },
   juggler: {
-    key: 'juggler',
+    key: SPECIAL_CARD_KEY.juggler,
     labelKey: 'card.special.juggler',
     descriptionKey: 'card.special.juggler.description',
     isPlayableAnytime: true,
     resolveBeforeTrickWinner: true,
   },
   dragon: {
-    key: 'dragon',
+    key: SPECIAL_CARD_KEY.dragon,
     labelKey: 'card.special.dragon',
     descriptionKey: 'card.special.dragon.description',
     isPlayableAnytime: true,
     resolveBeforeTrickWinner: true,
   },
   fairy: {
-    key: 'fairy',
+    key: SPECIAL_CARD_KEY.fairy,
     labelKey: 'card.special.fairy',
     descriptionKey: 'card.special.fairy.description',
     isPlayableAnytime: true,
     resolveBeforeTrickWinner: true,
   },
   witch: {
-    key: 'witch',
+    key: SPECIAL_CARD_KEY.witch,
     labelKey: 'card.special.witch',
     descriptionKey: 'card.special.witch.description',
     isPlayableAnytime: true,

@@ -1,5 +1,5 @@
 import type { Card, WizardGameState } from '@wizard/shared'
-import { isBombCard } from '@wizard/shared'
+import { SPECIAL_CARD_KEY, isBombCard } from '@wizard/shared'
 import crypto from 'node:crypto'
 import {
   getReadableCardLabel,
@@ -17,10 +17,10 @@ import {
 } from './specials/index.js'
 
 const SPECIAL_CARDS_WITH_OWN_PLAY_LOG: ReadonlySet<string> = new Set([
-  'shapeShifter',
-  'vampire',
-  'juggler',
-  'cloud',
+  SPECIAL_CARD_KEY.shapeShifter,
+  SPECIAL_CARD_KEY.vampire,
+  SPECIAL_CARD_KEY.juggler,
+  SPECIAL_CARD_KEY.cloud,
 ] as const)
 
 export function registerResolvedEffect(
@@ -107,7 +107,7 @@ export function appendCardToCurrentTrick(
       return
     }
 
-    if (card.type === 'special' && card.special === 'dragon') {
+    if (card.type === 'special' && card.special === SPECIAL_CARD_KEY.dragon) {
       logDragonPlayed(state, playerId)
       return
     }
@@ -117,7 +117,7 @@ export function appendCardToCurrentTrick(
       return
     }
 
-    if (card.type === 'special' && card.special === 'witch') {
+    if (card.type === 'special' && card.special === SPECIAL_CARD_KEY.witch) {
       logWitchPlayed(state, playerId)
       return
     }
@@ -183,7 +183,7 @@ export function beginJugglerPassDecision(
     type: 'jugglerPassCard',
     playerId: eligible[0],
     createdAt: nowIso(),
-    special: 'juggler',
+    special: SPECIAL_CARD_KEY.juggler,
     orderedPlayerIds: eligible,
     selections: {},
     remainingPlayerIds: eligible,

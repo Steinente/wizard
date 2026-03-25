@@ -6,6 +6,7 @@ import type {
   WizardGameState,
 } from '@wizard/shared'
 import {
+  SPECIAL_CARD_KEY,
   SPECIAL_CARD_KEYS,
   filterOutBombPlays,
   resolveTrickWinner,
@@ -212,12 +213,12 @@ export const getReadableCardLabel = (card: Card): string => {
 
 export const NO_TRUMP_SELECTABLE_SPECIALS = new Set([
   'wizard',
-  'shapeShifter',
-  'juggler',
-  'cloud',
-  'dragon',
-  'werewolf',
-  'witch',
+  SPECIAL_CARD_KEY.shapeShifter,
+  SPECIAL_CARD_KEY.juggler,
+  SPECIAL_CARD_KEY.cloud,
+  SPECIAL_CARD_KEY.dragon,
+  SPECIAL_CARD_KEY.werewolf,
+  SPECIAL_CARD_KEY.witch,
 ])
 
 export const getResolvedEffectForCard = (
@@ -232,7 +233,7 @@ export const disablesFollowSuitAsLeadCard = (
   const resolvedEffect = getResolvedEffectForCard(state, card.id)
   const effectiveCard =
     card.type === 'special' &&
-    card.special === 'vampire' &&
+    card.special === SPECIAL_CARD_KEY.vampire &&
     resolvedEffect?.copiedCard
       ? resolvedEffect.copiedCard
       : card
@@ -251,7 +252,7 @@ export const disablesFollowSuitAsLeadCard = (
 
   if (
     effectiveCard.type === 'special' &&
-    effectiveCard.special === 'shapeShifter'
+    effectiveCard.special === SPECIAL_CARD_KEY.shapeShifter
   ) {
     return resolvedEffect?.shapeShifterMode === 'wizard'
   }
@@ -312,7 +313,8 @@ export const getWerewolfOwnerPlayerId = (
 
   const owner = state.currentRound.players.find((player) =>
     player.hand.some(
-      (card) => card.type === 'special' && card.special === 'werewolf',
+      (card) =>
+        card.type === 'special' && card.special === SPECIAL_CARD_KEY.werewolf,
     ),
   )
 
@@ -320,12 +322,12 @@ export const getWerewolfOwnerPlayerId = (
 }
 
 export const SPECIAL_TRUMP_CARDS = [
-  'shapeShifter',
-  'dragon',
-  'werewolf',
-  'vampire',
-  'juggler',
-  'cloud',
+  SPECIAL_CARD_KEY.shapeShifter,
+  SPECIAL_CARD_KEY.dragon,
+  SPECIAL_CARD_KEY.werewolf,
+  SPECIAL_CARD_KEY.vampire,
+  SPECIAL_CARD_KEY.juggler,
+  SPECIAL_CARD_KEY.cloud,
 ] as const
 
 export const getPlayerBeforeRoundLeader = (

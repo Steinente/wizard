@@ -1,4 +1,9 @@
-import type { Card, Suit, WizardGameState } from '@wizard/shared'
+import {
+  SPECIAL_CARD_KEY,
+  type Card,
+  type Suit,
+  type WizardGameState,
+} from '@wizard/shared'
 import type {
   BeforePlaySpecialContext,
   BeforePlaySpecialResult,
@@ -35,7 +40,7 @@ export const handleJugglerBeforePlay = (
     playerId: context.playerId,
     createdAt: nowIso(),
     cardId: context.card.id,
-    special: 'juggler',
+    special: SPECIAL_CARD_KEY.juggler,
     allowedSuits: ['red', 'yellow', 'green', 'blue'],
   }
 
@@ -56,16 +61,21 @@ export const resolveJugglerDecision = (context: ResolveJugglerContext) => {
   }
 
   const isVampireJugglerCopy =
-    context.state.pendingDecision.special === 'vampire'
+    context.state.pendingDecision.special === SPECIAL_CARD_KEY.vampire
   const stagedCard = context.state.pendingDecision.playCard
 
   context.registerResolvedEffect({
     cardId: context.cardId,
     ownerPlayerId: context.playerId,
-    special: isVampireJugglerCopy ? 'vampire' : 'juggler',
+    special: isVampireJugglerCopy
+      ? SPECIAL_CARD_KEY.vampire
+      : SPECIAL_CARD_KEY.juggler,
     ...(isVampireJugglerCopy
       ? {
-          copiedCard: createVampireCopiedCard(context.cardId, 'juggler'),
+          copiedCard: createVampireCopiedCard(
+            context.cardId,
+            SPECIAL_CARD_KEY.juggler,
+          ),
         }
       : {}),
     chosenSuit: context.suit,

@@ -1,4 +1,9 @@
-import type { Card, Suit, WizardGameState } from '@wizard/shared'
+import {
+  SPECIAL_CARD_KEY,
+  type Card,
+  type Suit,
+  type WizardGameState,
+} from '@wizard/shared'
 import type {
   BeforePlaySpecialContext,
   BeforePlaySpecialResult,
@@ -46,7 +51,7 @@ export const enqueueCloudPredictionAdjustmentDecision = (context: {
     playerId: context.playerId,
     createdAt: nowIso(),
     ...(context.cardId ? { cardId: context.cardId } : {}),
-    special: 'cloud',
+    special: SPECIAL_CARD_KEY.cloud,
     currentPrediction: roundPlayer.prediction.value,
   }
 
@@ -62,7 +67,7 @@ export const handleCloudBeforePlay = (
     playerId: context.playerId,
     createdAt: nowIso(),
     cardId: context.card.id,
-    special: 'cloud',
+    special: SPECIAL_CARD_KEY.cloud,
     allowedSuits: ['red', 'yellow', 'green', 'blue'],
   }
 
@@ -82,16 +87,22 @@ export const resolveCloudDecision = (context: ResolveCloudContext) => {
     throw new Error('No matching cloud decision pending')
   }
 
-  const isVampireCloudCopy = context.state.pendingDecision.special === 'vampire'
+  const isVampireCloudCopy =
+    context.state.pendingDecision.special === SPECIAL_CARD_KEY.vampire
   const stagedCard = context.state.pendingDecision.playCard
 
   context.registerResolvedEffect({
     cardId: context.cardId,
     ownerPlayerId: context.playerId,
-    special: isVampireCloudCopy ? 'vampire' : 'cloud',
+    special: isVampireCloudCopy
+      ? SPECIAL_CARD_KEY.vampire
+      : SPECIAL_CARD_KEY.cloud,
     ...(isVampireCloudCopy
       ? {
-          copiedCard: createVampireCopiedCard(context.cardId, 'cloud'),
+          copiedCard: createVampireCopiedCard(
+            context.cardId,
+            SPECIAL_CARD_KEY.cloud,
+          ),
         }
       : {}),
     chosenSuit: context.suit,

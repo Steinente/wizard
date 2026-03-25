@@ -8,7 +8,7 @@ import {
 import { FormsModule } from '@angular/forms'
 import { ActivatedRoute, RouterLink } from '@angular/router'
 import type { SpecialCard, SpecialCardKey } from '@wizard/shared'
-import { SPECIAL_CARD_KEYS } from '@wizard/shared'
+import { SPECIAL_CARD_KEY, SPECIAL_CARD_KEYS } from '@wizard/shared'
 import { I18nService } from '../../core/i18n/i18n.service'
 import type { TranslationKey } from '../../core/i18n/translations'
 import { GameFacadeService } from '../../core/services/game-facade.service'
@@ -49,40 +49,47 @@ const SPECIAL_CARD_FILTER_PRESETS: readonly SpecialCardFilterPreset[] = [
   {
     id: SPECIAL_CARD_FILTER_ID.anniversary20,
     labelKey: 'specialCardsFilterAnniversary20',
-    includedCards: ['cloud', 'juggler', 'werewolf', 'bomb', 'fairy', 'dragon'],
+    includedCards: [
+      SPECIAL_CARD_KEY.cloud,
+      SPECIAL_CARD_KEY.juggler,
+      SPECIAL_CARD_KEY.werewolf,
+      SPECIAL_CARD_KEY.bomb,
+      SPECIAL_CARD_KEY.fairy,
+      SPECIAL_CARD_KEY.dragon,
+    ],
   },
   {
     id: SPECIAL_CARD_FILTER_ID.anniversary25,
     labelKey: 'specialCardsFilterAnniversary25',
     includedCards: [
-      'shapeShifter',
-      'cloud',
-      'juggler',
-      'werewolf',
-      'bomb',
-      'fairy',
-      'dragon',
+      SPECIAL_CARD_KEY.shapeShifter,
+      SPECIAL_CARD_KEY.cloud,
+      SPECIAL_CARD_KEY.juggler,
+      SPECIAL_CARD_KEY.werewolf,
+      SPECIAL_CARD_KEY.bomb,
+      SPECIAL_CARD_KEY.fairy,
+      SPECIAL_CARD_KEY.dragon,
     ],
   },
   {
     id: SPECIAL_CARD_FILTER_ID.anniversary30,
     labelKey: 'specialCardsFilterAnniversary30',
     includedCards: [
-      'vampire',
-      'shapeShifter',
-      'witch',
-      'cloud',
-      'juggler',
-      'werewolf',
-      'bomb',
-      'fairy',
-      'dragon',
+      SPECIAL_CARD_KEY.vampire,
+      SPECIAL_CARD_KEY.shapeShifter,
+      SPECIAL_CARD_KEY.witch,
+      SPECIAL_CARD_KEY.cloud,
+      SPECIAL_CARD_KEY.juggler,
+      SPECIAL_CARD_KEY.werewolf,
+      SPECIAL_CARD_KEY.bomb,
+      SPECIAL_CARD_KEY.fairy,
+      SPECIAL_CARD_KEY.dragon,
     ],
   },
   {
     id: SPECIAL_CARD_FILTER_ID.darkEyeOnly,
     labelKey: 'specialCardsFilterDarkEyeOnly',
-    includedCards: ['darkEye'],
+    includedCards: [SPECIAL_CARD_KEY.darkEye],
   },
 ] as const
 
@@ -291,7 +298,11 @@ const SPECIAL_CARD_FILTER_PRESETS: readonly SpecialCardFilterPreset[] = [
                   class="label"
                   style="margin-top: 14px;"
                   [style.opacity]="
-                    !isHost() ? 1 : isSpecialCardEnabled('cloud') ? 1 : 0.55
+                    !isHost()
+                      ? 1
+                      : isSpecialCardEnabled(specialCardKey.cloud)
+                        ? 1
+                        : 0.55
                   "
                 >
                   {{ 'cloudRuleTimingLabel' | t }}
@@ -313,9 +324,15 @@ const SPECIAL_CARD_FILTER_PRESETS: readonly SpecialCardFilterPreset[] = [
                 <select
                   class="select"
                   [style.opacity]="
-                    !isHost() ? 1 : isSpecialCardEnabled('cloud') ? 1 : 0.55
+                    !isHost()
+                      ? 1
+                      : isSpecialCardEnabled(specialCardKey.cloud)
+                        ? 1
+                        : 0.55
                   "
-                  [disabled]="!isHost() || !isSpecialCardEnabled('cloud')"
+                  [disabled]="
+                    !isHost() || !isSpecialCardEnabled(specialCardKey.cloud)
+                  "
                   [ngModel]="store.lobby()!.config.cloudRuleTiming"
                   (ngModelChange)="setCloudRuleTiming($event)"
                 >
@@ -543,6 +560,7 @@ export class LobbyPageComponent {
   }))
 
   readonly noopPlay = () => {}
+  readonly specialCardKey = SPECIAL_CARD_KEY
   readonly specialCardFilterId = SPECIAL_CARD_FILTER_ID
   readonly specialCardFilterPresets = SPECIAL_CARD_FILTER_PRESETS
 

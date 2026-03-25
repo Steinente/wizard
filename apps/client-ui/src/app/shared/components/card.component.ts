@@ -5,7 +5,11 @@ import {
   Input,
   inject,
 } from '@angular/core'
-import type { Card, ResolvedCardRuntimeEffect } from '@wizard/shared'
+import {
+  SPECIAL_CARD_KEY,
+  type Card,
+  type ResolvedCardRuntimeEffect,
+} from '@wizard/shared'
 import { I18nService } from '../../core/i18n/i18n.service'
 import type { TranslationKey } from '../../core/i18n/translations'
 import {
@@ -20,15 +24,15 @@ const WILD_CARD_VARIANTS = ['red', 'yellow', 'green', 'blue'] as const
 
 const SPECIAL_CARD_ARTWORK: Record<string, string> = {
   shapeShifter: 'shape_shifter',
-  bomb: 'bomb',
-  werewolf: 'werewolf',
-  vampire: 'vampire',
+  [SPECIAL_CARD_KEY.bomb]: SPECIAL_CARD_KEY.bomb,
+  [SPECIAL_CARD_KEY.werewolf]: SPECIAL_CARD_KEY.werewolf,
+  [SPECIAL_CARD_KEY.vampire]: SPECIAL_CARD_KEY.vampire,
   darkEye: 'the_dark_eye',
-  cloud: 'cloud',
-  juggler: 'juggler',
-  dragon: 'dragon',
-  fairy: 'fairy',
-  witch: 'witch',
+  [SPECIAL_CARD_KEY.cloud]: SPECIAL_CARD_KEY.cloud,
+  [SPECIAL_CARD_KEY.juggler]: SPECIAL_CARD_KEY.juggler,
+  [SPECIAL_CARD_KEY.dragon]: SPECIAL_CARD_KEY.dragon,
+  [SPECIAL_CARD_KEY.fairy]: SPECIAL_CARD_KEY.fairy,
+  [SPECIAL_CARD_KEY.witch]: SPECIAL_CARD_KEY.witch,
 }
 
 @Component({
@@ -474,7 +478,8 @@ export class CardComponent {
   get isCompactSpecialValue(): boolean {
     return (
       this.card.type === 'special' &&
-      (this.card.special === 'cloud' || this.card.special === 'juggler')
+      (this.card.special === SPECIAL_CARD_KEY.cloud ||
+        this.card.special === SPECIAL_CARD_KEY.juggler)
     )
   }
 
@@ -528,7 +533,7 @@ export class CardComponent {
   get shapeShifterMode(): string | null {
     if (
       this.resolvedEffect &&
-      this.resolvedEffect.special === 'shapeShifter' &&
+      this.resolvedEffect.special === SPECIAL_CARD_KEY.shapeShifter &&
       this.resolvedEffect.shapeShifterMode
     ) {
       return this.getShapeShifterModeLabel(this.resolvedEffect.shapeShifterMode)
@@ -536,9 +541,10 @@ export class CardComponent {
 
     if (
       this.resolvedEffect &&
-      this.resolvedEffect.special === 'vampire' &&
+      this.resolvedEffect.special === SPECIAL_CARD_KEY.vampire &&
       this.resolvedEffect.copiedCard?.type === 'special' &&
-      this.resolvedEffect.copiedCard.special === 'shapeShifter' &&
+      this.resolvedEffect.copiedCard.special ===
+        SPECIAL_CARD_KEY.shapeShifter &&
       this.resolvedEffect.shapeShifterMode
     ) {
       return this.getShapeShifterModeLabel(this.resolvedEffect.shapeShifterMode)
@@ -557,7 +563,7 @@ export class CardComponent {
     }
 
     if (
-      this.resolvedEffect?.special === 'shapeShifter' &&
+      this.resolvedEffect?.special === SPECIAL_CARD_KEY.shapeShifter &&
       this.resolvedEffect.shapeShifterMode
     ) {
       return this.i18n.t(
@@ -580,7 +586,7 @@ export class CardComponent {
 
   get vampireCopiedLabel(): string | null {
     if (
-      this.resolvedEffect?.special === 'vampire' &&
+      this.resolvedEffect?.special === SPECIAL_CARD_KEY.vampire &&
       this.resolvedEffect.copiedCard
     ) {
       return this.translateCard(this.resolvedEffect.copiedCard)
@@ -595,7 +601,7 @@ export class CardComponent {
     }
 
     if (
-      this.resolvedEffect.special === 'shapeShifter' &&
+      this.resolvedEffect.special === SPECIAL_CARD_KEY.shapeShifter &&
       this.resolvedEffect.shapeShifterMode
     ) {
       return this.i18n.t(
@@ -620,12 +626,12 @@ export class CardComponent {
   }
 
   get vampireCopiedOptionLabel(): string | null {
-    if (this.resolvedEffect?.special !== 'vampire') {
+    if (this.resolvedEffect?.special !== SPECIAL_CARD_KEY.vampire) {
       return null
     }
 
     if (
-      this.vampireCopiedSpecial === 'shapeShifter' &&
+      this.vampireCopiedSpecial === SPECIAL_CARD_KEY.shapeShifter &&
       this.resolvedEffect.shapeShifterMode
     ) {
       return this.i18n.t(
@@ -666,7 +672,7 @@ export class CardComponent {
 
   private get vampireCopiedSpecial(): string | null {
     if (
-      this.resolvedEffect?.special === 'vampire' &&
+      this.resolvedEffect?.special === SPECIAL_CARD_KEY.vampire &&
       this.resolvedEffect.copiedCard?.type === 'special'
     ) {
       return this.resolvedEffect.copiedCard.special
@@ -676,7 +682,9 @@ export class CardComponent {
   }
 
   private isCloudOrJugglerSpecial(special: string | null | undefined): boolean {
-    return special === 'cloud' || special === 'juggler'
+    return (
+      special === SPECIAL_CARD_KEY.cloud || special === SPECIAL_CARD_KEY.juggler
+    )
   }
 
   private getSuitLabel(suit: string): string {
@@ -692,7 +700,8 @@ export class CardComponent {
   get isTopTitleLeftAligned(): boolean {
     return (
       this.pinTitleTop &&
-      ((this.card.type === 'special' && this.card.special === 'shapeShifter') ||
+      ((this.card.type === 'special' &&
+        this.card.special === SPECIAL_CARD_KEY.shapeShifter) ||
         !!this.vampireCopiedBaseLabel)
     )
   }
@@ -702,7 +711,10 @@ export class CardComponent {
       return false
     }
 
-    return this.card.special === 'shapeShifter' || !!this.vampireCopiedLabel
+    return (
+      this.card.special === SPECIAL_CARD_KEY.shapeShifter ||
+      !!this.vampireCopiedLabel
+    )
   }
 
   get specialInfoText(): string {
@@ -726,7 +738,7 @@ export class CardComponent {
 
     // If vampire copied cloud/juggler, use the chosen suit color as well.
     if (
-      this.resolvedEffect?.special === 'vampire' &&
+      this.resolvedEffect?.special === SPECIAL_CARD_KEY.vampire &&
       this.isCloudOrJugglerSpecial(this.vampireCopiedSpecial) &&
       this.resolvedEffect.chosenSuit
     ) {
@@ -754,7 +766,7 @@ export class CardComponent {
     }
 
     if (
-      this.resolvedEffect?.special === 'vampire' &&
+      this.resolvedEffect?.special === SPECIAL_CARD_KEY.vampire &&
       this.isCloudOrJugglerSpecial(this.vampireCopiedSpecial)
     ) {
       if (this.resolvedEffect.chosenSuit === 'yellow') {

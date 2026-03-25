@@ -1,4 +1,8 @@
-import type { Card, WizardGameState } from '@wizard/shared'
+import {
+  SPECIAL_CARD_KEY,
+  type Card,
+  type WizardGameState,
+} from '@wizard/shared'
 import { createDecisionId, nowIso } from './special-utils.js'
 
 interface DarkEyeOption {
@@ -38,7 +42,7 @@ export const enqueueDarkEyeTrumpChoice = (context: {
     type: 'darkEyeTrumpChoice',
     playerId: context.playerId,
     createdAt: nowIso(),
-    special: 'darkEye',
+    special: SPECIAL_CARD_KEY.darkEye,
     options: toOptions(drawnCards, context.getReadableCardLabel),
     drawnCards,
   }
@@ -71,7 +75,7 @@ export const enqueueDarkEyePlayChoice = (context: {
     playerId: context.playerId,
     createdAt: nowIso(),
     cardId: context.sourceCardId,
-    special: 'darkEye',
+    special: SPECIAL_CARD_KEY.darkEye,
     options: toOptions(drawnCards, context.getReadableCardLabel),
     drawnCards,
   }

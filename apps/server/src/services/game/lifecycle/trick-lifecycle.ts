@@ -1,4 +1,8 @@
-import type { Card, WizardGameState } from '@wizard/shared'
+import {
+  SPECIAL_CARD_KEY,
+  type Card,
+  type WizardGameState,
+} from '@wizard/shared'
 import { resolveTrickWinner } from '@wizard/shared'
 import crypto from 'node:crypto'
 import { beginJugglerPassDecision } from '../game-mutations.js'
@@ -38,7 +42,7 @@ const getEffectiveSpecial = (
     return null
   }
 
-  if (card.special !== 'vampire') {
+  if (card.special !== SPECIAL_CARD_KEY.vampire) {
     return card.special ?? null
   }
 
@@ -97,13 +101,19 @@ export async function resolveCompletedTrick(
   state.currentRound.completedTricks.push(resolvedTrick)
 
   const playedJuggler = resolvedTrick.plays.find(
-    (play) => getEffectiveSpecial(state, play.card.id, play.card) === 'juggler',
+    (play) =>
+      getEffectiveSpecial(state, play.card.id, play.card) ===
+      SPECIAL_CARD_KEY.juggler,
   )
   const playedCloud = resolvedTrick.plays.find(
-    (play) => getEffectiveSpecial(state, play.card.id, play.card) === 'cloud',
+    (play) =>
+      getEffectiveSpecial(state, play.card.id, play.card) ===
+      SPECIAL_CARD_KEY.cloud,
   )
   const playedWitch = resolvedTrick.plays.find(
-    (play) => getEffectiveSpecial(state, play.card.id, play.card) === 'witch',
+    (play) =>
+      getEffectiveSpecial(state, play.card.id, play.card) ===
+      SPECIAL_CARD_KEY.witch,
   )
   const cloudTimingMode = state.config.cloudRuleTiming
   const justCompletedTrickIndex = state.currentRound.completedTricks.length - 1

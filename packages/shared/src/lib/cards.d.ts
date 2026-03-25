@@ -7,14 +7,29 @@ export declare const CARD_TYPES: readonly [
   'special',
 ]
 export type CardType = (typeof CARD_TYPES)[number]
+export declare const SPECIAL_CARD_KEY: {
+  readonly vampire: 'vampire'
+  readonly shapeShifter: 'shapeShifter'
+  readonly witch: 'witch'
+  readonly cloud: 'cloud'
+  readonly juggler: 'juggler'
+  readonly werewolf: 'werewolf'
+  readonly bomb: 'bomb'
+  readonly fairy: 'fairy'
+  readonly dragon: 'dragon'
+  readonly darkEye: 'darkEye'
+}
 export declare const SPECIAL_CARD_KEYS: readonly [
+  'vampire',
   'shapeShifter',
-  'bomb',
-  'werewolf',
+  'witch',
   'cloud',
   'juggler',
-  'dragon',
+  'werewolf',
+  'bomb',
   'fairy',
+  'dragon',
+  'darkEye',
 ]
 export type SpecialCardKey = (typeof SPECIAL_CARD_KEYS)[number]
 export declare const ANNIVERSARY_SPECIALS_ENABLED_BY_DEFAULT: ReadonlyArray<SpecialCardKey>

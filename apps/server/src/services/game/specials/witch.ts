@@ -1,4 +1,8 @@
-import type { Card, WizardGameState } from '@wizard/shared'
+import {
+  SPECIAL_CARD_KEY,
+  type Card,
+  type WizardGameState,
+} from '@wizard/shared'
 import { createDecisionId, nowIso } from './special-utils.js'
 
 interface EnqueuePendingWitchExchangeDecisionContext {
@@ -15,7 +19,7 @@ interface ResolveWitchExchangeDecisionContext {
 }
 
 export const isWitchCard = (card: Card): boolean =>
-  card.type === 'special' && card.special === 'witch'
+  card.type === 'special' && card.special === SPECIAL_CARD_KEY.witch
 
 export const disablesFollowSuitForWitchLead = (card: Card): boolean =>
   isWitchCard(card)
@@ -133,7 +137,7 @@ export const enqueuePendingWitchExchangeDecision = (
     playerId: roundPlayer.playerId,
     createdAt: nowIso(),
     cardId: witchCardId,
-    special: 'witch',
+    special: SPECIAL_CARD_KEY.witch,
     trickIndex,
     handCardOptions,
     trickCardOptions,
@@ -192,7 +196,7 @@ export const resolveWitchExchangeDecision = (
   if (
     context.state.config.cloudRuleTiming === 'endOfRound' &&
     takenCard.type === 'special' &&
-    takenCard.special === 'cloud'
+    takenCard.special === SPECIAL_CARD_KEY.cloud
   ) {
     const trickWinnerPlayerId =
       context.state.currentRound.completedTricks[decision.trickIndex]

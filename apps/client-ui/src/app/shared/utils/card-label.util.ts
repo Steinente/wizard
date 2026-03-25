@@ -1,4 +1,4 @@
-import type { Card } from '@wizard/shared'
+import { SPECIAL_CARD_KEY, type Card } from '@wizard/shared'
 import type { TranslationKey } from '../../core/i18n/translations'
 import { SUIT_BACKGROUNDS } from './suit-colors.util'
 
@@ -31,11 +31,11 @@ export const getCardPrimaryText = (card: Card): string => {
     return String(card.value)
   }
 
-  if (card.type === 'special' && card.special === 'juggler') {
+  if (card.type === 'special' && card.special === SPECIAL_CARD_KEY.juggler) {
     return '7 ½'
   }
 
-  if (card.type === 'special' && card.special === 'cloud') {
+  if (card.type === 'special' && card.special === SPECIAL_CARD_KEY.cloud) {
     return '9 ¾'
   }
 
