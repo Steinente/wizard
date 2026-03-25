@@ -31,6 +31,18 @@ export function applyRoundStartState(state: WizardGameState) {
   const playerBeforeRoundLeaderId = getPlayerBeforeRoundLeader(state)
   const werewolfOwnerPlayerId = getWerewolfOwnerPlayerId(state)
 
+  // Special rule: if Dark Eye is the only special card and we're in the final round,
+  // no trump can be selected to allow Dark Eye to draw cards
+  const isDarkEyeOnlySpecial =
+    state.config.includedSpecialCards.length === 1 &&
+    state.config.includedSpecialCards[0] === SPECIAL_CARD_KEY.darkEye
+
+  const deckSize = 60 + state.config.includedSpecialCards.length
+  const playerCount = round.players.length
+  const maxPossibleRounds = Math.floor(deckSize / playerCount)
+  const isDarkEyeFinalRound =
+    isDarkEyeOnlySpecial && round.roundNumber === maxPossibleRounds
+
   const pushSystemLog = (
     messageKey: WizardGameState['logs'][number]['messageKey'],
     messageParams?: Record<string, string | number | null>,
@@ -100,6 +112,20 @@ export function applyRoundStartState(state: WizardGameState) {
       })
     }
 
+    return
+  }
+
+  // Special rule: If Dark Eye is the only special card in the final round,
+  // no trump can be set to allow Dark Eye to draw up to 3 cards
+  if (isDarkEyeFinalRound) {
+    state.phase = 'prediction'
+    round.activePlayerId = round.roundLeaderPlayerId
+    state.pendingDecision = null
+    round.trumpSuit = null
+
+    pushSystemLog('game.trump.noTrumpFinalRound', {
+      reason: 'darkEyeOnly',
+    })
     return
   }
 

@@ -372,6 +372,8 @@ export const de = {
   'log.game.trump.roundStart.withValue': 'Der Trumpf ist {suit} {value}',
   'log.game.trump.noTrumpDueToCard':
     'Es gibt keinen Trumpf, da {cardLabel} aufgedeckt wurde',
+  'log.game.trump.noTrumpFinalRound':
+    'Es gibt keinen Trumpf in der finalen Runde, damit Das Schwarze Auge eine Karte ziehen kann',
   'log.game.trump.selected.bySpecial':
     '{playerId} wählt Trumpf durch {special} - {suit}',
   'log.game.trump.selected.werewolfRevealed':

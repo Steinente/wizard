@@ -395,7 +395,8 @@
                     : 'not-allowed'
                 "
                 [disabled]="
-                  !isHost() || store.lobby()!.config.specialCardsRandomizerEnabled
+                  !isHost() ||
+                  store.lobby()!.config.specialCardsRandomizerEnabled
                 "
                 [attr.aria-pressed]="isEnabled"
                 [attr.aria-label]="getSpecialCardAriaLabel(card)"

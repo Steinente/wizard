@@ -364,6 +364,8 @@ export const en = {
   'log.game.trump.roundStart.withValue': 'Trump is {suit} {value}',
   'log.game.trump.noTrumpDueToCard':
     'There is no trump, as {cardLabel} was revealed',
+  'log.game.trump.noTrumpFinalRound':
+    'There is no trump in the final round to allow Dark Eye to draw a card',
   'log.game.trump.selected.bySpecial':
     '{playerId} selected trump by {special} - {suit}',
   'log.game.trump.selected.werewolfRevealed':
