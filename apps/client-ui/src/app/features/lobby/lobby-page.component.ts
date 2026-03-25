@@ -17,6 +17,75 @@ import { AppStore } from '../../core/state/app.store'
 import { CardComponent } from '../../shared/components/card.component'
 import { TPipe } from '../../shared/pipes/t.pipe'
 
+const SPECIAL_CARD_FILTER_ID = {
+  custom: 'custom',
+  classic: 'classic',
+  anniversary20: 'anniversary20',
+  anniversary25: 'anniversary25',
+  anniversary30: 'anniversary30',
+  darkEyeOnly: 'darkEyeOnly',
+} as const
+
+type SpecialCardFilterId =
+  (typeof SPECIAL_CARD_FILTER_ID)[keyof typeof SPECIAL_CARD_FILTER_ID]
+
+type PresetSpecialCardFilterId = Exclude<
+  SpecialCardFilterId,
+  typeof SPECIAL_CARD_FILTER_ID.custom
+>
+
+interface SpecialCardFilterPreset {
+  id: PresetSpecialCardFilterId
+  labelKey: TranslationKey
+  includedCards: readonly SpecialCardKey[]
+}
+
+const SPECIAL_CARD_FILTER_PRESETS: readonly SpecialCardFilterPreset[] = [
+  {
+    id: SPECIAL_CARD_FILTER_ID.classic,
+    labelKey: 'specialCardsFilterClassic',
+    includedCards: [],
+  },
+  {
+    id: SPECIAL_CARD_FILTER_ID.anniversary20,
+    labelKey: 'specialCardsFilterAnniversary20',
+    includedCards: ['cloud', 'juggler', 'werewolf', 'bomb', 'fairy', 'dragon'],
+  },
+  {
+    id: SPECIAL_CARD_FILTER_ID.anniversary25,
+    labelKey: 'specialCardsFilterAnniversary25',
+    includedCards: [
+      'shapeShifter',
+      'cloud',
+      'juggler',
+      'werewolf',
+      'bomb',
+      'fairy',
+      'dragon',
+    ],
+  },
+  {
+    id: SPECIAL_CARD_FILTER_ID.anniversary30,
+    labelKey: 'specialCardsFilterAnniversary30',
+    includedCards: [
+      'vampire',
+      'shapeShifter',
+      'witch',
+      'cloud',
+      'juggler',
+      'werewolf',
+      'bomb',
+      'fairy',
+      'dragon',
+    ],
+  },
+  {
+    id: SPECIAL_CARD_FILTER_ID.darkEyeOnly,
+    labelKey: 'specialCardsFilterDarkEyeOnly',
+    includedCards: ['darkEye'],
+  },
+] as const
+
 @Component({
   standalone: true,
   imports: [FormsModule, TPipe, RouterLink, CardComponent],
@@ -288,6 +357,47 @@ import { TPipe } from '../../shared/pipes/t.pipe'
                     }}
                   </span>
                 </label>
+
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                  <button
+                    type="button"
+                    class="btn"
+                    [class.btn-active]="
+                      activeSpecialCardFilter() !== specialCardFilterId.custom
+                    "
+                    [disabled]="
+                      !isHost() ||
+                      store.lobby()!.config.specialCardsRandomizerEnabled
+                    "
+                    [attr.aria-expanded]="isSpecialCardFilterMenuOpen()"
+                    (click)="toggleSpecialCardFilterMenu()"
+                  >
+                    {{ 'specialCardsFilterLabel' | t }}:
+                    {{
+                      specialCardFilterLabelKey(activeSpecialCardFilter()) | t
+                    }}
+                  </button>
+
+                  @if (isSpecialCardFilterMenuOpen()) {
+                    <div class="special-card-filter-menu">
+                      @for (
+                        preset of specialCardFilterPresets;
+                        track preset.id
+                      ) {
+                        <button
+                          type="button"
+                          class="btn special-card-filter-option"
+                          [class.btn-active]="
+                            activeSpecialCardFilter() === preset.id
+                          "
+                          (click)="applySpecialCardFilter(preset.id)"
+                        >
+                          {{ preset.labelKey | t }}
+                        </button>
+                      }
+                    </div>
+                  }
+                </div>
               </div>
               @if (activeRuleInfo() === 'specialCards') {
                 <div class="rule-info-box" style="margin-bottom: 10px;">
@@ -385,6 +495,17 @@ import { TPipe } from '../../shared/pipes/t.pipe'
         padding: 0;
       }
 
+      .special-card-filter-menu {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        width: 100%;
+      }
+
+      .special-card-filter-option {
+        text-align: left;
+      }
+
       @media (max-width: 1100px) {
         .lobby-main-grid {
           grid-template-columns: 1fr;
@@ -406,6 +527,9 @@ export class LobbyPageComponent {
     | 'specialCards'
     | null
   >(null)
+  private readonly specialCardFilterMenuOpenState = signal(false)
+  private readonly selectedSpecialCardFilterHintState =
+    signal<PresetSpecialCardFilterId | null>(null)
   copied = false
   private copiedTimeoutId: ReturnType<typeof setTimeout> | null = null
 
@@ -419,8 +543,12 @@ export class LobbyPageComponent {
   }))
 
   readonly noopPlay = () => {}
+  readonly specialCardFilterId = SPECIAL_CARD_FILTER_ID
+  readonly specialCardFilterPresets = SPECIAL_CARD_FILTER_PRESETS
 
   readonly activeRuleInfo = this.activeRuleInfoState.asReadonly()
+  readonly isSpecialCardFilterMenuOpen =
+    this.specialCardFilterMenuOpenState.asReadonly()
 
   constructor(
     private readonly appStore: AppStore,
@@ -447,6 +575,17 @@ export class LobbyPageComponent {
       | 'specialCards',
   ) {
     this.activeRuleInfoState.update((current) => (current === key ? null : key))
+  }
+
+  toggleSpecialCardFilterMenu() {
+    if (
+      !this.isHost() ||
+      this.store.lobby()?.config.specialCardsRandomizerEnabled
+    ) {
+      return
+    }
+
+    this.specialCardFilterMenuOpenState.update((isOpen) => !isOpen)
   }
 
   isHost() {
@@ -601,7 +740,99 @@ export class LobbyPageComponent {
       ? current.filter((k) => k !== key)
       : [...current, key]
 
+    this.specialCardFilterMenuOpenState.set(false)
+    this.selectedSpecialCardFilterHintState.set(null)
     this.facade.updateConfig(lobby.code, { includedSpecialCards: next })
+  }
+
+  activeSpecialCardFilter(): SpecialCardFilterId {
+    const lobby = this.store.lobby()
+
+    if (!lobby) {
+      return SPECIAL_CARD_FILTER_ID.custom
+    }
+
+    const included = this.normalizeIncludedSpecialCards(
+      lobby.config.includedSpecialCards,
+    )
+
+    const selectedHint = this.selectedSpecialCardFilterHintState()
+
+    if (selectedHint) {
+      const hintedPreset = this.findSpecialCardFilterPreset(selectedHint)
+
+      if (
+        hintedPreset &&
+        this.hasSameCards(included, hintedPreset.includedCards)
+      ) {
+        return selectedHint
+      }
+    }
+
+    const matchedPreset = this.specialCardFilterPresets.find((preset) =>
+      this.hasSameCards(included, preset.includedCards),
+    )
+
+    return matchedPreset?.id ?? SPECIAL_CARD_FILTER_ID.custom
+  }
+
+  specialCardFilterLabelKey(id: SpecialCardFilterId): TranslationKey {
+    if (id === SPECIAL_CARD_FILTER_ID.custom) {
+      return 'specialCardsFilterCustom'
+    }
+
+    return (
+      this.specialCardFilterPresets.find((preset) => preset.id === id)
+        ?.labelKey ?? 'specialCardsFilterCustom'
+    )
+  }
+
+  applySpecialCardFilter(id: PresetSpecialCardFilterId) {
+    const lobby = this.store.lobby()
+
+    if (
+      !lobby ||
+      !this.isHost() ||
+      lobby.config.specialCardsRandomizerEnabled
+    ) {
+      return
+    }
+
+    const preset = this.findSpecialCardFilterPreset(id)
+
+    if (!preset) {
+      return
+    }
+
+    this.specialCardFilterMenuOpenState.set(false)
+    this.selectedSpecialCardFilterHintState.set(id)
+    this.facade.updateConfig(lobby.code, {
+      includedSpecialCards: [...preset.includedCards],
+    })
+  }
+
+  private findSpecialCardFilterPreset(
+    id: PresetSpecialCardFilterId,
+  ): SpecialCardFilterPreset | undefined {
+    return this.specialCardFilterPresets.find((preset) => preset.id === id)
+  }
+
+  private normalizeIncludedSpecialCards(
+    includedSpecialCards: readonly SpecialCardKey[] | undefined,
+  ): SpecialCardKey[] {
+    const cards = includedSpecialCards ?? SPECIAL_CARD_KEYS
+    return SPECIAL_CARD_KEYS.filter((key) => cards.includes(key))
+  }
+
+  private hasSameCards(
+    selected: readonly SpecialCardKey[],
+    expected: readonly SpecialCardKey[],
+  ): boolean {
+    if (selected.length !== expected.length) {
+      return false
+    }
+
+    return selected.every((key) => expected.includes(key))
   }
 
   toggleCardArtworkEnabled(enabled: boolean) {

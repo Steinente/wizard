@@ -244,6 +244,13 @@ export const en = {
   specialCardsLabel: 'Special cards',
   specialCardsInfo:
     'Click cards to enable or disable them for the game. Grayed-out cards are excluded.',
+  specialCardsFilterLabel: 'Filter',
+  specialCardsFilterCustom: 'Custom (no filter)',
+  specialCardsFilterClassic: 'Wizard (Classic)',
+  specialCardsFilterAnniversary20: 'Wizard (20th Anniversary)',
+  specialCardsFilterAnniversary25: 'Wizard (25th Anniversary)',
+  specialCardsFilterAnniversary30: 'Wizard (30th Anniversary)',
+  specialCardsFilterDarkEyeOnly: 'Wizard - The Dark Eye',
   specialCardsRandomizerLabel: 'Special cards randomizer',
   specialCardsRandomizerEnabled: 'Enable random special cards at game start',
   specialCardsRandomizerInfo:

@@ -246,6 +246,13 @@ export const de = {
   specialCardsLabel: 'Sonderkarten',
   specialCardsInfo:
     'Karten anklicken, um sie für das Spiel zu aktivieren oder deaktivieren. Ausgegraute Karten sind ausgeschlossen.',
+  specialCardsFilterLabel: 'Filter',
+  specialCardsFilterCustom: 'Individuell (kein Filter)',
+  specialCardsFilterClassic: 'Wizard (Klassik)',
+  specialCardsFilterAnniversary20: 'Wizard (Jubiläum 20 Jahre)',
+  specialCardsFilterAnniversary25: 'Wizard (Jubiläum 25 Jahre)',
+  specialCardsFilterAnniversary30: 'Wizard (Jubiläum 30 Jahre)',
+  specialCardsFilterDarkEyeOnly: 'Wizard - Das Schwarze Auge',
   specialCardsRandomizerLabel: 'Sonderkarten-Randomizer',
   specialCardsRandomizerEnabled:
     'Zufällige Sonderkarten beim Spielstart aktivieren',
