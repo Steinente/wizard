@@ -207,11 +207,7 @@ export class LobbyPageComponent {
   toggleSpecialCard(key: SpecialCardKey) {
     const lobby = this.store.lobby()
 
-    if (
-      !lobby ||
-      !this.isHost() ||
-      lobby.config.specialCardsRandomizerEnabled
-    ) {
+    if (!lobby || !this.isHost()) {
       return
     }
 
@@ -269,11 +265,7 @@ export class LobbyPageComponent {
   applySpecialCardFilter(id: PresetSpecialCardFilterId) {
     const lobby = this.store.lobby()
 
-    if (
-      !lobby ||
-      !this.isHost() ||
-      lobby.config.specialCardsRandomizerEnabled
-    ) {
+    if (!lobby || !this.isHost()) {
       return
     }
 

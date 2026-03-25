@@ -116,10 +116,7 @@
               </label>
               <select
                 class="select"
-                [disabled]="
-                  !isHost() ||
-                  store.lobby()!.config.specialCardsRandomizerEnabled
-                "
+                [disabled]="!isHost()"
                 [value]="activeSpecialCardFilter()"
                 (change)="onSpecialCardFilterChange($event)"
               >
@@ -367,9 +364,6 @@
 
           <div
             style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px"
-            [style.opacity]="
-              store.lobby()!.config.specialCardsRandomizerEnabled ? 0.55 : 1
-            "
             role="group"
             [attr.aria-label]="i18n.t('specialCardsLabel')"
           >
@@ -377,27 +371,12 @@
               @let isEnabled = isSpecialCardEnabled(card.special);
               <button
                 type="button"
-                [style.cursor]="
-                  isHost() &&
-                  !store.lobby()!.config.specialCardsRandomizerEnabled
-                    ? 'pointer'
-                    : 'default'
-                "
+                [style.cursor]="isHost() ? 'pointer' : 'default'"
                 [style.opacity]="isEnabled ? '1' : '0.45'"
                 [style.filter]="isEnabled ? 'none' : 'grayscale(0.4)'"
                 [style.border]="'none'"
                 [style.background]="'none'"
                 [style.padding]="'0'"
-                [style.cursor]="
-                  isHost() &&
-                  !store.lobby()!.config.specialCardsRandomizerEnabled
-                    ? 'pointer'
-                    : 'not-allowed'
-                "
-                [disabled]="
-                  !isHost() ||
-                  store.lobby()!.config.specialCardsRandomizerEnabled
-                "
                 [attr.aria-pressed]="isEnabled"
                 [attr.aria-label]="getSpecialCardAriaLabel(card)"
                 (click)="toggleSpecialCard(card.special)"
