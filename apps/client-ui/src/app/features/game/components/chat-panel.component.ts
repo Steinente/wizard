@@ -8,8 +8,10 @@ import {
   OnChanges,
   Output,
   ViewChild,
+  inject,
 } from '@angular/core'
 import { FormsModule } from '@angular/forms'
+import { I18nService } from '../../../core/i18n/i18n.service'
 import type { TranslationKey } from '../../../core/i18n/translations'
 import type { GameChatMessageView } from '@wizard/shared'
 import { TPipe } from '../../../shared/pipes/t.pipe'
@@ -51,17 +53,20 @@ const QUICK_EMOTES = ['😀', '🎉', '👏', '😅', '🤔', '❤️']
           @for (message of messages; track message.id) {
             <div
               class="chat-message"
+              [class.is-system]="isSystemMessage(message)"
               [class.is-own]="message.senderPlayerId === selfPlayerId"
             >
               <div class="chat-meta muted">
                 <span class="chat-name">{{ message.senderName }}</span>
-                <span class="chat-role">{{
-                  roleLabel(message.senderRole) | t
-                }}</span>
+                @if (!isSystemMessage(message)) {
+                  <span class="chat-role">{{
+                    roleLabel(message.senderRole) | t
+                  }}</span>
+                }
                 <span>•</span>
                 <span>{{ message.createdAt | date: 'HH:mm:ss' }}</span>
               </div>
-              <div class="chat-text">{{ message.text }}</div>
+              <div class="chat-text">{{ renderMessageText(message) }}</div>
             </div>
           }
         }
@@ -151,6 +156,11 @@ const QUICK_EMOTES = ['😀', '🎉', '👏', '😅', '🤔', '❤️']
         background: rgba(59, 130, 246, 0.16);
       }
 
+      .chat-message.is-system {
+        background: rgba(226, 232, 240, 0.08);
+        border: 1px solid rgba(226, 232, 240, 0.12);
+      }
+
       .chat-meta {
         display: flex;
         gap: 6px;
@@ -162,6 +172,10 @@ const QUICK_EMOTES = ['😀', '🎉', '👏', '😅', '🤔', '❤️']
       .chat-name {
         font-weight: 700;
         color: #e2e8f0;
+      }
+
+      .chat-message.is-system .chat-name {
+        color: #f8fafc;
       }
 
       .chat-role {
@@ -249,6 +263,7 @@ export class ChatPanelComponent implements OnChanges {
   readonly quickEmotes = QUICK_EMOTES
   private isAtBottom = true
   private isResizing = false
+  private readonly i18n = inject(I18nService)
   private resizeStartPageY = 0
   private resizeStartHeight = 0
   private lastPointerClientY = 0
@@ -371,6 +386,21 @@ export class ChatPanelComponent implements OnChanges {
 
   roleLabel(role: GameChatMessageView['senderRole']) {
     return `role.${role}` as TranslationKey
+  }
+
+  isSystemMessage(message: GameChatMessageView) {
+    return (message.senderRole as string) === 'system'
+  }
+
+  renderMessageText(message: GameChatMessageView) {
+    if (!message.systemMessageKey) {
+      return message.text
+    }
+
+    return this.i18n.format(
+      message.systemMessageKey as TranslationKey,
+      message.systemMessageParams,
+    )
   }
 
   toggleChatSound() {

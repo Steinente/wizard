@@ -42,6 +42,7 @@ export const en = {
   'role.host': 'Host',
   'role.player': 'Player',
   'role.spectator': 'Spectator',
+  'role.system': 'System',
   kick: 'Kick',
   startGame: 'Start game',
   closeLobby: 'Close lobby',
@@ -73,6 +74,12 @@ export const en = {
   chatSend: 'Send',
   chatNoMessages: 'No messages yet',
   chatEmotesLabel: 'Quick emotes',
+  'chat.system.inGameContinuation': 'Chat now continues in-game.',
+  'chat.system.hostOpenedLobby': '{name} opened the lobby.',
+  'chat.system.playerJoinedLobby': '{name} joined the lobby.',
+  'chat.system.spectatorJoinedLobby':
+    '{name} joined the lobby as a spectator.',
+  'chat.system.playerLeftLobby': '{name} left the lobby.',
 
   // Connection and activity state
   connected: 'Connected',

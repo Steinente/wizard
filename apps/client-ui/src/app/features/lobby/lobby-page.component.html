@@ -392,6 +392,14 @@
             }
           </div>
         </div>
+
+        <wiz-chat-panel
+          [messages]="store.lobby()!.chatMessages"
+          [selfPlayerId]="store.playerId() ?? ''"
+          [chatSoundEnabled]="chatSoundEnabledSignal()"
+          (sendMessage)="sendChatMessageFn($event)"
+          (chatSoundToggle)="setChatSoundEnabledFn($event)"
+        ></wiz-chat-panel>
       </div>
     </div>
   }

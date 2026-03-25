@@ -7,6 +7,7 @@ import {
   reconnectLobbySchema,
   spectateLobbySchema,
   updateConfigSchema,
+  sendLobbyChatMessageSchema,
 } from '../schemas/lobby-schemas.js'
 import {
   emitError,
@@ -100,6 +101,15 @@ export const registerLobbyHandlers = ({
         lobby: result.lobby,
         playerId: result.playerId,
       })
+
+      if (result.announceInGameSpectatorJoin) {
+        await gameService.appendSystemChatMessage({
+          code: result.lobby.code,
+          systemMessageKey: 'chat.system.spectatorJoinedLobby',
+          systemMessageParams: { name: input.playerName.trim() },
+        })
+      }
+
       await emitStateForCode(io, result.lobby.code, sessionStore, gameService)
     } catch (error) {
       emitError(
@@ -220,6 +230,19 @@ export const registerLobbyHandlers = ({
       emitError(
         socket,
         error instanceof Error ? error.message : 'error.closeLobbyFailed',
+      )
+    }
+  })
+
+  socket.on('lobby:sendChatMessage', async (payload) => {
+    try {
+      const input = sendLobbyChatMessageSchema.parse(payload)
+      const lobby = await lobbyService.sendChatMessage(input)
+      io.to(lobby.code).emit('lobby:updated', { lobby })
+    } catch (error) {
+      emitError(
+        socket,
+        error instanceof Error ? error.message : 'error.chatMessageFailed',
       )
     }
   })

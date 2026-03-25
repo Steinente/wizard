@@ -16,6 +16,10 @@ import { prisma } from '../../db/prisma.js'
 import { LobbyStatus, PlayerRole } from '../../generated/prisma/client.js'
 import { mapLobbyToSummary } from '../lobby-mapper.js'
 import {
+  clearLobbyChatMessages,
+  getLobbyChatMessages,
+} from '../lobby-chat-store.js'
+import {
   appendCardToCurrentTrick,
   registerResolvedEffect,
   removeCardFromHand,
@@ -205,6 +209,30 @@ export class GameService {
     }
 
     const state = buildInitialState(lobby)
+    const transferredLobbyMessages = getLobbyChatMessages(lobby.code)
+
+    if (transferredLobbyMessages.length > 0) {
+      state.chatMessages.push(...transferredLobbyMessages)
+    }
+
+    state.chatMessages.push({
+      id: crypto.randomUUID(),
+      createdAt: nowIso(),
+      senderPlayerId: 'system',
+      senderName: 'System',
+      senderRole: 'system',
+      text: '',
+      systemMessageKey: 'chat.system.inGameContinuation',
+    })
+
+    if (state.chatMessages.length > GameService.CHAT_MESSAGE_LIMIT) {
+      state.chatMessages.splice(
+        0,
+        state.chatMessages.length - GameService.CHAT_MESSAGE_LIMIT,
+      )
+    }
+
+    clearLobbyChatMessages(lobby.code)
 
     await prisma.lobby.update({
       where: { id: lobby.id },
@@ -999,6 +1027,36 @@ export class GameService {
       senderName: player.name,
       senderRole,
       text,
+    })
+
+    if (state.chatMessages.length > GameService.CHAT_MESSAGE_LIMIT) {
+      state.chatMessages.splice(
+        0,
+        state.chatMessages.length - GameService.CHAT_MESSAGE_LIMIT,
+      )
+    }
+
+    await persistState(lobby.id, state)
+
+    return state
+  }
+
+  async appendSystemChatMessage(input: {
+    code: string
+    systemMessageKey: string
+    systemMessageParams?: Record<string, string | number | boolean | null>
+  }) {
+    const { lobby, state } = await loadStateOrThrow(input.code)
+
+    state.chatMessages.push({
+      id: crypto.randomUUID(),
+      createdAt: nowIso(),
+      senderPlayerId: 'system',
+      senderName: 'System',
+      senderRole: 'system',
+      text: '',
+      systemMessageKey: input.systemMessageKey,
+      systemMessageParams: input.systemMessageParams,
     })
 
     if (state.chatMessages.length > GameService.CHAT_MESSAGE_LIMIT) {

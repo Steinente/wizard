@@ -82,6 +82,7 @@ export const mapLobbyToSummary = (lobby: LobbyWithPlayers): LobbySummary => {
     hasPassword: false,
     config,
     players,
+    chatMessages: [],
     createdAt: lobby.createdAt.toISOString(),
     updatedAt: lobby.updatedAt.toISOString(),
   }

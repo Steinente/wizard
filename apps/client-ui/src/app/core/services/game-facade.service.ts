@@ -3,6 +3,8 @@ import { Router } from '@angular/router'
 import type {
   ClientToServerEvents,
   GameConfig,
+  GameChatMessageView,
+  LobbySummary,
   Suit,
   WizardGameViewState,
 } from '@wizard/shared'
@@ -40,6 +42,8 @@ export class GameFacadeService {
   private lastLogCursorLobbyCode: string | null = null
   private lastSeenChatMessageId: string | null = null
   private lastChatCursorLobbyCode: string | null = null
+  private lastSeenLobbyChatMessageId: string | null = null
+  private lastLobbyChatCursorCode: string | null = null
   private lastInteractionPromptKey: string | null = null
   private suppressNextSelfInteractionBing = false
   private wasConnected = false
@@ -77,6 +81,7 @@ export class GameFacadeService {
 
     socket.on('lobby:created', (payload) => {
       this.store.setLobby(payload.lobby)
+      this.notifyIncomingLobbyChatMessage(payload.lobby)
       this.store.setPlayerId(payload.playerId)
       this.session.setLastLobbyCode(payload.lobby.code)
       this.session.setLobbyConfig(payload.lobby.config)
@@ -87,6 +92,7 @@ export class GameFacadeService {
 
     socket.on('lobby:joined', (payload) => {
       this.store.setLobby(payload.lobby)
+      this.notifyIncomingLobbyChatMessage(payload.lobby)
       this.store.setPlayerId(payload.playerId)
       this.session.setLastLobbyCode(payload.lobby.code)
       this.session.setLobbyConfig(payload.lobby.config)
@@ -120,6 +126,7 @@ export class GameFacadeService {
         currentPlayerId &&
         !payload.lobby.players.some((player) => player.id === currentPlayerId)
       ) {
+        this.resetLobbyChatCursor()
         this.session.clearLastLobbyCode()
         this.store.reset()
         this.store.setError(this.i18n.t('info.removedFromLobby'))
@@ -127,12 +134,15 @@ export class GameFacadeService {
         return
       }
 
+      this.notifyIncomingLobbyChatMessage(payload.lobby)
+
       if (payload.lobby.status === 'running') {
         this.router.navigateByUrl(`/game/${payload.lobby.code}`)
       }
     })
 
     socket.on('lobby:closed', (payload) => {
+      this.resetLobbyChatCursor()
       this.session.clearLastLobbyCode()
       this.store.reset()
       this.store.setError(this.translateMessage(payload.reason))
@@ -185,6 +195,7 @@ export class GameFacadeService {
         payload.message === 'info.removedFromLobby'
 
       if (shouldClearLobby) {
+        this.resetLobbyChatCursor()
         this.session.clearLastLobbyCode()
         this.store.reset()
         this.store.setError(this.translateMessage(payload.message))
@@ -248,6 +259,7 @@ export class GameFacadeService {
       | 'lobby:updateConfig'
       | 'lobby:kickPlayer'
       | 'lobby:end'
+      | 'lobby:sendChatMessage'
       | 'game:start'
       | 'game:makePrediction'
       | 'game:playCard'
@@ -598,6 +610,12 @@ export class GameFacadeService {
     })
   }
 
+  sendLobbyChatMessage(code: string, text: string) {
+    this.emitCodeScoped('lobby:sendChatMessage', code, {
+      text,
+    })
+  }
+
   setReadLogEnabled(code: string, enabled: boolean) {
     this.applyReadLogEnabled(code, enabled, false)
   }
@@ -666,5 +684,80 @@ export class GameFacadeService {
       }
       this.lastSeenChatMessageId = entry.id
     }
+  }
+
+  private notifyIncomingLobbyChatMessage(lobby: LobbySummary) {
+    this.notifyIncomingMessages({
+      lobbyCode: lobby.code,
+      selfPlayerId: this.store.playerId(),
+      messages: lobby.chatMessages,
+      getCursor: () => ({
+        lobbyCode: this.lastLobbyChatCursorCode,
+        messageId: this.lastSeenLobbyChatMessageId,
+      }),
+      setCursor: (cursor) => {
+        this.lastLobbyChatCursorCode = cursor.lobbyCode
+        this.lastSeenLobbyChatMessageId = cursor.messageId
+      },
+    })
+  }
+
+  private notifyIncomingMessages(input: {
+    lobbyCode: string
+    selfPlayerId: string | null
+    messages: GameChatMessageView[]
+    getCursor: () => { lobbyCode: string | null; messageId: string | null }
+    setCursor: (cursor: {
+      lobbyCode: string | null
+      messageId: string | null
+    }) => void
+  }) {
+    if (!input.messages.length) {
+      return
+    }
+
+    const cursor = input.getCursor()
+    const isFirstStateForLobby = cursor.lobbyCode !== input.lobbyCode
+
+    if (isFirstStateForLobby) {
+      input.setCursor({
+        lobbyCode: input.lobbyCode,
+        messageId: input.messages.at(-1)?.id ?? null,
+      })
+      return
+    }
+
+    let startIndex = 0
+
+    if (cursor.messageId) {
+      const index = input.messages.findIndex(
+        (entry) => entry.id === cursor.messageId,
+      )
+
+      if (index >= 0) {
+        startIndex = index + 1
+      }
+    }
+
+    const unseen = input.messages.slice(startIndex)
+
+    for (const entry of unseen) {
+      if (
+        entry.senderPlayerId !== input.selfPlayerId &&
+        this.session.chatSoundEnabled()
+      ) {
+        this.audio.chatPing()
+      }
+
+      input.setCursor({
+        lobbyCode: input.lobbyCode,
+        messageId: entry.id,
+      })
+    }
+  }
+
+  private resetLobbyChatCursor() {
+    this.lastLobbyChatCursorCode = null
+    this.lastSeenLobbyChatMessageId = null
   }
 }

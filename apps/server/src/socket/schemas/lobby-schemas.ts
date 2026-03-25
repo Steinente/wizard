@@ -92,3 +92,9 @@ export const endLobbySchema = z.object({
   code: z.string().trim().min(4).max(12),
   sessionToken: z.string().trim().min(1).max(200),
 })
+
+export const sendLobbyChatMessageSchema = z.object({
+  code: z.string().trim().min(4).max(12),
+  sessionToken: z.string().trim().min(1).max(200),
+  text: z.string().trim().min(1).max(300),
+})

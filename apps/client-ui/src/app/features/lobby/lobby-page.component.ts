@@ -10,6 +10,7 @@ import { SessionService } from '../../core/services/session.service'
 import { AppStore } from '../../core/state/app.store'
 import { CardComponent } from '../../shared/components/card.component'
 import { TPipe } from '../../shared/pipes/t.pipe'
+import { ChatPanelComponent } from '../game/components/chat-panel.component'
 import {
   findSpecialCardFilterPreset,
   getSpecialCardFilterLabelKey,
@@ -30,7 +31,7 @@ type RuleInfoKey =
 
 @Component({
   standalone: true,
-  imports: [FormsModule, TPipe, RouterLink, CardComponent],
+  imports: [FormsModule, TPipe, RouterLink, CardComponent, ChatPanelComponent],
   templateUrl: './lobby-page.component.html',
   styleUrl: './lobby-page.component.css',
 })
@@ -45,6 +46,7 @@ export class LobbyPageComponent {
   private readonly selectedSpecialCardFilterHintState =
     signal<PresetSpecialCardFilterId | null>(null)
   readonly copied = signal(false)
+  readonly chatSoundEnabledSignal = signal(this.session.chatSoundEnabled())
   private copiedTimeoutId: ReturnType<typeof setTimeout> | null = null
 
   routeCode = this.route.snapshot.paramMap.get('code')?.toUpperCase() ?? ''
@@ -284,5 +286,16 @@ export class LobbyPageComponent {
 
   toggleCardArtworkEnabled(enabled: boolean) {
     this.session.setCardArtworkEnabled(enabled)
+  }
+
+  sendChatMessageFn(message: string) {
+    const lobby = this.store.lobby()
+    if (!lobby) return
+    this.facade.sendLobbyChatMessage(lobby.code, message)
+  }
+
+  setChatSoundEnabledFn(enabled: boolean) {
+    this.chatSoundEnabledSignal.set(enabled)
+    this.session.setChatSoundEnabled(enabled)
   }
 }

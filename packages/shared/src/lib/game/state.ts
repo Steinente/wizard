@@ -41,8 +41,10 @@ export interface GameChatMessage {
   createdAt: string
   senderPlayerId: string
   senderName: string
-  senderRole: 'host' | 'player' | 'spectator'
+  senderRole: 'host' | 'player' | 'spectator' | 'system'
   text: string
+  systemMessageKey?: string
+  systemMessageParams?: Record<string, string | number | boolean | null>
 }
 
 export interface WizardGameState {

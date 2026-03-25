@@ -1,4 +1,4 @@
-import type { GameConfig, LobbySummary } from '@wizard/shared'
+import type { GameChatMessage, GameConfig, LobbySummary } from '@wizard/shared'
 import crypto from 'node:crypto'
 import { env } from '../config/env.js'
 import { prisma } from '../db/prisma.js'
@@ -9,6 +9,12 @@ import {
   PredictionVisibility,
 } from '../generated/prisma/client.js'
 import { defaultGameConfig } from '../utils/default-game-config.js'
+import {
+  clearLobbyChatMessages,
+  getLobbyChatMessages,
+  LOBBY_CHAT_MESSAGE_LIMIT,
+  setLobbyChatMessages,
+} from './lobby-chat-store.js'
 import { mapLobbyToSummary } from './lobby-mapper.js'
 import {
   parseSpecialCardSettings,
@@ -263,8 +269,42 @@ const withPasswordFlag = (summary: LobbySummary): LobbySummary => ({
 })
 
 export class LobbyService {
+  private appendLobbyChatMessage(code: string, message: GameChatMessage) {
+    const chatMessages = getLobbyChatMessages(code)
+
+    chatMessages.push(message)
+
+    if (chatMessages.length > LOBBY_CHAT_MESSAGE_LIMIT) {
+      chatMessages.splice(0, chatMessages.length - LOBBY_CHAT_MESSAGE_LIMIT)
+    }
+
+    setLobbyChatMessages(code, chatMessages)
+  }
+
+  private appendLobbySystemMessage(input: {
+    code: string
+    messageKey: string
+    messageParams?: Record<string, string | number | boolean | null>
+  }) {
+    this.appendLobbyChatMessage(input.code, {
+      id: crypto.randomUUID(),
+      createdAt: now().toISOString(),
+      senderPlayerId: 'system',
+      senderName: 'System',
+      senderRole: 'system',
+      text: '',
+      systemMessageKey: input.messageKey,
+      systemMessageParams: input.messageParams,
+    })
+  }
+
   private toLobbySummary(lobby: LobbyForSummary): LobbySummary {
-    return withPasswordFlag(mapLobbyToSummary(lobby))
+    const summary = withPasswordFlag(mapLobbyToSummary(lobby))
+
+    return {
+      ...summary,
+      chatMessages: getLobbyChatMessages(summary.code),
+    }
   }
 
   private async refreshLobbySummary(lobbyId: string): Promise<LobbySummary> {
@@ -321,6 +361,7 @@ export class LobbyService {
 
     for (const code of codes) {
       lobbyPasswordHashes.delete(code)
+      clearLobbyChatMessages(code)
     }
 
     await prisma.lobby.updateMany({
@@ -393,6 +434,8 @@ export class LobbyService {
       include: includePlayersByJoinOrder(),
     })
 
+    clearLobbyChatMessages(created.code)
+
     const hostPlayer = created.players[0]
 
     const lobby = await prisma.lobby.update({
@@ -408,6 +451,12 @@ export class LobbyService {
     } else {
       lobbyPasswordHashes.delete(code)
     }
+
+    this.appendLobbySystemMessage({
+      code: lobby.code,
+      messageKey: 'chat.system.hostOpenedLobby',
+      messageParams: { name: hostPlayer.name },
+    })
 
     return {
       lobby: this.toLobbySummary(lobby),
@@ -437,6 +486,9 @@ export class LobbyService {
       throw new Error('error.lobbyFull')
     }
 
+    const hadExistingPlayer =
+      findPlayerBySessionToken(lobby.players, input.sessionToken) !== undefined
+
     const playerId = await this.upsertJoinedPlayer({
       lobby,
       playerName: input.playerName,
@@ -444,6 +496,14 @@ export class LobbyService {
       role: PlayerRole.PLAYER,
       inGame: false,
     })
+
+    if (!hadExistingPlayer) {
+      this.appendLobbySystemMessage({
+        code: lobby.code,
+        messageKey: 'chat.system.playerJoinedLobby',
+        messageParams: { name: input.playerName.trim() },
+      })
+    }
 
     return {
       lobby: await this.refreshLobbySummary(lobby.id),
@@ -456,7 +516,11 @@ export class LobbyService {
     playerName: string
     sessionToken: string
     password?: string
-  }): Promise<{ lobby: LobbySummary; playerId: string }> {
+  }): Promise<{
+    lobby: LobbySummary
+    playerId: string
+    announceInGameSpectatorJoin: boolean
+  }> {
     const lobby = await loadLobbyByCodeWithPlayers(input.code)
 
     if (!lobby || lobby.status === LobbyStatus.CLOSED) {
@@ -469,6 +533,9 @@ export class LobbyService {
 
     validateLobbyPassword(input.code, input.password)
 
+    const hadExistingPlayer =
+      findPlayerBySessionToken(lobby.players, input.sessionToken) !== undefined
+
     const playerId = await this.upsertJoinedPlayer({
       lobby,
       playerName: input.playerName,
@@ -477,9 +544,18 @@ export class LobbyService {
       inGame: true,
     })
 
+    if (!hadExistingPlayer) {
+      this.appendLobbySystemMessage({
+        code: lobby.code,
+        messageKey: 'chat.system.spectatorJoinedLobby',
+        messageParams: { name: input.playerName.trim() },
+      })
+    }
+
     return {
       lobby: await this.refreshLobbySummary(lobby.id),
       playerId,
+      announceInGameSpectatorJoin: !hadExistingPlayer,
     }
   }
 
@@ -555,6 +631,12 @@ export class LobbyService {
 
     await prisma.player.delete({
       where: { id: player.id },
+    })
+
+    this.appendLobbySystemMessage({
+      code: lobby.code,
+      messageKey: 'chat.system.playerLeftLobby',
+      messageParams: { name: player.name },
     })
 
     return this.refreshLobbySummary(lobby.id)
@@ -685,8 +767,55 @@ export class LobbyService {
     })
 
     lobbyPasswordHashes.delete(lobby.code)
+    clearLobbyChatMessages(lobby.code)
 
     return lobby.code
+  }
+
+  async sendChatMessage(input: {
+    code: string
+    sessionToken: string
+    text: string
+  }): Promise<LobbySummary> {
+    const lobby = await loadLobbyByCodeWithPlayers(input.code)
+
+    if (!lobby || lobby.status === LobbyStatus.CLOSED) {
+      throw new Error('error.lobbyNotFound')
+    }
+
+    const player = findPlayerBySessionToken(lobby.players, input.sessionToken)
+
+    if (!player) {
+      throw new Error('error.playerNotFound')
+    }
+
+    const text = input.text.trim()
+
+    if (!text.length) {
+      throw new Error('error.chatMessageEmpty')
+    }
+
+    if (text.length > 300) {
+      throw new Error('error.chatMessageTooLong')
+    }
+
+    const senderRole: 'host' | 'player' | 'spectator' =
+      player.role === PlayerRole.HOST
+        ? 'host'
+        : player.role === PlayerRole.SPECTATOR
+          ? 'spectator'
+          : 'player'
+
+    this.appendLobbyChatMessage(lobby.code, {
+      id: crypto.randomUUID(),
+      createdAt: now().toISOString(),
+      senderPlayerId: player.id,
+      senderName: player.name,
+      senderRole,
+      text,
+    })
+
+    return this.toLobbySummary(lobby)
   }
 
   async markDisconnected(input: {

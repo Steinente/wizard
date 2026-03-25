@@ -45,6 +45,12 @@ export interface ClientToServerEvents {
 
   'lobby:end': (payload: { code: string; sessionToken: string }) => void
 
+  'lobby:sendChatMessage': (payload: {
+    code: string
+    sessionToken: string
+    text: string
+  }) => void
+
   'game:start': (payload: { code: string; sessionToken: string }) => void
 
   'game:makePrediction': (payload: {
