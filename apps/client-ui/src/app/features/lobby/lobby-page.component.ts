@@ -431,11 +431,11 @@ export class LobbyPageComponent {
   ) {}
 
   lobbyStatusKey(status: string): TranslationKey {
-    return `lobbyStatus_${status.toLowerCase()}` as TranslationKey
+    return `lobbyStatus.${status.toLowerCase()}` as TranslationKey
   }
 
   roleKey(role: string): TranslationKey {
-    return `role_${role.toLowerCase()}` as TranslationKey
+    return `role.${role.toLowerCase()}` as TranslationKey
   }
 
   toggleRuleInfo(

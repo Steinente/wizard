@@ -186,7 +186,7 @@ export class GameHeaderComponent {
   @Output() readonly panelChatChange = new EventEmitter<boolean>()
 
   get translatedPhase() {
-    return this.i18n.t(`phase_${this.state.phase}` as TranslationKey)
+    return this.i18n.t(`phase.${this.state.phase}` as TranslationKey)
   }
 
   get predictionVisibilityText() {

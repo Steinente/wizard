@@ -18,7 +18,7 @@ interface RankedPlayer {
   template: `
     <div class="panel finished-panel">
       <div class="finished-hero">
-        <div class="finished-label">{{ 'phase_finished' | t }}</div>
+        <div class="finished-label">{{ 'phase.finished' | t }}</div>
         <h2 style="margin: 0;">{{ 'gameFinishedTitle' | t }}</h2>
         <p class="muted" style="margin: 8px 0 0;">{{ 'finalRanking' | t }}</p>
       </div>

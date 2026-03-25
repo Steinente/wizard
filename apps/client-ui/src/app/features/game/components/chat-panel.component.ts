@@ -370,7 +370,7 @@ export class ChatPanelComponent implements OnChanges {
   }
 
   roleLabel(role: GameChatMessageView['senderRole']) {
-    return `role_${role}` as TranslationKey
+    return `role.${role}` as TranslationKey
   }
 
   toggleChatSound() {
