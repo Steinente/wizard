@@ -12,6 +12,7 @@ import { TPipe } from '../../../shared/pipes/t.pipe'
 import { getLogTranslationKey } from '../utils/log-label.util'
 import {
   addDerivedCardLabelForSpecialPlay,
+  formatCloudPredictionAdjustedParams,
   normalizeLogParams,
 } from '../utils/log-params.util'
 
@@ -106,23 +107,15 @@ export class LogPanelComponent implements OnChanges {
     messageKey: string,
     params?: Record<string, string | number | boolean | null>,
   ) {
-    const normalized = addDerivedCardLabelForSpecialPlay(
+    const normalized = formatCloudPredictionAdjustedParams(
       messageKey,
-      this.replacePlayerIds(params),
-      (key) => this.i18n.t(key),
+      addDerivedCardLabelForSpecialPlay(
+        messageKey,
+        this.replacePlayerIds(params),
+        (key) => this.i18n.t(key),
+      ),
+      'visible',
     )
-
-    if (!normalized) {
-      return normalized
-    }
-
-    if (
-      messageKey === 'special.cloud.predictionAdjusted' &&
-      typeof normalized.delta === 'number' &&
-      normalized.delta > 0
-    ) {
-      normalized.delta = `+${normalized.delta}`
-    }
 
     return normalized
   }

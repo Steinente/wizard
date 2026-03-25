@@ -5,6 +5,8 @@ type TranslateFn = (key: TranslationKey) => string
 
 export type LogParams = Record<string, string | number | boolean | null>
 
+export type CloudPredictionDeltaFormat = 'visible' | 'speech'
+
 type NormalizeModeBehavior = 'none' | 'translateKey' | 'wizardJesterOnly'
 
 type NormalizeLogParamsOptions = {
@@ -204,6 +206,32 @@ export const addDerivedCardLabelForSpecialPlay = (
 
   if (typeof next.cardLabel !== 'string') {
     next.cardLabel = t(cardTranslationKey)
+  }
+
+  return next
+}
+
+export const formatCloudPredictionAdjustedParams = (
+  messageKey: string,
+  params: LogParams | undefined,
+  format: CloudPredictionDeltaFormat,
+) => {
+  if (!params) {
+    return params
+  }
+
+  const canonical = messageKey.startsWith('log.')
+    ? messageKey.slice(4)
+    : messageKey
+
+  if (canonical !== 'special.cloud.predictionAdjusted') {
+    return params
+  }
+
+  const next = { ...params }
+
+  if (typeof next.delta === 'number' && next.delta > 0) {
+    next.delta = format === 'speech' ? `plus ${next.delta}` : `+${next.delta}`
   }
 
   return next

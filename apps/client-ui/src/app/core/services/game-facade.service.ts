@@ -11,6 +11,7 @@ import type {
 import { getLogTranslationKey } from '../../features/game/utils/log-label.util'
 import {
   addDerivedCardLabelForSpecialPlay,
+  formatCloudPredictionAdjustedParams,
   normalizeLogParams,
 } from '../../features/game/utils/log-params.util'
 import { I18nService } from '../i18n/i18n.service'
@@ -298,15 +299,14 @@ export class GameFacadeService {
     params: Record<string, string | number | boolean | null> | undefined,
     state: WizardGameViewState,
   ) {
-    const normalized = normalizeLogParams(
-      params,
-      state.players,
-      (key) => this.i18n.t(key),
-      {
+    const normalized = formatCloudPredictionAdjustedParams(
+      messageKey,
+      normalizeLogParams(params, state.players, (key) => this.i18n.t(key), {
         modeBehavior: 'wizardJesterOnly',
         includeSwappedCardLabel: true,
         includeSpecial: true,
-      },
+      }),
+      'speech',
     )
 
     return addDerivedCardLabelForSpecialPlay(messageKey, normalized, (key) =>
