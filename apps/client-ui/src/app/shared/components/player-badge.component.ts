@@ -15,6 +15,11 @@ import { TPipe } from '../pipes/t.pipe'
       <div class="spread">
         <strong class="name-wrap">
           <span>{{ name }}</span>
+          @if (showDealerIndicator) {
+            <span class="dealer-indicator" [attr.title]="'tooltipDealer' | t"
+              >🂠</span
+            >
+          }
           @if (showPredictionStartIndicator) {
             <span
               class="prediction-start-indicator"
@@ -58,6 +63,16 @@ import { TPipe } from '../pipes/t.pipe'
         color: #4a90d9;
       }
 
+      .dealer-indicator {
+        font-size: 11px;
+        line-height: 1;
+        color: #fff;
+        background: #7c3aed;
+        border-radius: 3px;
+        padding: 1px 4px;
+        font-weight: 700;
+      }
+
       .prediction-start-indicator {
         font-size: 13px;
         line-height: 1;
@@ -94,6 +109,7 @@ export class PlayerBadgeComponent {
   @Input() active = false
   @Input() showCloudIndicator = false
   @Input() showPredictionStartIndicator = false
+  @Input() showDealerIndicator = false
   @Input() compact = false
 
   get statusClass() {

@@ -30,6 +30,7 @@ import { TPipe } from '../../../shared/pipes/t.pipe'
             [showPredictionStartIndicator]="
               showRoundLeaderStartIndicator(player.playerId)
             "
+            [showDealerIndicator]="isDealer(player.playerId)"
           />
         }
       </div>
@@ -103,5 +104,11 @@ export class PlayerListPanelComponent {
       (isTrumpSelectionPending || isPredictionPhase) &&
       this.state.currentRound?.roundLeaderPlayerId === playerId
     )
+  }
+
+  isDealer(playerId: string) {
+    const round = this.state.currentRound
+    if (!round) return false
+    return round.players[round.dealerIndex]?.playerId === playerId
   }
 }

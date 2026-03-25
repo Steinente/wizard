@@ -197,6 +197,7 @@ export const de = {
   tooltipPredictionStartOrder:
     'Startet mit der Ansage und legt im Stich zuerst',
   tooltipCloudAdjustmentPending: 'Wolken-Anpassung ausstehend',
+  tooltipDealer: 'Gibt die Karten aus',
 
   // Spieleraktionen in Sonderphasen
   resolveShapeShifter: 'Gestaltenwandler wählen',

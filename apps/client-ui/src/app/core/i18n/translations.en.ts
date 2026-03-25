@@ -77,8 +77,7 @@ export const en = {
   'chat.system.inGameContinuation': 'Chat now continues in-game.',
   'chat.system.hostOpenedLobby': '{name} opened the lobby.',
   'chat.system.playerJoinedLobby': '{name} joined the lobby.',
-  'chat.system.spectatorJoinedLobby':
-    '{name} joined the lobby as a spectator.',
+  'chat.system.spectatorJoinedLobby': '{name} joined the lobby as a spectator.',
   'chat.system.playerLeftLobby': '{name} left the lobby.',
 
   // Connection and activity state
@@ -196,6 +195,7 @@ export const en = {
   // Tooltips
   tooltipPredictionStartOrder: 'Starts with the prediction and leads the trick',
   tooltipCloudAdjustmentPending: 'Cloud adjustment pending',
+  tooltipDealer: 'Deals the cards',
 
   // Player actions in special phases
   resolveShapeShifter: 'Choose Shape Shifter mode',
