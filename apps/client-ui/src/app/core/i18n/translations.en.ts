@@ -354,7 +354,7 @@ export const en = {
   'log.game.trump.selection.pending.darkEye':
     '{playerId} chooses the trump card because The Dark Eye was revealed',
   'log.game.trump.selection.pending.werewolfInHand':
-    '{playerId} chooses trump suit because they drew Werewolf',
+    '{playerId} chooses trump suit, since Werewolf was drawn',
   'log.game.trump.selection.pending.werewolfRevealed':
     '{playerId} chooses trump suit because {currentTrump} was revealed',
   'log.game.trump.roundStart': 'Trump is {suit}',

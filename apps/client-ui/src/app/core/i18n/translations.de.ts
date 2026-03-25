@@ -363,7 +363,7 @@ export const de = {
   'log.game.trump.selection.pending.darkEye':
     '{playerId} wählt Trumpfkarte, da Das Dunkle Auge aufgedeckt wurde',
   'log.game.trump.selection.pending.werewolfInHand':
-    '{playerId} wählt Trumpffarbe, da er den Werwolf gezogen hat',
+    '{playerId} wählt Trumpffarbe, da Werwolf gezogen wurde',
   'log.game.trump.selection.pending.werewolfRevealed':
     '{playerId} wählt Trumpffarbe, da {currentTrump} aufgedeckt wurde',
   'log.game.trump.roundStart': 'Der Trumpf ist {suit}',
