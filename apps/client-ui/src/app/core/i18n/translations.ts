@@ -350,6 +350,8 @@ export const translations = {
     'log.special.juggler.pass.started': 'Everyone must choose a card to pass',
     'log.special.juggler.pass.completed': 'Juggler shuffled the cards',
     'log.special.juggler.pass.receivedCard': 'You received {cardLabel}',
+    'log.special.juggler.noHandCard':
+      '{playerId} cannot use Juggler effect because no card is left to pass',
     'log.special.vampire.played':
       '{playerId} played Vampire which transforms into {copiedCardLabel}',
     'log.special.vampire.played.werewolfTrumpRevealed':
@@ -772,6 +774,8 @@ export const translations = {
     'log.special.juggler.pass.completed':
       'Jongleur hat die Karten durcheinander gemischt',
     'log.special.juggler.pass.receivedCard': 'Du hast {cardLabel} erhalten',
+    'log.special.juggler.noHandCard':
+      '{playerId} kann den Jongleur-Effekt nicht nutzen, da keine Karte mehr zum Weitergeben vorhanden ist',
     'log.special.vampire.played':
       '{playerId} spielt Vampir, der sich in {copiedCardLabel} verwandelt',
     'log.special.vampire.played.werewolfTrumpRevealed':

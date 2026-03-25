@@ -228,7 +228,7 @@ export async function resolveCompletedTrick(
     state.currentRound.roundLeaderPlayerId
 
   if (playedJuggler) {
-    beginJugglerPassDecision(state)
+    beginJugglerPassDecision(state, playedJuggler.playerId)
   }
 
   if (

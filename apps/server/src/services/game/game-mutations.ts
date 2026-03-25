@@ -139,7 +139,10 @@ export function appendCardToCurrentTrick(
   }
 }
 
-export function beginJugglerPassDecision(state: WizardGameState) {
+export function beginJugglerPassDecision(
+  state: WizardGameState,
+  sourcePlayerId?: string,
+) {
   if (!state.currentRound) {
     return
   }
@@ -153,6 +156,18 @@ export function beginJugglerPassDecision(state: WizardGameState) {
   })
 
   if (!eligible.length) {
+    if (sourcePlayerId) {
+      state.logs.push({
+        id: crypto.randomUUID(),
+        createdAt: nowIso(),
+        type: 'specialEffect',
+        messageKey: 'special.juggler.noHandCard',
+        messageParams: {
+          playerId: sourcePlayerId,
+        },
+      })
+    }
+
     return
   }
 
