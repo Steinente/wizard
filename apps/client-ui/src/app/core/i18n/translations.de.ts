@@ -47,7 +47,8 @@ export const de = {
   closeLobby: 'Lobby schließen',
   confirmCloseLobby: 'Schließen bestätigen',
   cancel: 'Abbrechen',
-  minPlayersRequired: 'Wizard ist erst ab 3 Spielern spielbar.',
+  minPlayersRequired:
+    'Wizard ist erst ab 3 Spielern spielbar (oder ab 2 mit der inoffiziellen Regel).',
   waitingForPlayers: 'Warten auf Spieler',
   confirmLeaveGame:
     'Möchtest du das Spiel wirklich verlassen und zur Startseite gehen? Du kannst dich wieder verbinden.',
@@ -233,6 +234,12 @@ export const de = {
   predictionRestrictionMustEqual: 'Summe muss Stichzahl entsprechen',
   predictionRestrictionMustNotEqual: 'Summe darf Stichzahl nicht entsprechen',
   predictionVisibilityLabel: 'Ansagemodus',
+  officialRules: 'Offizielle Regeln',
+  unofficialRules: 'Inoffizielle Regeln',
+  twoPlayerModeLabel: '2-Spieler-Regel',
+  twoPlayerModeEnabled: 'Spielstart bereits ab 2 Spielern erlauben',
+  twoPlayerModeInfo:
+    'Inoffizielle Regel: Wenn aktiviert, kann das Spiel schon mit 2 Spielern gestartet werden. Dadurch ergeben sich automatisch 30 Runden.',
   predictionVisibilityInfo:
     'Offen: Ansagen sind sofort sichtbar.\nVerdeckt: Ansagen werden erst nach allen Ansagen aufgedeckt.\nGeheim: Ansagen bleiben während der Runde verborgen.',
   openRestrictionLabel: 'Einschränkung bei offenen Ansagen',
@@ -294,7 +301,8 @@ export const de = {
   'error.targetPlayerNotFound': 'Zielspieler wurde nicht gefunden',
   'error.onlyHostCanCloseLobby': 'Nur der Host kann die Lobby schließen',
   'error.onlyHostCanStart': 'Nur der Host kann das Spiel starten',
-  'error.wizardMinPlayers': 'Wizard benötigt 3 bis 6 Spieler',
+  'error.wizardMinPlayers':
+    'Wizard benötigt 3 bis 6 Spieler (oder 2 bis 6 mit 2-Spieler-Regel)',
   'error.predictionsNotOpen': 'Ansagen sind gerade nicht möglich',
   'error.predictionOutOfRange':
     'Ansagewert ist außerhalb des erlaubten Bereichs',

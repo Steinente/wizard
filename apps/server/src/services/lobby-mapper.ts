@@ -41,6 +41,7 @@ export const mapLobbyToSummary = (lobby: LobbyWithPlayers): LobbySummary => {
     cloudRuleTiming: specialCardSettings.cloudRuleTiming,
     specialCardsRandomizerEnabled:
       specialCardSettings.specialCardsRandomizerEnabled,
+    twoPlayerModeEnabled: specialCardSettings.twoPlayerModeEnabled,
     readLogEnabledByDefault: lobby.readLogEnabledByDefault,
     languageDefault: lobby.languageDefault === 'de' ? 'de' : 'en',
     includedSpecialCards: specialCardSettings.includedSpecialCards,

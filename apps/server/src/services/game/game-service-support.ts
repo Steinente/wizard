@@ -30,11 +30,13 @@ export const parseSpecialCardSettings = (
   includedSpecialCards: SpecialCardKey[]
   cloudRuleTiming: GameConfig['cloudRuleTiming']
   specialCardsRandomizerEnabled: boolean
+  twoPlayerModeEnabled: boolean
 } => {
   const fallback = {
     includedSpecialCards: [...SPECIAL_CARD_KEYS],
     cloudRuleTiming: 'endOfRound' as const,
     specialCardsRandomizerEnabled: false,
+    twoPlayerModeEnabled: false,
   }
 
   if (value === null) return fallback
@@ -47,6 +49,7 @@ export const parseSpecialCardSettings = (
         includedSpecialCards: parsed as SpecialCardKey[],
         cloudRuleTiming: fallback.cloudRuleTiming,
         specialCardsRandomizerEnabled: fallback.specialCardsRandomizerEnabled,
+        twoPlayerModeEnabled: fallback.twoPlayerModeEnabled,
       }
     }
 
@@ -58,6 +61,8 @@ export const parseSpecialCardSettings = (
       const maybeRandomizer = (
         parsed as { specialCardsRandomizerEnabled?: unknown }
       ).specialCardsRandomizerEnabled
+      const maybeTwoPlayerMode = (parsed as { twoPlayerModeEnabled?: unknown })
+        .twoPlayerModeEnabled
 
       return {
         includedSpecialCards: Array.isArray(maybeCards)
@@ -68,6 +73,7 @@ export const parseSpecialCardSettings = (
             ? 'immediateAfterTrick'
             : 'endOfRound',
         specialCardsRandomizerEnabled: maybeRandomizer === true,
+        twoPlayerModeEnabled: maybeTwoPlayerMode === true,
       }
     }
 
@@ -126,6 +132,7 @@ export const serializeSpecialCardSettings = (settings: {
   includedSpecialCards: SpecialCardKey[]
   cloudRuleTiming: GameConfig['cloudRuleTiming']
   specialCardsRandomizerEnabled: boolean
+  twoPlayerModeEnabled: boolean
 }) => JSON.stringify(settings)
 
 export const toJson = (value: WizardGameState): Prisma.JsonObject =>

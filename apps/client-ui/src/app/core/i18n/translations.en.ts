@@ -47,7 +47,8 @@ export const en = {
   closeLobby: 'Close lobby',
   confirmCloseLobby: 'Confirm close',
   cancel: 'Cancel',
-  minPlayersRequired: 'Wizard can only be started with at least 3 players.',
+  minPlayersRequired:
+    'Wizard can only be started with at least 3 players (or 2 with the unofficial rule).',
   waitingForPlayers: 'Waiting for players',
   confirmLeaveGame:
     'Do you really want to leave the game and go to the home page? You can reconnect.',
@@ -231,6 +232,12 @@ export const en = {
   predictionRestrictionMustEqual: 'Sum must equal tricks',
   predictionRestrictionMustNotEqual: 'Sum must not equal tricks',
   predictionVisibilityLabel: 'Prediction visibility',
+  officialRules: 'Official rules',
+  unofficialRules: 'Unofficial rules',
+  twoPlayerModeLabel: '2-player rule',
+  twoPlayerModeEnabled: 'Allow game start with 2 players',
+  twoPlayerModeInfo:
+    'Unofficial rule: If enabled, the game can already start with 2 players. This automatically results in 30 rounds.',
   predictionVisibilityInfo:
     'Open: everyone sees bids immediately.\nHidden: bids are revealed after all bids are made.\nSecret: bids stay hidden during the round.',
   openRestrictionLabel: 'Open restriction',
@@ -290,7 +297,8 @@ export const en = {
   'error.targetPlayerNotFound': 'Target player not found',
   'error.onlyHostCanCloseLobby': 'Only the host can close the lobby',
   'error.onlyHostCanStart': 'Only the host can start the game',
-  'error.wizardMinPlayers': 'Wizard requires 3 to 6 players',
+  'error.wizardMinPlayers':
+    'Wizard requires 3 to 6 players (or 2 to 6 with 2-player rule)',
   'error.predictionsNotOpen': 'Predictions are not open right now',
   'error.predictionOutOfRange': 'Prediction value is out of range',
   'error.notYourTurnToPredict': 'It is not your turn to make a prediction',

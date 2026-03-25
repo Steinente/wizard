@@ -6,6 +6,7 @@ export const defaultGameConfig: GameConfig = {
   openPredictionRestriction: 'none',
   cloudRuleTiming: 'immediateAfterTrick',
   specialCardsRandomizerEnabled: false,
+  twoPlayerModeEnabled: false,
   readLogEnabledByDefault: false,
   languageDefault: 'en',
   includedSpecialCards: [...ANNIVERSARY_SPECIALS_ENABLED_BY_DEFAULT],

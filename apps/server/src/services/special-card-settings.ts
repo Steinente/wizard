@@ -3,13 +3,17 @@ import { SPECIAL_CARD_KEYS } from '@wizard/shared'
 
 export type SpecialCardSettings = Pick<
   GameConfig,
-  'includedSpecialCards' | 'cloudRuleTiming' | 'specialCardsRandomizerEnabled'
+  | 'includedSpecialCards'
+  | 'cloudRuleTiming'
+  | 'specialCardsRandomizerEnabled'
+  | 'twoPlayerModeEnabled'
 >
 
 const DEFAULT_SPECIAL_CARD_SETTINGS: SpecialCardSettings = {
   includedSpecialCards: [...SPECIAL_CARD_KEYS],
   cloudRuleTiming: 'endOfRound',
   specialCardsRandomizerEnabled: false,
+  twoPlayerModeEnabled: false,
 }
 
 export const parseSpecialCardSettings = (
@@ -26,6 +30,8 @@ export const parseSpecialCardSettings = (
         cloudRuleTiming: DEFAULT_SPECIAL_CARD_SETTINGS.cloudRuleTiming,
         specialCardsRandomizerEnabled:
           DEFAULT_SPECIAL_CARD_SETTINGS.specialCardsRandomizerEnabled,
+        twoPlayerModeEnabled:
+          DEFAULT_SPECIAL_CARD_SETTINGS.twoPlayerModeEnabled,
       }
     }
 
@@ -37,6 +43,8 @@ export const parseSpecialCardSettings = (
       const maybeRandomizer = (
         parsed as { specialCardsRandomizerEnabled?: unknown }
       ).specialCardsRandomizerEnabled
+      const maybeTwoPlayerMode = (parsed as { twoPlayerModeEnabled?: unknown })
+        .twoPlayerModeEnabled
 
       return {
         includedSpecialCards: Array.isArray(maybeCards)
@@ -47,6 +55,7 @@ export const parseSpecialCardSettings = (
             ? 'immediateAfterTrick'
             : 'endOfRound',
         specialCardsRandomizerEnabled: maybeRandomizer === true,
+        twoPlayerModeEnabled: maybeTwoPlayerMode === true,
       }
     }
 

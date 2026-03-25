@@ -377,6 +377,7 @@ export class LobbyService {
           cloudRuleTiming: mergedConfig.cloudRuleTiming,
           specialCardsRandomizerEnabled:
             mergedConfig.specialCardsRandomizerEnabled,
+          twoPlayerModeEnabled: mergedConfig.twoPlayerModeEnabled,
         }),
         players: {
           create: {
@@ -594,7 +595,8 @@ export class LobbyService {
         includedSpecialCards:
           input.config.includedSpecialCards ||
           input.config.cloudRuleTiming ||
-          typeof input.config.specialCardsRandomizerEnabled === 'boolean'
+          typeof input.config.specialCardsRandomizerEnabled === 'boolean' ||
+          typeof input.config.twoPlayerModeEnabled === 'boolean'
             ? serializeSpecialCardSettings({
                 includedSpecialCards:
                   input.config.includedSpecialCards ??
@@ -605,6 +607,9 @@ export class LobbyService {
                 specialCardsRandomizerEnabled:
                   input.config.specialCardsRandomizerEnabled ??
                   previousSpecialCardSettings.specialCardsRandomizerEnabled,
+                twoPlayerModeEnabled:
+                  input.config.twoPlayerModeEnabled ??
+                  previousSpecialCardSettings.twoPlayerModeEnabled,
               })
             : undefined,
       },

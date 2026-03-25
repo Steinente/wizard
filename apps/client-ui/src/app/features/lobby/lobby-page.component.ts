@@ -25,6 +25,7 @@ type RuleInfoKey =
   | 'openRestriction'
   | 'cloudRuleTiming'
   | 'specialCardsRandomizer'
+  | 'twoPlayerMode'
   | 'specialCards'
 
 @Component({
@@ -126,7 +127,9 @@ export class LobbyPageComponent {
     const lobby = this.store.lobby()
     if (!lobby) return
 
-    if (lobby.players.length < 3) {
+    const minPlayers = lobby.config.twoPlayerModeEnabled ? 2 : 3
+
+    if (lobby.players.length < minPlayers) {
       this.store.setError(this.i18n.t('minPlayersRequired'))
       return
     }
@@ -160,6 +163,10 @@ export class LobbyPageComponent {
 
   setSpecialCardsRandomizerEnabled(specialCardsRandomizerEnabled: boolean) {
     this.updateConfigIfHost({ specialCardsRandomizerEnabled })
+  }
+
+  setTwoPlayerModeEnabled(twoPlayerModeEnabled: boolean) {
+    this.updateConfigIfHost({ twoPlayerModeEnabled })
   }
 
   private updateConfigIfHost(patch: Partial<GameConfig>): void {

@@ -22,6 +22,7 @@ export interface GameConfig {
   openPredictionRestriction: OpenPredictionRestriction
   cloudRuleTiming: CloudRuleTiming
   specialCardsRandomizerEnabled: boolean
+  twoPlayerModeEnabled: boolean
   readLogEnabledByDefault: boolean
   languageDefault: 'en' | 'de'
   includedSpecialCards: SpecialCardKey[]

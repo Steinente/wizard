@@ -167,13 +167,15 @@ export class GameService {
       throw new Error('error.onlyHostCanStart')
     }
 
-    if (lobby.players.length < 3 || lobby.players.length > 6) {
-      throw new Error('error.wizardMinPlayers')
-    }
-
     const specialCardSettings = parseSpecialCardSettings(
       lobby.includedSpecialCards,
     )
+
+    const minPlayers = specialCardSettings.twoPlayerModeEnabled ? 2 : 3
+
+    if (lobby.players.length < minPlayers || lobby.players.length > 6) {
+      throw new Error('error.wizardMinPlayers')
+    }
 
     const randomizedIncludedSpecialCards =
       specialCardSettings.specialCardsRandomizerEnabled
@@ -186,6 +188,7 @@ export class GameService {
         cloudRuleTiming: specialCardSettings.cloudRuleTiming,
         specialCardsRandomizerEnabled:
           specialCardSettings.specialCardsRandomizerEnabled,
+        twoPlayerModeEnabled: specialCardSettings.twoPlayerModeEnabled,
       })
     }
 

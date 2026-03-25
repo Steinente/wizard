@@ -38,6 +38,7 @@ export const createLobbySchema = z.object({
         .optional(),
       cloudRuleTiming: z.enum(['endOfRound', 'immediateAfterTrick']).optional(),
       specialCardsRandomizerEnabled: z.boolean().optional(),
+      twoPlayerModeEnabled: z.boolean().optional(),
       languageDefault: z.enum(['en', 'de']).optional(),
       includedSpecialCards: z.array(specialCardKeySchema).optional(),
     })
@@ -75,6 +76,7 @@ export const updateConfigSchema = z.object({
       .optional(),
     cloudRuleTiming: z.enum(['endOfRound', 'immediateAfterTrick']).optional(),
     specialCardsRandomizerEnabled: z.boolean().optional(),
+    twoPlayerModeEnabled: z.boolean().optional(),
     languageDefault: z.enum(['en', 'de']).optional(),
     includedSpecialCards: z.array(specialCardKeySchema).optional(),
   }),
