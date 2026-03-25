@@ -4,7 +4,7 @@ import type { GameConfig } from '@wizard/shared'
 export const defaultGameConfig: GameConfig = {
   predictionVisibility: 'open',
   openPredictionRestriction: 'none',
-  cloudRuleTiming: 'endOfRound',
+  cloudRuleTiming: 'immediateAfterTrick',
   specialCardsRandomizerEnabled: false,
   readLogEnabledByDefault: false,
   languageDefault: 'en',

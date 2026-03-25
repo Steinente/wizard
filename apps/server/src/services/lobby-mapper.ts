@@ -38,7 +38,7 @@ const parseSpecialCardSettings = (
 } => {
   const fallback = {
     includedSpecialCards: [...ANNIVERSARY_SPECIALS_ENABLED_BY_DEFAULT],
-    cloudRuleTiming: 'endOfRound' as const,
+    cloudRuleTiming: 'immediateAfterTrick' as const,
     specialCardsRandomizerEnabled: false,
   }
 
@@ -71,7 +71,7 @@ const parseSpecialCardSettings = (
         cloudRuleTiming:
           maybeTiming === 'immediateAfterTrick'
             ? 'immediateAfterTrick'
-            : 'endOfRound',
+            : 'immediateAfterTrick',
         specialCardsRandomizerEnabled: maybeRandomizer === true,
       }
     }
