@@ -580,11 +580,23 @@ export class GamePageComponent {
   canPredict() {
     const state = this.store.gameState()
 
-    return (
-      !!state &&
-      state.phase === 'prediction' &&
-      state.currentRound?.activePlayerId === state.selfPlayerId
+    if (!state || state.phase !== 'prediction') {
+      return false
+    }
+
+    const ownRoundPlayer = state.currentRound?.players.find(
+      (entry) => entry.playerId === state.selfPlayerId,
     )
+
+    if (!ownRoundPlayer || ownRoundPlayer.prediction) {
+      return false
+    }
+
+    if (state.config.predictionVisibility !== 'open') {
+      return true
+    }
+
+    return state.currentRound?.activePlayerId === state.selfPlayerId
   }
 
   isMyTurnToPlay() {

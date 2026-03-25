@@ -257,8 +257,13 @@ export class GameService {
     }
 
     const player = getPlayerBySessionToken(lobby, input.sessionToken)
+    const isSimultaneousPredictionMode =
+      state.config.predictionVisibility !== 'open'
 
-    if (state.currentRound.activePlayerId !== player.id) {
+    if (
+      !isSimultaneousPredictionMode &&
+      state.currentRound.activePlayerId !== player.id
+    ) {
       throw new Error('error.notYourTurnToPredict')
     }
 
@@ -321,16 +326,19 @@ export class GameService {
       cloudDelta: 0,
     }
 
-    state.logs.push({
-      id: crypto.randomUUID(),
-      createdAt: nowIso(),
-      type: 'predictionMade',
-      messageKey: 'game.prediction.made',
-      messageParams: {
-        playerId: player.id,
-        value: input.value,
-      },
-    })
+    // Only add to logs if prediction is open (immediately visible)
+    if (state.config.predictionVisibility === 'open') {
+      state.logs.push({
+        id: crypto.randomUUID(),
+        createdAt: nowIso(),
+        type: 'predictionMade',
+        messageKey: 'game.prediction.made',
+        messageParams: {
+          playerId: player.id,
+          value: input.value,
+        },
+      })
+    }
 
     const orderedPlayerIds = getSeatOrderedPlayerIds(state)
     const allPredicted = state.currentRound.players.every(
@@ -338,15 +346,34 @@ export class GameService {
     )
 
     if (!allPredicted) {
-      state.currentRound.activePlayerId = getNextPlayerId(
-        orderedPlayerIds,
-        player.id,
-      )
+      if (!isSimultaneousPredictionMode) {
+        state.currentRound.activePlayerId = getNextPlayerId(
+          orderedPlayerIds,
+          player.id,
+        )
+      }
     } else {
       if (state.config.predictionVisibility === 'hidden') {
+        // Reveal all predictions in the state
         for (const entry of state.currentRound.players) {
           if (entry.prediction) {
             entry.prediction.revealed = true
+          }
+        }
+
+        // Add logs for all predictions now that they are being revealed
+        for (const entry of state.currentRound.players) {
+          if (entry.prediction) {
+            state.logs.push({
+              id: crypto.randomUUID(),
+              createdAt: nowIso(),
+              type: 'predictionMade',
+              messageKey: 'game.prediction.made',
+              messageParams: {
+                playerId: entry.playerId,
+                value: entry.prediction.value,
+              },
+            })
           }
         }
       }

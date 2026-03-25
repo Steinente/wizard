@@ -71,6 +71,17 @@ export class PlayerListPanelComponent {
       return this.state.pendingDecision.playerId === playerId
     }
 
+    if (
+      this.state.phase === 'prediction' &&
+      this.state.config.predictionVisibility !== 'open'
+    ) {
+      const roundPlayer = this.state.currentRound?.players.find(
+        (player) => player.playerId === playerId,
+      )
+
+      return !roundPlayer?.prediction
+    }
+
     return this.state.currentRound?.activePlayerId === playerId
   }
 

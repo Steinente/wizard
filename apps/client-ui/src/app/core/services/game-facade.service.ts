@@ -329,8 +329,23 @@ export class GameFacadeService {
       return null
     }
 
-    if (state.phase === 'prediction' && round.activePlayerId === selfId) {
-      return `prediction:${round.roundNumber}:${selfId}`
+    if (state.phase === 'prediction') {
+      const ownRoundPlayer = round.players.find(
+        (player) => player.playerId === selfId,
+      )
+      const isSelfStillPredicting = !ownRoundPlayer?.prediction
+
+      if (!isSelfStillPredicting) {
+        return null
+      }
+
+      const isPredictionActionableBySelf =
+        state.config.predictionVisibility !== 'open' ||
+        round.activePlayerId === selfId
+
+      if (isPredictionActionableBySelf) {
+        return `prediction:${round.roundNumber}:${selfId}`
+      }
     }
 
     if (
