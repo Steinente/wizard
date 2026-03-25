@@ -254,7 +254,7 @@ export const de = {
   cloudRuleTimingImmediateAfterTrick: '30-Jahre-Modus (direkt nach dem Stich)',
   specialCardsLabel: 'Sonderkarten',
   specialCardsInfo:
-    'Karten anklicken, um sie für das Spiel zu aktivieren oder deaktivieren. Ausgegraute Karten sind ausgeschlossen. Wenn der Randomizer aktiv ist, bilden die ausgewählten Karten den Pool fuer die zufaellige Auswahl.',
+    'Karten anklicken, um sie für das Spiel zu aktivieren oder deaktivieren. Ausgegraute Karten sind ausgeschlossen. Wenn der Randomizer aktiv ist, bilden die ausgewählten Karten den Pool für die zufällige Auswahl.',
   specialCardsFilterLabel: 'Filter',
   specialCardsFilterCustom: 'Individuell (kein Filter)',
   specialCardsFilterClassic: 'Wizard (Klassik)',
@@ -266,7 +266,7 @@ export const de = {
   specialCardsRandomizerEnabled:
     'Zufällige Sonderkarten aus der Auswahl beim Spielstart aktivieren',
   specialCardsRandomizerInfo:
-    'Wenn aktiviert, bilden die aktuell ausgewaehlten Sonderkarten den Pool fuer den Spielstart. Das Spiel waehlt dann zufaellig aus diesem Pool aus, welche Sonderkarten enthalten sind.',
+    'Wenn aktiviert, bilden die aktuell ausgewählten Sonderkarten den Pool für den Spielstart. Das Spiel wählt dann zufällig aus diesem Pool aus, welche Sonderkarten enthalten sind.',
   specialCardsInMatch: 'Sonderkarten im Spiel',
 
   // Allgemeine Statuslabels
