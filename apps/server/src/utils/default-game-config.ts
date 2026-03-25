@@ -8,6 +8,6 @@ export const defaultGameConfig: GameConfig = {
   specialCardsRandomizerEnabled: false,
   twoPlayerModeEnabled: false,
   readLogEnabledByDefault: false,
-  languageDefault: 'en',
+  languageDefault: 'de',
   includedSpecialCards: [...ANNIVERSARY_SPECIALS_ENABLED_BY_DEFAULT],
 }
