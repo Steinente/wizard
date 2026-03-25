@@ -16,16 +16,19 @@ export interface RuntimeCardEffectLookup {
   special?: SpecialCardKey
 }
 
-export type CardClass =
-  | 'dragon'
-  | 'wizard'
-  | 'trump'
-  | 'leadSuit'
-  | 'number'
-  | 'jester'
-  | 'fairy'
-  | 'witch'
-  | 'otherSpecial'
+export const CARD_CLASS = {
+  dragon: 'dragon',
+  wizard: 'wizard',
+  trump: 'trump',
+  leadSuit: 'leadSuit',
+  number: 'number',
+  jester: 'jester',
+  fairy: 'fairy',
+  witch: 'witch',
+  otherSpecial: 'otherSpecial',
+} as const
+
+export type CardClass = (typeof CARD_CLASS)[keyof typeof CARD_CLASS]
 
 export interface ClassifiedCard {
   card: Card
@@ -66,6 +69,34 @@ const getShapeShifterMode = (
   runtimeEffect?: RuntimeCardEffectLookup | null,
 ): 'wizard' | 'jester' => runtimeEffect?.shapeShifterMode ?? 'jester'
 
+const classified = (
+  card: Card,
+  className: CardClass,
+  numericStrength: number,
+  effectiveSuit: Suit | null,
+): ClassifiedCard => ({ card, className, numericStrength, effectiveSuit })
+
+const classifySuitBasedSpecial = (
+  card: Card,
+  leadSuit: Suit | null,
+  trumpSuit: Suit | null,
+  runtimeEffect: RuntimeCardEffectLookup | null | undefined,
+  defaultValue: number,
+): ClassifiedCard => {
+  const suit = runtimeEffect?.chosenSuit ?? null
+  const value = runtimeEffect?.chosenValue ?? defaultValue
+
+  if (suit && trumpSuit && suit === trumpSuit) {
+    return classified(card, CARD_CLASS.trump, 700 + value, suit)
+  }
+
+  if (suit && leadSuit && suit === leadSuit) {
+    return classified(card, CARD_CLASS.leadSuit, 300 + value, suit)
+  }
+
+  return classified(card, CARD_CLASS.otherSpecial, 100 + value, suit)
+}
+
 export const classifyCard = (
   card: Card,
   leadSuit: Suit | null,
@@ -85,164 +116,56 @@ export const classifyCard = (
     )
   }
 
-  if (isWizardCard(card)) {
-    return {
-      card,
-      className: 'wizard',
-      numericStrength: 1000,
-      effectiveSuit: null,
-    }
-  }
-
-  if (isJesterCard(card)) {
-    return {
-      card,
-      className: 'jester',
-      numericStrength: 10,
-      effectiveSuit: null,
-    }
-  }
+  if (isWizardCard(card)) return classified(card, CARD_CLASS.wizard, 1000, null)
+  if (isJesterCard(card)) return classified(card, CARD_CLASS.jester, 10, null)
 
   if (isSpecialCard(card)) {
-    if (card.special === SPECIAL_CARD_KEY.dragon) {
-      return {
-        card,
-        className: 'dragon',
-        numericStrength: 1100,
-        effectiveSuit: null,
-      }
-    }
-
-    if (card.special === SPECIAL_CARD_KEY.fairy) {
-      return {
-        card,
-        className: 'fairy',
-        numericStrength: -10,
-        effectiveSuit: null,
-      }
-    }
-
-    if (card.special === SPECIAL_CARD_KEY.witch) {
-      return {
-        card,
-        className: 'witch',
-        numericStrength: -20,
-        effectiveSuit: null,
-      }
-    }
+    if (card.special === SPECIAL_CARD_KEY.dragon)
+      return classified(card, CARD_CLASS.dragon, 1100, null)
+    if (card.special === SPECIAL_CARD_KEY.fairy)
+      return classified(card, CARD_CLASS.fairy, -10, null)
+    if (card.special === SPECIAL_CARD_KEY.witch)
+      return classified(card, CARD_CLASS.witch, -20, null)
 
     if (card.special === SPECIAL_CARD_KEY.shapeShifter) {
       const mode = getShapeShifterMode(runtimeEffect)
-
-      if (mode === 'wizard') {
-        return {
-          card,
-          className: 'wizard',
-          numericStrength: 1000,
-          effectiveSuit: null,
-        }
-      }
-
-      return {
-        card,
-        className: 'jester',
-        numericStrength: 10,
-        effectiveSuit: null,
-      }
+      return mode === 'wizard'
+        ? classified(card, CARD_CLASS.wizard, 1000, null)
+        : classified(card, CARD_CLASS.jester, 10, null)
     }
 
     if (card.special === SPECIAL_CARD_KEY.juggler) {
-      const suit = runtimeEffect?.chosenSuit ?? null
-      const value = runtimeEffect?.chosenValue ?? 7.5
-
-      if (suit && trumpSuit && suit === trumpSuit) {
-        return {
-          card,
-          className: 'trump',
-          numericStrength: 700 + value,
-          effectiveSuit: suit,
-        }
-      }
-
-      if (suit && leadSuit && suit === leadSuit) {
-        return {
-          card,
-          className: 'leadSuit',
-          numericStrength: 300 + value,
-          effectiveSuit: suit,
-        }
-      }
-
-      return {
+      return classifySuitBasedSpecial(
         card,
-        className: 'otherSpecial',
-        numericStrength: 100 + value,
-        effectiveSuit: suit,
-      }
+        leadSuit,
+        trumpSuit,
+        runtimeEffect,
+        7.5,
+      )
     }
 
     if (card.special === SPECIAL_CARD_KEY.cloud) {
-      const suit = runtimeEffect?.chosenSuit ?? null
-      const value = runtimeEffect?.chosenValue ?? 9.75
-
-      if (suit && trumpSuit && suit === trumpSuit) {
-        return {
-          card,
-          className: 'trump',
-          numericStrength: 700 + value,
-          effectiveSuit: suit,
-        }
-      }
-
-      if (suit && leadSuit && suit === leadSuit) {
-        return {
-          card,
-          className: 'leadSuit',
-          numericStrength: 300 + value,
-          effectiveSuit: suit,
-        }
-      }
-
-      return {
+      return classifySuitBasedSpecial(
         card,
-        className: 'otherSpecial',
-        numericStrength: 100 + value,
-        effectiveSuit: suit,
-      }
+        leadSuit,
+        trumpSuit,
+        runtimeEffect,
+        9.75,
+      )
     }
 
-    return {
-      card,
-      className: 'otherSpecial',
-      numericStrength: 500,
-      effectiveSuit: null,
-    }
+    return classified(card, CARD_CLASS.otherSpecial, 500, null)
   }
 
   if (trumpSuit && card.suit === trumpSuit) {
-    return {
-      card,
-      className: 'trump',
-      numericStrength: 700 + card.value,
-      effectiveSuit: card.suit,
-    }
+    return classified(card, CARD_CLASS.trump, 700 + card.value, card.suit)
   }
 
   if (leadSuit && card.suit === leadSuit) {
-    return {
-      card,
-      className: 'leadSuit',
-      numericStrength: 300 + card.value,
-      effectiveSuit: card.suit,
-    }
+    return classified(card, CARD_CLASS.leadSuit, 300 + card.value, card.suit)
   }
 
-  return {
-    card,
-    className: 'number',
-    numericStrength: 100 + card.value,
-    effectiveSuit: card.suit,
-  }
+  return classified(card, CARD_CLASS.number, 100 + card.value, card.suit)
 }
 
 export const compareCards = (
