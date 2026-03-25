@@ -107,7 +107,7 @@
         <div class="panel">
           <div class="spread" style="align-items: flex-start; gap: 12px">
             <h3 style="margin-top: 0; margin-bottom: 4px">
-              {{ 'officialRules' | t }}
+              {{ 'rules' | t }}
             </h3>
 
             <div style="display: flex; flex-direction: column; gap: 6px">
@@ -133,6 +133,10 @@
           </div>
 
           <div [style.opacity]="isHost() ? 1 : 0.55">
+            <h3 style="margin-top: 0; margin-bottom: 12px">
+              {{ 'officialRules' | t }}
+            </h3>
+
             <label class="label">
               {{ 'predictionVisibilityLabel' | t }}
               <button
@@ -264,143 +268,142 @@
                 {{ 'cloudRuleTimingImmediateAfterTrick' | t }}
               </option>
             </select>
-          </div>
-        </div>
 
-        <div class="panel">
-          <h3 style="margin-top: 0; margin-bottom: 12px">
-            {{ 'unofficialRules' | t }}
-          </h3>
+            <h3 style="margin-top: 20px; margin-bottom: 12px">
+              {{ 'unofficialRules' | t }}
+            </h3>
 
-          <label class="label" style="margin-top: 0">
-            {{ 'twoPlayerModeLabel' | t }}
-            <button
-              type="button"
-              class="info-icon"
-              [attr.aria-label]="i18n.t('twoPlayerModeInfo')"
-              (click)="toggleRuleInfo('twoPlayerMode')"
-            >
-              ?
-            </button>
-          </label>
-          @if (activeRuleInfo() === 'twoPlayerMode') {
-            <div class="rule-info-box">
-              {{ i18n.t('twoPlayerModeInfo') }}
-            </div>
-          }
-
-          <label class="row" style="gap: 8px; margin-top: 8px">
-            <input
-              type="checkbox"
-              [disabled]="!isHost()"
-              [ngModel]="store.lobby()!.config.twoPlayerModeEnabled"
-              (ngModelChange)="setTwoPlayerModeEnabled($event)"
-            />
-            <span class="muted">{{ 'twoPlayerModeEnabled' | t }}</span>
-          </label>
-        </div>
-
-        <div class="panel">
-          <div class="spread" style="align-items: flex-start; gap: 12px">
-            <h3 style="margin-top: 0; margin-bottom: 4px">
-              {{ 'specialCardsLabel' | t }}
+            <label class="label" style="margin-top: 0">
+              {{ 'twoPlayerModeLabel' | t }}
               <button
                 type="button"
                 class="info-icon"
-                [attr.aria-label]="i18n.t('specialCardsInfo')"
-                (click)="toggleRuleInfo('specialCards')"
+                [attr.aria-label]="i18n.t('twoPlayerModeInfo')"
+                (click)="toggleRuleInfo('twoPlayerMode')"
               >
                 ?
               </button>
-            </h3>
+            </label>
+            @if (activeRuleInfo() === 'twoPlayerMode') {
+              <div class="rule-info-box">
+                {{ i18n.t('twoPlayerModeInfo') }}
+              </div>
+            }
 
-            <label class="row" style="gap: 8px; flex-wrap: nowrap">
+            <label class="row" style="gap: 8px; margin-top: 8px">
               <input
                 type="checkbox"
-                [ngModel]="session.cardArtworkEnabled()"
-                (ngModelChange)="toggleCardArtworkEnabled($event)"
+                [disabled]="!isHost()"
+                [ngModel]="store.lobby()!.config.twoPlayerModeEnabled"
+                (ngModelChange)="setTwoPlayerModeEnabled($event)"
               />
-              <span style="font-size: 12px; line-height: 1.2">
-                {{
-                  session.cardArtworkEnabled()
-                    ? ('cardArtworkModeOn' | t)
-                    : ('cardArtworkModeOff' | t)
-                }}
-              </span>
+              <span class="muted">{{ 'twoPlayerModeEnabled' | t }}</span>
             </label>
           </div>
-          @if (activeRuleInfo() === 'specialCards') {
-            <div class="rule-info-box" style="margin-bottom: 10px">
-              {{ i18n.t('specialCardsInfo') }}
-            </div>
-          }
+        </div>
+      </div>
 
-          <label class="label" style="margin-top: 4px">
-            {{ 'specialCardsRandomizerLabel' | t }}
+      <div class="panel lobby-span-full">
+        <div class="spread" style="align-items: flex-start; gap: 12px">
+          <h3 style="margin-top: 0; margin-bottom: 4px">
+            {{ 'specialCardsLabel' | t }}
             <button
               type="button"
               class="info-icon"
-              [attr.aria-label]="i18n.t('specialCardsRandomizerInfo')"
-              (click)="toggleRuleInfo('specialCardsRandomizer')"
+              [attr.aria-label]="i18n.t('specialCardsInfo')"
+              (click)="toggleRuleInfo('specialCards')"
             >
               ?
             </button>
-          </label>
-          @if (activeRuleInfo() === 'specialCardsRandomizer') {
-            <div class="rule-info-box">
-              {{ i18n.t('specialCardsRandomizerInfo') }}
-            </div>
-          }
+          </h3>
 
-          <label class="row" style="gap: 8px; margin-top: 8px">
+          <label class="row" style="gap: 8px; flex-wrap: nowrap">
             <input
               type="checkbox"
-              [disabled]="!isHost()"
-              [ngModel]="store.lobby()!.config.specialCardsRandomizerEnabled"
-              (ngModelChange)="setSpecialCardsRandomizerEnabled($event)"
+              [ngModel]="session.cardArtworkEnabled()"
+              (ngModelChange)="toggleCardArtworkEnabled($event)"
             />
-            <span class="muted">{{ 'specialCardsRandomizerEnabled' | t }}</span>
+            <span style="font-size: 12px; line-height: 1.2">
+              {{
+                session.cardArtworkEnabled()
+                  ? ('cardArtworkModeOn' | t)
+                  : ('cardArtworkModeOff' | t)
+              }}
+            </span>
           </label>
-
-          <div
-            style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px"
-            role="group"
-            [attr.aria-label]="i18n.t('specialCardsLabel')"
-          >
-            @for (card of specialCards; track card.id) {
-              @let isEnabled = isSpecialCardEnabled(card.special);
-              <button
-                type="button"
-                [style.cursor]="isHost() ? 'pointer' : 'default'"
-                [style.opacity]="isEnabled ? '1' : '0.45'"
-                [style.filter]="isEnabled ? 'none' : 'grayscale(0.4)'"
-                [style.border]="'none'"
-                [style.background]="'none'"
-                [style.padding]="'0'"
-                [attr.aria-pressed]="isEnabled"
-                [attr.aria-label]="getSpecialCardAriaLabel(card)"
-                (click)="toggleSpecialCard(card.special)"
-              >
-                <wiz-card
-                  [card]="card"
-                  [disabled]="false"
-                  [showSpecialInfo]="true"
-                  [useArtwork]="session.cardArtworkEnabled()"
-                  [play]="noopPlay"
-                />
-              </button>
-            }
-          </div>
         </div>
+        @if (activeRuleInfo() === 'specialCards') {
+          <div class="rule-info-box" style="margin-bottom: 10px">
+            {{ i18n.t('specialCardsInfo') }}
+          </div>
+        }
 
-        <wiz-chat-panel
-          [messages]="store.lobby()!.chatMessages"
-          [selfPlayerId]="store.playerId() ?? ''"
-          [chatSoundEnabled]="chatSoundEnabledSignal()"
-          (sendMessage)="sendChatMessageFn($event)"
-          (chatSoundToggle)="setChatSoundEnabledFn($event)"
-        ></wiz-chat-panel>
+        <label class="label" style="margin-top: 4px">
+          {{ 'specialCardsRandomizerLabel' | t }}
+          <button
+            type="button"
+            class="info-icon"
+            [attr.aria-label]="i18n.t('specialCardsRandomizerInfo')"
+            (click)="toggleRuleInfo('specialCardsRandomizer')"
+          >
+            ?
+          </button>
+        </label>
+        @if (activeRuleInfo() === 'specialCardsRandomizer') {
+          <div class="rule-info-box">
+            {{ i18n.t('specialCardsRandomizerInfo') }}
+          </div>
+        }
+
+        <label class="row" style="gap: 8px; margin-top: 8px">
+          <input
+            type="checkbox"
+            [disabled]="!isHost()"
+            [ngModel]="store.lobby()!.config.specialCardsRandomizerEnabled"
+            (ngModelChange)="setSpecialCardsRandomizerEnabled($event)"
+          />
+          <span class="muted">{{ 'specialCardsRandomizerEnabled' | t }}</span>
+        </label>
+
+        <div
+          style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px"
+          role="group"
+          [attr.aria-label]="i18n.t('specialCardsLabel')"
+        >
+          @for (card of specialCards; track card.id) {
+            @let isEnabled = isSpecialCardEnabled(card.special);
+            <button
+              type="button"
+              [style.cursor]="isHost() ? 'pointer' : 'default'"
+              [style.opacity]="isEnabled ? '1' : '0.45'"
+              [style.filter]="isEnabled ? 'none' : 'grayscale(0.4)'"
+              [style.border]="'none'"
+              [style.background]="'none'"
+              [style.padding]="'0'"
+              [attr.aria-pressed]="isEnabled"
+              [attr.aria-label]="getSpecialCardAriaLabel(card)"
+              (click)="toggleSpecialCard(card.special)"
+            >
+              <wiz-card
+                [card]="card"
+                [disabled]="false"
+                [showSpecialInfo]="true"
+                [useArtwork]="session.cardArtworkEnabled()"
+                [play]="noopPlay"
+              />
+            </button>
+          }
+        </div>
       </div>
+
+      <wiz-chat-panel
+        class="lobby-span-full"
+        [messages]="store.lobby()!.chatMessages"
+        [selfPlayerId]="store.playerId() ?? ''"
+        [chatSoundEnabled]="chatSoundEnabledSignal()"
+        (sendMessage)="sendChatMessageFn($event)"
+        (chatSoundToggle)="setChatSoundEnabledFn($event)"
+      ></wiz-chat-panel>
     </div>
   }
 </div>

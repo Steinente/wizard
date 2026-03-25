@@ -2,6 +2,10 @@
   grid-template-columns: 360px 1fr;
 }
 
+.lobby-span-full {
+  grid-column: 1 / -1;
+}
+
 .rule-info-box {
   margin-bottom: 10px;
   border: 1px solid var(--border);
