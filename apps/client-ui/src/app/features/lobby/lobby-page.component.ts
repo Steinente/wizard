@@ -41,7 +41,6 @@ export class LobbyPageComponent {
   protected readonly session = inject(SessionService)
 
   private readonly activeRuleInfoState = signal<RuleInfoKey | null>(null)
-  private readonly specialCardFilterMenuOpenState = signal(false)
   private readonly selectedSpecialCardFilterHintState =
     signal<PresetSpecialCardFilterId | null>(null)
   readonly copied = signal(false)
@@ -62,8 +61,6 @@ export class LobbyPageComponent {
   readonly specialCardFilterPresets = SPECIAL_CARD_FILTER_PRESETS
 
   readonly activeRuleInfo = this.activeRuleInfoState.asReadonly()
-  readonly isSpecialCardFilterMenuOpen =
-    this.specialCardFilterMenuOpenState.asReadonly()
   readonly isHost = computed(() => {
     const lobby = this.store.lobby()
     const playerId = this.store.playerId()
@@ -75,6 +72,7 @@ export class LobbyPageComponent {
 
     return resolveActiveSpecialCardFilter(
       lobby.config.includedSpecialCards,
+      lobby.config.cloudRuleTiming,
       this.selectedSpecialCardFilterHintState(),
     )
   })
@@ -89,17 +87,6 @@ export class LobbyPageComponent {
 
   toggleRuleInfo(key: RuleInfoKey) {
     this.activeRuleInfoState.update((current) => (current === key ? null : key))
-  }
-
-  toggleSpecialCardFilterMenu() {
-    if (
-      !this.isHost() ||
-      this.store.lobby()?.config.specialCardsRandomizerEnabled
-    ) {
-      return
-    }
-
-    this.specialCardFilterMenuOpenState.update((isOpen) => !isOpen)
   }
 
   copyCode() {
@@ -167,6 +154,7 @@ export class LobbyPageComponent {
   }
 
   setCloudRuleTiming(cloudRuleTiming: 'endOfRound' | 'immediateAfterTrick') {
+    this.selectedSpecialCardFilterHintState.set(null)
     this.updateConfigIfHost({ cloudRuleTiming })
   }
 
@@ -202,13 +190,50 @@ export class LobbyPageComponent {
       ? current.filter((k) => k !== key)
       : [...current, key]
 
-    this.specialCardFilterMenuOpenState.set(false)
     this.selectedSpecialCardFilterHintState.set(null)
     this.facade.updateConfig(lobby.code, { includedSpecialCards: next })
   }
 
   specialCardFilterLabelKey(id: SpecialCardFilterId): TranslationKey {
     return getSpecialCardFilterLabelKey(id)
+  }
+
+  onSpecialCardFilterChange(event: Event) {
+    const selectElement = event.target as HTMLSelectElement | null
+
+    if (!selectElement) {
+      return
+    }
+
+    const id = selectElement.value as SpecialCardFilterId
+
+    if (id === this.specialCardFilterId.custom) {
+      const lobby = this.store.lobby()
+
+      if (!lobby) {
+        this.selectedSpecialCardFilterHintState.set(null)
+        selectElement.value = this.specialCardFilterId.custom
+        return
+      }
+
+      const resolved = resolveActiveSpecialCardFilter(
+        lobby.config.includedSpecialCards,
+        lobby.config.cloudRuleTiming,
+        null,
+      )
+
+      if (resolved !== this.specialCardFilterId.custom) {
+        selectElement.value = resolved
+        this.applySpecialCardFilter(resolved as PresetSpecialCardFilterId)
+        return
+      }
+
+      this.selectedSpecialCardFilterHintState.set(null)
+      selectElement.value = this.specialCardFilterId.custom
+      return
+    }
+
+    this.applySpecialCardFilter(id)
   }
 
   applySpecialCardFilter(id: PresetSpecialCardFilterId) {
@@ -228,10 +253,10 @@ export class LobbyPageComponent {
       return
     }
 
-    this.specialCardFilterMenuOpenState.set(false)
     this.selectedSpecialCardFilterHintState.set(id)
     this.facade.updateConfig(lobby.code, {
       includedSpecialCards: [...preset.includedCards],
+      cloudRuleTiming: preset.cloudRuleTiming,
     })
   }
 

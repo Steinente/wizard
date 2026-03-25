@@ -105,7 +105,33 @@
 
       <div style="display: flex; flex-direction: column; gap: 16px">
         <div class="panel">
-          <h3>{{ 'rules' | t }}</h3>
+          <div class="spread" style="align-items: flex-start; gap: 12px">
+            <h3 style="margin-top: 0; margin-bottom: 4px">{{ 'rules' | t }}</h3>
+
+            <div style="display: flex; flex-direction: column; gap: 6px">
+              <label class="label" style="margin: 0">
+                {{ 'specialCardsFilterLabel' | t }}
+              </label>
+              <select
+                class="select"
+                [disabled]="
+                  !isHost() ||
+                  store.lobby()!.config.specialCardsRandomizerEnabled
+                "
+                [value]="activeSpecialCardFilter()"
+                (change)="onSpecialCardFilterChange($event)"
+              >
+                <option [value]="specialCardFilterId.custom">
+                  {{
+                    specialCardFilterLabelKey(specialCardFilterId.custom) | t
+                  }}
+                </option>
+                @for (preset of specialCardFilterPresets; track preset.id) {
+                  <option [value]="preset.id">{{ preset.labelKey | t }}</option>
+                }
+              </select>
+            </div>
+          </div>
 
           <div [style.opacity]="isHost() ? 1 : 0.55">
             <label class="label">
@@ -270,42 +296,6 @@
                 }}
               </span>
             </label>
-
-            <div style="display: flex; flex-direction: column; gap: 6px">
-              <button
-                type="button"
-                class="btn"
-                [class.btn-active]="
-                  activeSpecialCardFilter() !== specialCardFilterId.custom
-                "
-                [disabled]="
-                  !isHost() ||
-                  store.lobby()!.config.specialCardsRandomizerEnabled
-                "
-                [attr.aria-expanded]="isSpecialCardFilterMenuOpen()"
-                (click)="toggleSpecialCardFilterMenu()"
-              >
-                {{ 'specialCardsFilterLabel' | t }}:
-                {{ specialCardFilterLabelKey(activeSpecialCardFilter()) | t }}
-              </button>
-
-              @if (isSpecialCardFilterMenuOpen()) {
-                <div class="special-card-filter-menu">
-                  @for (preset of specialCardFilterPresets; track preset.id) {
-                    <button
-                      type="button"
-                      class="btn special-card-filter-option"
-                      [class.btn-active]="
-                        activeSpecialCardFilter() === preset.id
-                      "
-                      (click)="applySpecialCardFilter(preset.id)"
-                    >
-                      {{ preset.labelKey | t }}
-                    </button>
-                  }
-                </div>
-              }
-            </div>
           </div>
           @if (activeRuleInfo() === 'specialCards') {
             <div class="rule-info-box" style="margin-bottom: 10px">

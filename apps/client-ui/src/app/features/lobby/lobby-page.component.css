@@ -20,17 +20,6 @@
   padding: 0;
 }
 
-.special-card-filter-menu {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  width: 100%;
-}
-
-.special-card-filter-option {
-  text-align: left;
-}
-
 @media (max-width: 1100px) {
   .lobby-main-grid {
     grid-template-columns: 1fr;

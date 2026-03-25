@@ -5,10 +5,9 @@ import type {
   PlayerIdentity,
   PlayerLobbyState,
   PredictionVisibility,
-  SpecialCardKey,
 } from '@wizard/shared'
-import { ANNIVERSARY_SPECIALS_ENABLED_BY_DEFAULT } from '@wizard/shared'
 import type { Lobby, Player, PlayerRole } from '../generated/prisma/client.js'
+import { parseSpecialCardSettings } from './special-card-settings.js'
 
 type LobbyWithPlayers = Lobby & {
   players: Player[]
@@ -28,59 +27,6 @@ const mapOpenPredictionRestriction = (
     : value === 'MUST_NOT_EQUAL_TRICKS'
       ? 'mustNotEqualTricks'
       : 'none'
-
-const parseSpecialCardSettings = (
-  value: string | null,
-): {
-  includedSpecialCards: SpecialCardKey[]
-  cloudRuleTiming: GameConfig['cloudRuleTiming']
-  specialCardsRandomizerEnabled: boolean
-} => {
-  const fallback = {
-    includedSpecialCards: [...ANNIVERSARY_SPECIALS_ENABLED_BY_DEFAULT],
-    cloudRuleTiming: 'immediateAfterTrick' as const,
-    specialCardsRandomizerEnabled: false,
-  }
-
-  if (value === null) return fallback
-
-  try {
-    const parsed = JSON.parse(value)
-
-    if (Array.isArray(parsed)) {
-      return {
-        includedSpecialCards: parsed as SpecialCardKey[],
-        cloudRuleTiming: fallback.cloudRuleTiming,
-        specialCardsRandomizerEnabled: fallback.specialCardsRandomizerEnabled,
-      }
-    }
-
-    if (parsed && typeof parsed === 'object') {
-      const maybeCards = (parsed as { includedSpecialCards?: unknown })
-        .includedSpecialCards
-      const maybeTiming = (parsed as { cloudRuleTiming?: unknown })
-        .cloudRuleTiming
-      const maybeRandomizer = (
-        parsed as { specialCardsRandomizerEnabled?: unknown }
-      ).specialCardsRandomizerEnabled
-
-      return {
-        includedSpecialCards: Array.isArray(maybeCards)
-          ? (maybeCards as SpecialCardKey[])
-          : fallback.includedSpecialCards,
-        cloudRuleTiming:
-          maybeTiming === 'immediateAfterTrick'
-            ? 'immediateAfterTrick'
-            : 'immediateAfterTrick',
-        specialCardsRandomizerEnabled: maybeRandomizer === true,
-      }
-    }
-
-    return fallback
-  } catch {
-    return fallback
-  }
-}
 
 export const mapLobbyToSummary = (lobby: LobbyWithPlayers): LobbySummary => {
   const specialCardSettings = parseSpecialCardSettings(

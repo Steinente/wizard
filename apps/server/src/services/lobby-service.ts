@@ -1,5 +1,4 @@
-import type { GameConfig, LobbySummary, SpecialCardKey } from '@wizard/shared'
-import { SPECIAL_CARD_KEYS } from '@wizard/shared'
+import type { GameConfig, LobbySummary } from '@wizard/shared'
 import crypto from 'node:crypto'
 import { env } from '../config/env.js'
 import { prisma } from '../db/prisma.js'
@@ -11,68 +10,12 @@ import {
 } from '../generated/prisma/client.js'
 import { defaultGameConfig } from '../utils/default-game-config.js'
 import { mapLobbyToSummary } from './lobby-mapper.js'
+import {
+  parseSpecialCardSettings,
+  serializeSpecialCardSettings,
+} from './special-card-settings.js'
 
 const normalizeCode = (code: string) => code.trim().toUpperCase()
-
-const parseSpecialCardSettings = (
-  value: string | null,
-): {
-  includedSpecialCards: SpecialCardKey[]
-  cloudRuleTiming: GameConfig['cloudRuleTiming']
-  specialCardsRandomizerEnabled: boolean
-} => {
-  const fallback = {
-    includedSpecialCards: [...SPECIAL_CARD_KEYS],
-    cloudRuleTiming: 'endOfRound' as const,
-    specialCardsRandomizerEnabled: false,
-  }
-
-  if (value === null) return fallback
-
-  try {
-    const parsed = JSON.parse(value)
-
-    if (Array.isArray(parsed)) {
-      return {
-        includedSpecialCards: parsed as SpecialCardKey[],
-        cloudRuleTiming: fallback.cloudRuleTiming,
-        specialCardsRandomizerEnabled: fallback.specialCardsRandomizerEnabled,
-      }
-    }
-
-    if (parsed && typeof parsed === 'object') {
-      const maybeCards = (parsed as { includedSpecialCards?: unknown })
-        .includedSpecialCards
-      const maybeTiming = (parsed as { cloudRuleTiming?: unknown })
-        .cloudRuleTiming
-      const maybeRandomizer = (
-        parsed as { specialCardsRandomizerEnabled?: unknown }
-      ).specialCardsRandomizerEnabled
-
-      return {
-        includedSpecialCards: Array.isArray(maybeCards)
-          ? (maybeCards as SpecialCardKey[])
-          : fallback.includedSpecialCards,
-        cloudRuleTiming:
-          maybeTiming === 'immediateAfterTrick'
-            ? 'immediateAfterTrick'
-            : 'endOfRound',
-        specialCardsRandomizerEnabled: maybeRandomizer === true,
-      }
-    }
-
-    return fallback
-  } catch {
-    return fallback
-  }
-}
-
-const serializeSpecialCardSettings = (
-  settings: Pick<
-    GameConfig,
-    'includedSpecialCards' | 'cloudRuleTiming' | 'specialCardsRandomizerEnabled'
-  >,
-): string => JSON.stringify(settings)
 
 const CODE_LENGTH = 6
 const lobbyPasswordHashes = new Map<string, string>()
