@@ -17,7 +17,7 @@ import { TPipe } from '../pipes/t.pipe'
           <span>{{ name }}</span>
           @if (showDealerIndicator) {
             <span class="dealer-indicator" [attr.title]="'tooltipDealer' | t"
-              >🂠</span
+              >D</span
             >
           }
           @if (showPredictionStartIndicator) {
