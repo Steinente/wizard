@@ -87,7 +87,7 @@ export class LobbyPageComponent {
   }
 
   getSpecialCardAriaLabel(card: SpecialCard): string {
-    const cardName = this.i18n.t(card.labelKey)
+    const cardName = this.i18n.t(card.labelKey as any)
     const isEnabled = this.isSpecialCardEnabled(card.special)
     const status = isEnabled
       ? this.i18n.t('cardStatusIncluded')
