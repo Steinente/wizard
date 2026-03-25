@@ -265,6 +265,7 @@ export const de = {
     'Zufällige Sonderkarten beim Spielstart aktivieren',
   specialCardsRandomizerInfo:
     'Wenn aktiviert, werden die Host-Einstellungen einzelner Sonderkarten beim Spielstart ignoriert. Das Spiel entscheidet zufällig, welche Sonderkarten enthalten sind.',
+  specialCardsInMatch: 'Sonderkarten im Spiel',
 
   // Allgemeine Statuslabels
   loading: 'Lädt',

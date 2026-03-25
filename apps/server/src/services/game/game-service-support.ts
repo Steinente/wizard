@@ -118,15 +118,26 @@ export type LobbyWithPlayers = Awaited<ReturnType<typeof loadLobbyByCode>>
 
 export const lobbyConfigToShared = (
   lobby: NonNullable<LobbyWithPlayers>,
-): GameConfig => ({
-  ...parseSpecialCardSettings(lobby.includedSpecialCards),
-  predictionVisibility: toPredictionVisibility(lobby.predictionVisibility),
-  openPredictionRestriction: toOpenPredictionRestriction(
-    lobby.openPredictionRestriction,
-  ),
-  readLogEnabledByDefault: lobby.readLogEnabledByDefault,
-  languageDefault: lobby.languageDefault === 'de' ? 'de' : 'en',
-})
+  options?: { includeTwoPlayerMode?: boolean },
+): GameConfig => {
+  const specialCardSettings = parseSpecialCardSettings(
+    lobby.includedSpecialCards,
+  )
+
+  return {
+    ...specialCardSettings,
+    twoPlayerModeEnabled:
+      options?.includeTwoPlayerMode === false
+        ? false
+        : specialCardSettings.twoPlayerModeEnabled,
+    predictionVisibility: toPredictionVisibility(lobby.predictionVisibility),
+    openPredictionRestriction: toOpenPredictionRestriction(
+      lobby.openPredictionRestriction,
+    ),
+    readLogEnabledByDefault: lobby.readLogEnabledByDefault,
+    languageDefault: lobby.languageDefault === 'de' ? 'de' : 'en',
+  }
+}
 
 export const serializeSpecialCardSettings = (settings: {
   includedSpecialCards: SpecialCardKey[]

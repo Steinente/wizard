@@ -173,7 +173,9 @@ export function applyRoundStartState(state: WizardGameState) {
 export function buildInitialState(
   lobby: NonNullable<LobbyWithPlayers>,
 ): WizardGameState {
-  const config = lobbyConfigToShared(lobby)
+  const config = lobbyConfigToShared(lobby, {
+    includeTwoPlayerMode: false,
+  })
 
   // Shuffle players for random seating order instead of join order
   const shuffledPlayers = [...lobby.players].sort(() => Math.random() - 0.5)

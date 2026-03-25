@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, Output, inject } from '@angular/core'
 import { Router } from '@angular/router'
-import type { WizardGameViewState } from '@wizard/shared'
+import type { SpecialCardKey, WizardGameViewState } from '@wizard/shared'
 import { I18nService } from '../../../core/i18n/i18n.service'
 import type { TranslationKey } from '../../../core/i18n/translations'
 import { GameFacadeService } from '../../../core/services/game-facade.service'
@@ -11,6 +11,12 @@ import {
   translateCardLabel,
   translateSuitValue,
 } from '../utils/log-params.util'
+
+type HeaderRuleItem = {
+  id: 'predictionVisibility' | 'openPredictionRestriction' | 'cloudRuleTiming'
+  label: string
+  value: string
+}
 
 const SPECIAL_TRUMP_REASON_CARDS = new Set([
   'cloud',
@@ -34,8 +40,43 @@ const SPECIAL_TRUMP_REASON_CARDS = new Set([
           <div class="header-rules" aria-label="Game rules summary">
             <span class="header-rules-label">{{ 'rules' | t }}</span>
             <div class="header-rules-list">
-              @for (rule of ruleItems; track rule) {
-                <span class="header-rule-chip">{{ rule }}</span>
+              @for (rule of ruleItems; track rule.id) {
+                <span class="header-rule-chip">
+                  <span class="header-rule-chip-label">{{ rule.label }}:</span>
+                  <span class="header-rule-chip-value">{{ rule.value }}</span>
+                </span>
+              }
+
+              @if (
+                !state.config.specialCardsRandomizerEnabled &&
+                includedSpecialCardItems.length
+              ) {
+                <details
+                  class="header-rule-details"
+                  name="special-cards-summary"
+                >
+                  <summary class="header-rule-chip-toggle">
+                    <span class="header-rule-chip-toggle-text">
+                      <span class="header-rule-chip-label"
+                        >{{ 'specialCardsInMatch' | t }}:</span
+                      >
+                      <span class="header-rule-chip-value">{{
+                        includedSpecialCardItems.length
+                      }}</span>
+                    </span>
+                  </summary>
+                  <div class="header-special-cards-list" role="list">
+                    @for (item of includedSpecialCardItems; track item.key) {
+                      <span
+                        class="header-special-card-chip"
+                        role="listitem"
+                        [attr.title]="item.info"
+                      >
+                        {{ item.label }}
+                      </span>
+                    }
+                  </div>
+                </details>
               }
             </div>
           </div>
@@ -139,10 +180,12 @@ const SPECIAL_TRUMP_REASON_CARDS = new Set([
       }
 
       .header-rule-chip {
-        display: inline-flex;
-        align-items: center;
+        display: inline-grid;
+        grid-template-columns: auto 1fr;
+        gap: 6px;
+        align-items: baseline;
         min-height: 28px;
-        padding: 4px 10px;
+        padding: 5px 11px;
         border: 1px solid rgb(148 163 184 / 0.24);
         border-radius: 999px;
         background: rgb(15 23 42 / 0.5);
@@ -150,6 +193,80 @@ const SPECIAL_TRUMP_REASON_CARDS = new Set([
         font-size: 12px;
         line-height: 1.25;
         white-space: normal;
+      }
+
+      .header-rule-chip-label {
+        color: rgb(148 163 184);
+        font-weight: 600;
+      }
+
+      .header-rule-chip-value {
+        font-weight: 700;
+      }
+
+      .header-rule-details {
+        display: inline-block;
+        max-width: 100%;
+        min-height: 28px;
+        padding: 5px 11px;
+        border: 1px solid rgb(148 163 184 / 0.24);
+        border-radius: 16px;
+        background: rgb(15 23 42 / 0.5);
+        color: var(--text);
+        font-size: 12px;
+        line-height: 1.25;
+      }
+
+      .header-rule-chip-toggle {
+        cursor: pointer;
+        list-style: none;
+        display: block;
+        width: fit-content;
+      }
+
+      .header-rule-chip-toggle-text {
+        display: inline-grid;
+        grid-template-columns: auto auto;
+        align-items: baseline;
+        gap: 6px;
+      }
+
+      .header-rule-details[open] .header-rule-chip-toggle {
+        width: 100%;
+      }
+
+      .header-rule-details[open] .header-rule-chip-toggle-text {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+      }
+
+      .header-rule-chip-toggle::-webkit-details-marker {
+        display: none;
+      }
+
+      .header-rule-chip-toggle::marker {
+        display: none;
+      }
+
+      .header-special-cards-list {
+        margin-top: 8px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        max-width: 100%;
+      }
+
+      .header-special-card-chip {
+        display: inline-flex;
+        align-items: center;
+        min-height: 26px;
+        padding: 4px 10px;
+        border: 1px solid rgb(148 163 184 / 0.22);
+        border-radius: 999px;
+        background: rgb(2 6 23 / 0.45);
+        color: var(--text);
+        font-size: 12px;
       }
 
       @media (max-width: 900px) {
@@ -224,24 +341,44 @@ export class GameHeaderComponent {
     return this.state.config.includedSpecialCards.includes('cloud')
   }
 
-  get ruleItems() {
-    const rules = [this.predictionVisibilityText]
+  get ruleItems(): HeaderRuleItem[] {
+    const items: Array<HeaderRuleItem & { enabled: boolean }> = [
+      {
+        id: 'predictionVisibility',
+        label: this.i18n.t('predictionVisibilityLabel'),
+        value: this.predictionVisibilityText,
+        enabled: true,
+      },
+      {
+        id: 'openPredictionRestriction',
+        label: this.i18n.t('openRestrictionLabel'),
+        value: this.openRestrictionText,
+        enabled: this.state.config.predictionVisibility === 'open',
+      },
+      {
+        id: 'cloudRuleTiming',
+        label: this.i18n.t('cloudRuleTimingLabel'),
+        value: this.cloudRuleTimingText,
+        enabled: this.isCloudEnabled,
+      },
+    ]
 
-    if (this.state.config.predictionVisibility !== 'open') {
-      if (this.isCloudEnabled) {
-        rules.push(this.cloudRuleTimingText)
-      }
+    return items
+      .filter((item) => item.enabled)
+      .map(({ enabled: _enabled, ...item }) => item)
+  }
 
-      return rules
-    }
+  get includedSpecialCardItems() {
+    return this.state.config.includedSpecialCards.map((specialCardKey) => ({
+      key: specialCardKey,
+      label: translateCardLabel(specialCardKey, this.t),
+      info: this.getSpecialCardInfoText(specialCardKey),
+    }))
+  }
 
-    rules.push(this.openRestrictionText)
-
-    if (this.isCloudEnabled) {
-      rules.push(this.cloudRuleTimingText)
-    }
-
-    return rules
+  private getSpecialCardInfoText(specialCardKey: SpecialCardKey): string {
+    const key = `card.special.${specialCardKey}.info` as TranslationKey
+    return this.i18n.t(key)
   }
 
   private getTranslatedCardReason() {

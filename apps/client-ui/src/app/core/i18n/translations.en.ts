@@ -262,6 +262,7 @@ export const en = {
   specialCardsRandomizerEnabled: 'Enable random special cards at game start',
   specialCardsRandomizerInfo:
     'If enabled, the host settings for individual special cards are ignored when starting the game. The game randomly decides which special cards are included.',
+  specialCardsInMatch: 'Special cards in this game',
 
   // Generic state labels
   loading: 'Loading',
