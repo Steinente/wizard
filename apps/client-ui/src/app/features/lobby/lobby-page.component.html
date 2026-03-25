@@ -370,10 +370,13 @@
             [style.opacity]="
               store.lobby()!.config.specialCardsRandomizerEnabled ? 0.55 : 1
             "
+            role="group"
+            [attr.aria-label]="i18n.t('specialCardsLabel')"
           >
             @for (card of specialCards; track card.id) {
               @let isEnabled = isSpecialCardEnabled(card.special);
-              <div
+              <button
+                type="button"
                 [style.cursor]="
                   isHost() &&
                   !store.lobby()!.config.specialCardsRandomizerEnabled
@@ -382,6 +385,20 @@
                 "
                 [style.opacity]="isEnabled ? '1' : '0.45'"
                 [style.filter]="isEnabled ? 'none' : 'grayscale(0.4)'"
+                [style.border]="'none'"
+                [style.background]="'none'"
+                [style.padding]="'0'"
+                [style.cursor]="
+                  isHost() &&
+                  !store.lobby()!.config.specialCardsRandomizerEnabled
+                    ? 'pointer'
+                    : 'not-allowed'
+                "
+                [disabled]="
+                  !isHost() || store.lobby()!.config.specialCardsRandomizerEnabled
+                "
+                [attr.aria-pressed]="isEnabled"
+                [attr.aria-label]="getSpecialCardAriaLabel(card)"
                 (click)="toggleSpecialCard(card.special)"
               >
                 <wiz-card
@@ -391,7 +408,7 @@
                   [useArtwork]="session.cardArtworkEnabled()"
                   [play]="noopPlay"
                 />
-              </div>
+              </button>
             }
           </div>
         </div>

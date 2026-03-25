@@ -86,6 +86,15 @@ export class LobbyPageComponent {
     return `role.${role.toLowerCase()}` as TranslationKey
   }
 
+  getSpecialCardAriaLabel(card: SpecialCard): string {
+    const cardName = this.i18n.t(card.labelKey)
+    const isEnabled = this.isSpecialCardEnabled(card.special)
+    const status = isEnabled
+      ? this.i18n.t('cardStatusIncluded')
+      : this.i18n.t('cardStatusExcluded')
+    return `${cardName}, ${status}`
+  }
+
   toggleRuleInfo(key: RuleInfoKey) {
     this.activeRuleInfoState.update((current) => (current === key ? null : key))
   }
@@ -131,6 +140,20 @@ export class LobbyPageComponent {
 
     if (lobby.players.length < minPlayers) {
       this.store.setError(this.i18n.t('minPlayersRequired'))
+      return
+    }
+
+    const hasSelectedSpecialCards =
+      lobby.config.includedSpecialCards &&
+      lobby.config.includedSpecialCards.length > 0
+
+    if (
+      lobby.config.specialCardsRandomizerEnabled &&
+      !hasSelectedSpecialCards
+    ) {
+      this.store.setError(
+        this.i18n.t('specialCardsRandomizerRequiresSelection'),
+      )
       return
     }
 

@@ -49,6 +49,8 @@ export const en = {
   cancel: 'Cancel',
   minPlayersRequired:
     'Wizard can only be started with at least 3 players (or 2 with the unofficial rule).',
+  specialCardsRandomizerRequiresSelection:
+    'When the special cards randomizer is enabled, at least one special card must be selected.',
   waitingForPlayers: 'Waiting for players',
   confirmLeaveGame:
     'Do you really want to leave the game and go to the home page? You can reconnect.',
@@ -250,7 +252,7 @@ export const en = {
   cloudRuleTimingImmediateAfterTrick: '30-year mode (immediately after trick)',
   specialCardsLabel: 'Special cards',
   specialCardsInfo:
-    'Click cards to enable or disable them for the game. Grayed-out cards are excluded.',
+    'Click cards to enable or disable them for the game. Grayed-out cards are excluded. When the randomizer is enabled, the selected cards become the pool for the random draw.',
   specialCardsFilterLabel: 'Filter',
   specialCardsFilterCustom: 'Custom (no filter)',
   specialCardsFilterClassic: 'Wizard (Classic)',
@@ -259,9 +261,10 @@ export const en = {
   specialCardsFilterAnniversary30: 'Wizard (30th Anniversary)',
   specialCardsFilterDarkEyeOnly: 'Wizard - The Dark Eye',
   specialCardsRandomizerLabel: 'Special cards randomizer',
-  specialCardsRandomizerEnabled: 'Enable random special cards at game start',
+  specialCardsRandomizerEnabled:
+    'Enable random special cards from the selected pool at game start',
   specialCardsRandomizerInfo:
-    'If enabled, the host settings for individual special cards are ignored when starting the game. The game randomly decides which special cards are included.',
+    'If enabled, the currently selected special cards form the pool for game start. The game then randomly chooses which special cards are included from that pool.',
   specialCardsInMatch: 'Special cards in this game',
 
   // Generic state labels
@@ -414,6 +417,8 @@ export const en = {
 
   'card.wizard': 'Wizard',
   'card.jester': 'Jester',
+  cardStatusIncluded: 'selected',
+  cardStatusExcluded: 'not selected',
   'card.special.shapeShifter': 'Shape Shifter',
   'card.special.bomb': 'Bomb',
   'card.special.werewolf': 'Werewolf',

@@ -9,7 +9,6 @@ import {
   getAllowedPredictionValues,
   SPECIAL_CARD_KEY,
   isLegalPlay,
-  SPECIAL_CARD_KEYS,
   validatePredictionRestriction,
 } from '@wizard/shared'
 import crypto from 'node:crypto'
@@ -64,9 +63,15 @@ import {
 export class GameService {
   private static readonly CHAT_MESSAGE_LIMIT = 200
 
-  private randomizeSpecialCards(): SpecialCardKey[] {
-    const shuffled = [...SPECIAL_CARD_KEYS].sort(() => Math.random() - 0.5)
-    const count = Math.floor(Math.random() * SPECIAL_CARD_KEYS.length) + 1
+  private randomizeSpecialCards(
+    pool: readonly SpecialCardKey[],
+  ): SpecialCardKey[] {
+    if (pool.length === 0) {
+      return []
+    }
+
+    const shuffled = [...pool].sort(() => Math.random() - 0.5)
+    const count = Math.floor(Math.random() * pool.length) + 1
     return shuffled.slice(0, count)
   }
 
@@ -177,9 +182,16 @@ export class GameService {
       throw new Error('error.wizardMinPlayers')
     }
 
+    if (
+      specialCardSettings.specialCardsRandomizerEnabled &&
+      specialCardSettings.includedSpecialCards.length === 0
+    ) {
+      throw new Error('error.specialCardsRandomizerRequiresSelection')
+    }
+
     const randomizedIncludedSpecialCards =
       specialCardSettings.specialCardsRandomizerEnabled
-        ? this.randomizeSpecialCards()
+        ? this.randomizeSpecialCards(specialCardSettings.includedSpecialCards)
         : null
 
     if (randomizedIncludedSpecialCards) {

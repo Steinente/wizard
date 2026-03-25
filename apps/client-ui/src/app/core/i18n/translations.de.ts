@@ -49,6 +49,8 @@ export const de = {
   cancel: 'Abbrechen',
   minPlayersRequired:
     'Wizard ist erst ab 3 Spielern spielbar (oder ab 2 mit der inoffiziellen Regel).',
+  specialCardsRandomizerRequiresSelection:
+    'Wenn der Sonderkarten-Randomizer aktiviert ist, muss mindestens eine Sonderkarte ausgewählt sein.',
   waitingForPlayers: 'Warten auf Spieler',
   confirmLeaveGame:
     'Möchtest du das Spiel wirklich verlassen und zur Startseite gehen? Du kannst dich wieder verbinden.',
@@ -252,7 +254,7 @@ export const de = {
   cloudRuleTimingImmediateAfterTrick: '30-Jahre-Modus (direkt nach dem Stich)',
   specialCardsLabel: 'Sonderkarten',
   specialCardsInfo:
-    'Karten anklicken, um sie für das Spiel zu aktivieren oder deaktivieren. Ausgegraute Karten sind ausgeschlossen.',
+    'Karten anklicken, um sie für das Spiel zu aktivieren oder deaktivieren. Ausgegraute Karten sind ausgeschlossen. Wenn der Randomizer aktiv ist, bilden die ausgewählten Karten den Pool fuer die zufaellige Auswahl.',
   specialCardsFilterLabel: 'Filter',
   specialCardsFilterCustom: 'Individuell (kein Filter)',
   specialCardsFilterClassic: 'Wizard (Klassik)',
@@ -262,9 +264,9 @@ export const de = {
   specialCardsFilterDarkEyeOnly: 'Wizard - Das Schwarze Auge',
   specialCardsRandomizerLabel: 'Sonderkarten-Randomizer',
   specialCardsRandomizerEnabled:
-    'Zufällige Sonderkarten beim Spielstart aktivieren',
+    'Zufällige Sonderkarten aus der Auswahl beim Spielstart aktivieren',
   specialCardsRandomizerInfo:
-    'Wenn aktiviert, werden die Host-Einstellungen einzelner Sonderkarten beim Spielstart ignoriert. Das Spiel entscheidet zufällig, welche Sonderkarten enthalten sind.',
+    'Wenn aktiviert, bilden die aktuell ausgewaehlten Sonderkarten den Pool fuer den Spielstart. Das Spiel waehlt dann zufaellig aus diesem Pool aus, welche Sonderkarten enthalten sind.',
   specialCardsInMatch: 'Sonderkarten im Spiel',
 
   // Allgemeine Statuslabels
@@ -428,6 +430,8 @@ export const de = {
 
   'card.wizard': 'Zauberer',
   'card.jester': 'Narr',
+  cardStatusIncluded: 'ausgewählt',
+  cardStatusExcluded: 'nicht ausgewählt',
   'card.special.shapeShifter': 'Gestaltenwandler',
   'card.special.bomb': 'Bombe',
   'card.special.werewolf': 'Werwolf',
