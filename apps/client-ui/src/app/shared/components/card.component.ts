@@ -9,6 +9,7 @@ import {
   SPECIAL_CARD_KEY,
   type Card,
   type ResolvedCardRuntimeEffect,
+  type Suit,
 } from '@wizard/shared'
 import { I18nService } from '../../core/i18n/i18n.service'
 import type { TranslationKey } from '../../core/i18n/translations'
@@ -468,6 +469,10 @@ export class CardComponent {
   @Input() useArtwork = false
 
   get accent() {
+    if (this.displaySuit) {
+      return SUIT_BACKGROUNDS[this.displaySuit]
+    }
+
     return getCardAccent(this.card)
   }
 
@@ -681,6 +686,33 @@ export class CardComponent {
     return null
   }
 
+  private get displaySuit(): Suit | null {
+    if (
+      this.resolvedEffect &&
+      this.isCloudOrJugglerSpecial(this.resolvedEffect.special) &&
+      this.resolvedEffect.chosenSuit
+    ) {
+      return this.resolvedEffect.chosenSuit
+    }
+
+    if (this.resolvedEffect?.special !== SPECIAL_CARD_KEY.vampire) {
+      return null
+    }
+
+    if (
+      this.isCloudOrJugglerSpecial(this.vampireCopiedSpecial) &&
+      this.resolvedEffect.chosenSuit
+    ) {
+      return this.resolvedEffect.chosenSuit
+    }
+
+    if (this.resolvedEffect.copiedCard?.type === 'number') {
+      return this.resolvedEffect.copiedCard.suit
+    }
+
+    return null
+  }
+
   private isCloudOrJugglerSpecial(special: string | null | undefined): boolean {
     return (
       special === SPECIAL_CARD_KEY.cloud || special === SPECIAL_CARD_KEY.juggler
@@ -727,22 +759,8 @@ export class CardComponent {
   }
 
   get background() {
-    // Check if this is a cloud or juggler card with a chosen suit
-    if (
-      this.resolvedEffect &&
-      this.isCloudOrJugglerSpecial(this.resolvedEffect.special) &&
-      this.resolvedEffect.chosenSuit
-    ) {
-      return SUIT_BACKGROUNDS[this.resolvedEffect.chosenSuit] ?? this.accent
-    }
-
-    // If vampire copied cloud/juggler, use the chosen suit color as well.
-    if (
-      this.resolvedEffect?.special === SPECIAL_CARD_KEY.vampire &&
-      this.isCloudOrJugglerSpecial(this.vampireCopiedSpecial) &&
-      this.resolvedEffect.chosenSuit
-    ) {
-      return SUIT_BACKGROUNDS[this.resolvedEffect.chosenSuit] ?? this.accent
+    if (this.displaySuit) {
+      return SUIT_BACKGROUNDS[this.displaySuit] ?? this.accent
     }
 
     if (this.card.type === 'number') {
@@ -753,25 +771,11 @@ export class CardComponent {
   }
 
   get foreground() {
-    // Check if background is the yellow color
-    if (
-      this.resolvedEffect &&
-      this.isCloudOrJugglerSpecial(this.resolvedEffect.special)
-    ) {
-      // Yellow needs dark text, other colors need light text
-      if (this.resolvedEffect.chosenSuit === 'yellow') {
+    if (this.displaySuit) {
+      if (this.displaySuit === 'yellow') {
         return '#0f172a'
       }
-      return '#ffffff'
-    }
 
-    if (
-      this.resolvedEffect?.special === SPECIAL_CARD_KEY.vampire &&
-      this.isCloudOrJugglerSpecial(this.vampireCopiedSpecial)
-    ) {
-      if (this.resolvedEffect.chosenSuit === 'yellow') {
-        return '#0f172a'
-      }
       return '#ffffff'
     }
 
