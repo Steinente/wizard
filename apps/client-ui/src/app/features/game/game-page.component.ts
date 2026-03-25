@@ -29,6 +29,7 @@ const SPECIAL_SORT_PRIORITY: Record<string, number> = {
   shapeShifter: 80,
   wizard: 70,
   werewolf: 60,
+  darkEye: 55,
   cloud: 50,
   juggler: 40,
   bomb: 30,
@@ -182,6 +183,7 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
                     [onResolveCloudAdjustment]="resolveCloudAdjustmentFn"
                     [onResolveJugglerSuit]="resolveJugglerSuitFn"
                     [onResolveWitch]="resolveWitchFn"
+                    [onResolveDarkEyeChoice]="resolveDarkEyeChoiceFn"
                   />
                 } @else if (foreignPendingDecisionText()) {
                   <div class="panel">
@@ -382,6 +384,8 @@ export class GamePageComponent {
     handCardId: string
     trickCardId: string
   }) => this.resolveWitch(payload)
+  readonly resolveDarkEyeChoiceFn = (selectedCardId: string) =>
+    this.resolveDarkEyeChoice(selectedCardId)
   readonly toggleReadLogFn = (enabled: boolean) => this.toggleAudio(enabled)
   readonly toggleBingFn = (enabled: boolean) =>
     this.session.setBingEnabled(enabled)
@@ -800,6 +804,20 @@ export class GamePageComponent {
     }
 
     this.facade.resolveWitch(state.lobbyCode, payload)
+  }
+
+  resolveDarkEyeChoice(selectedCardId: string) {
+    const state = this.store.gameState()
+
+    if (
+      !state?.pendingDecision ||
+      (state.pendingDecision.type !== 'darkEyeTrumpChoice' &&
+        state.pendingDecision.type !== 'darkEyePlayChoice')
+    ) {
+      return
+    }
+
+    this.facade.resolveDarkEyeChoice(state.lobbyCode, selectedCardId)
   }
 
   toggleAudio(enabled: boolean) {

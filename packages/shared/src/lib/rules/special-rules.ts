@@ -60,6 +60,13 @@ export const SPECIAL_CARD_DEFINITIONS: Record<
     isPlayableAnytime: true,
     resolveBeforeTrickWinner: true,
   },
+  darkEye: {
+    key: 'darkEye',
+    labelKey: 'card.special.darkEye',
+    descriptionKey: 'card.special.darkEye.description',
+    isPlayableAnytime: true,
+    resolveBeforeTrickWinner: true,
+  },
   cloud: {
     key: 'cloud',
     labelKey: 'card.special.cloud',

@@ -180,6 +180,8 @@ export const translations = {
     chooseWitchTrickCard: 'Choose a trick card to take into your hand',
     applyWitchExchange: 'Apply Witch exchange',
     chooseWerewolfTrump: 'Choose the new trump for Werewolf',
+    chooseDarkEyeTrumpCard: 'Choose a trump-decider card for The Dark Eye',
+    chooseDarkEyePlayCard: 'Choose the card The Dark Eye plays into the trick',
     noTrump: 'No trump',
     plusOne: '+1',
     minusOne: '-1',
@@ -301,6 +303,7 @@ export const translations = {
     'error.jugglerPassFailed': 'Juggler pass selection failed',
     'error.witchResolutionFailed': 'Witch resolution failed',
     'error.werewolfTrumpSwapFailed': 'Werewolf trump swap failed',
+    'error.darkEyeChoiceFailed': 'The Dark Eye choice failed',
     'error.playerNameRequired': 'Player name is required',
     'error.playerNameTooLong': 'Player name must be 15 characters or fewer',
     'error.playerNameNoEmoji': 'Player name must not contain emoji',
@@ -314,6 +317,8 @@ export const translations = {
     'log.game.finished': 'Game finished',
     'log.game.trump.selected': 'Trump selected - {suit}',
     'log.game.trump.selection.pending': '{playerId} chooses trump suit',
+    'log.game.trump.selection.pending.darkEye':
+      '{playerId} chooses the trump card because The Dark Eye was revealed',
     'log.game.trump.selection.pending.werewolfInHand':
       '{playerId} chooses trump suit because they drew Werewolf',
     'log.game.trump.selection.pending.werewolfRevealed':
@@ -351,6 +356,16 @@ export const translations = {
       '{playerId} played Vampire. Because trump is Werewolf, a new trump is revealed. Vampire transforms into {copiedCardLabel}',
     'log.special.werewolf.pendingTrumpEffect':
       '{playerId} swapped Werewolf with {swappedCardLabel} and chose trump {suit}',
+    'log.special.darkEye.played':
+      '{playerId} played The Dark Eye and drew {drawnCount} card(s)',
+    'log.special.darkEye.played.single':
+      '{playerId} played The Dark Eye and drew 1 card',
+    'log.special.darkEye.played.multiple':
+      '{playerId} played The Dark Eye and drew {drawnCount} cards',
+    'log.special.darkEye.choice':
+      '{playerId} plays {cardLabel} via The Dark Eye',
+    'log.special.darkEye.trumpChoice':
+      '{playerId} has chosen {cardLabel} as the new trump card',
     'log.special.witch.noHandCard':
       '{playerId} cannot use Witch effect because no hand card is left',
     'log.special.witch.exchange.started':
@@ -369,6 +384,7 @@ export const translations = {
     'card.special.bomb': 'Bomb',
     'card.special.werewolf': 'Werewolf',
     'card.special.vampire': 'Vampire',
+    'card.special.darkEye': 'The Dark Eye',
     'card.special.cloud': 'Cloud',
     'card.special.juggler': 'Juggler',
     'card.special.dragon': 'Dragon',
@@ -382,6 +398,8 @@ export const translations = {
       'When drawn into a hand, it swaps with the current trump card; its owner then chooses the new trump suit (or no trump).',
     'card.special.vampire.info':
       'When played in a trick, it copies the current trump card (including effects). If trump is Werewolf, a new trump card is revealed first and Vampire copies that card instead.',
+    'card.special.darkEye.info':
+      'Set this card aside, draw up to three cards from the draw pile, choose one to play into the trick, and return the rest face down.',
     'card.special.cloud.info':
       'Choose a suit; if this card wins a trick, the winner must adjust their prediction by +1 or -1.',
     'card.special.juggler.info':
@@ -572,6 +590,10 @@ export const translations = {
     chooseWitchTrickCard: 'Stichkarte wählen, die auf die Hand genommen wird',
     applyWitchExchange: 'Hexen-Tausch ausführen',
     chooseWerewolfTrump: 'Neuen Trumpf für den Werwolf wählen',
+    chooseDarkEyeTrumpCard:
+      'Trumpf-Bestimmerkarte für Das Schwarze Auge wählen',
+    chooseDarkEyePlayCard:
+      'Karte wählen, die Das Schwarze Auge in den Stich spielt',
     noTrump: 'Kein Trumpf',
     plusOne: '+1',
     minusOne: '-1',
@@ -699,6 +721,7 @@ export const translations = {
     'error.jugglerPassFailed': 'Jongleur-Weitergabe fehlgeschlagen',
     'error.witchResolutionFailed': 'Hexen-Auflösung fehlgeschlagen',
     'error.werewolfTrumpSwapFailed': 'Werwolf-Trumpftausch fehlgeschlagen',
+    'error.darkEyeChoiceFailed': 'Auswahl für Das Schwarze Auge fehlgeschlagen',
     'error.playerNameRequired': 'Spielername ist erforderlich',
     'error.playerNameTooLong':
       'Der Spielername darf maximal 15 Zeichen lang sein',
@@ -713,6 +736,8 @@ export const translations = {
     'log.game.finished': 'Spiel beendet',
     'log.game.trump.selected': 'Trumpf gewählt - {suit}',
     'log.game.trump.selection.pending': '{playerId} wählt Trumpffarbe',
+    'log.game.trump.selection.pending.darkEye':
+      '{playerId} wählt Trumpfkarte, da Das Dunkle Auge aufgedeckt wurde',
     'log.game.trump.selection.pending.werewolfInHand':
       '{playerId} wählt Trumpffarbe, da er den Werwolf gezogen hat',
     'log.game.trump.selection.pending.werewolfRevealed':
@@ -753,6 +778,16 @@ export const translations = {
       '{playerId} spielt Vampir. Da der Trumpf Werwolf ist, wird ein neuer Trumpf aufgedeckt. Der Vampir verwandelt sich in {copiedCardLabel}',
     'log.special.werewolf.pendingTrumpEffect':
       '{playerId} tauscht den Werwolf mit {swappedCardLabel} und wählt {suit} als Trumpf',
+    'log.special.darkEye.played':
+      '{playerId} spielt Das Schwarze Auge und zieht {drawnCount} Karte(n)',
+    'log.special.darkEye.played.single':
+      '{playerId} spielt Das Schwarze Auge und zieht 1 Karte',
+    'log.special.darkEye.played.multiple':
+      '{playerId} spielt Das Schwarze Auge und zieht {drawnCount} Karten',
+    'log.special.darkEye.choice':
+      '{playerId} spielt über Das Schwarze Auge {cardLabel}',
+    'log.special.darkEye.trumpChoice':
+      '{playerId} hat {cardLabel} zur neuen Trumpfkarte gewählt',
     'log.special.witch.noHandCard':
       '{playerId} kann den Hexen-Effekt nicht nutzen, da keine Handkarte mehr vorhanden ist',
     'log.special.witch.exchange.started':
@@ -771,6 +806,7 @@ export const translations = {
     'card.special.bomb': 'Bombe',
     'card.special.werewolf': 'Werwolf',
     'card.special.vampire': 'Vampir',
+    'card.special.darkEye': 'Das Schwarze Auge',
     'card.special.cloud': 'Wolke',
     'card.special.juggler': 'Jongleur',
     'card.special.dragon': 'Drache',
@@ -784,6 +820,8 @@ export const translations = {
       'Wird er auf die Hand gezogen, tauscht er mit der aktiven Trumpfkarte; sein Besitzer bestimmt danach die neue Trumpffarbe (oder kein Trumpf).',
     'card.special.vampire.info':
       'Wird er im Stich gespielt, kopiert er die aktuelle Trumpfkarte (inklusive Effekten). Ist der Trumpf ein Werwolf, wird zuerst eine neue Trumpfkarte aufgedeckt; der Vampir kopiert dann diese neue Karte.',
+    'card.special.darkEye.info':
+      'Lege diese Karte beiseite, ziehe bis zu drei Karten vom Nachziehstapel, wähle eine davon für den Stich und lege die übrigen verdeckt zurück.',
     'card.special.cloud.info':
       'Wähle eine Farbe; gewinnt diese Karte einen Stich, muss der Gewinner seine Ansage um +1 oder -1 anpassen.',
     'card.special.juggler.info':

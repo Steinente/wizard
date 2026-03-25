@@ -69,6 +69,12 @@ export const resolveWerewolfTrumpSwapSchema = z.object({
   suit: z.union([z.enum(['red', 'yellow', 'green', 'blue']), z.null()]),
 })
 
+export const resolveDarkEyeChoiceSchema = z.object({
+  code: z.string().trim().min(4).max(12),
+  sessionToken: z.string().trim().min(1).max(200),
+  selectedCardId: z.string().trim().min(1),
+})
+
 export const sendChatMessageSchema = z.object({
   code: z.string().trim().min(4).max(12),
   sessionToken: z.string().trim().min(1).max(200),

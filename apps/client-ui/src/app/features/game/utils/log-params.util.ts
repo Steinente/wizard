@@ -18,6 +18,7 @@ const KNOWN_SPECIALS = new Set([
   'bomb',
   'werewolf',
   'vampire',
+  'darkeye',
   'cloud',
   'juggler',
   'dragon',
@@ -32,7 +33,12 @@ const getSpecialCardTranslationKey = (value: string): TranslationKey | null => {
     return null
   }
 
-  const keySegment = lower === 'shapeshifter' ? 'shapeShifter' : lower
+  const keySegment =
+    lower === 'shapeshifter'
+      ? 'shapeShifter'
+      : lower === 'darkeye'
+        ? 'darkEye'
+        : lower
   return `card.special.${keySegment}` as TranslationKey
 }
 

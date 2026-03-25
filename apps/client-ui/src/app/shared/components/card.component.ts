@@ -23,6 +23,7 @@ const SPECIAL_CARD_ARTWORK: Record<string, string> = {
   bomb: 'bomb',
   werewolf: 'werewolf',
   vampire: 'vampire',
+  darkEye: 'the_dark_eye',
   cloud: 'cloud',
   juggler: 'juggler',
   dragon: 'dragon',

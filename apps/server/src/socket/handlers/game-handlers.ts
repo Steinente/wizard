@@ -4,6 +4,7 @@ import {
   playCardSchema,
   resolveCloudAdjustmentSchema,
   resolveCloudSchema,
+  resolveDarkEyeChoiceSchema,
   resolveJugglerSchema,
   resolveShapeShifterSchema,
   resolveWitchSchema,
@@ -173,16 +174,44 @@ export const registerGameHandlers = ({
   })
 
   socket.on('game:resolveWerewolfTrumpSwap', async (payload) => {
-    await runSocketAction(
-      socket,
-      payload,
-      resolveWerewolfTrumpSwapSchema.parse,
-      async (input) => {
+    try {
+      const input = resolveWerewolfTrumpSwapSchema.parse(payload)
+      const stateAfterResolution =
         await gameService.resolveWerewolfTrumpSwap(input)
-        await emitStateForCode(io, input.code, sessionStore, gameService)
-      },
-      'error.werewolfTrumpSwapFailed',
-    )
+      await resolveCompletedTrickAfterDelay(
+        io,
+        input.code,
+        stateAfterResolution,
+        sessionStore,
+        gameService,
+      )
+    } catch (error) {
+      emitError(
+        socket,
+        error instanceof Error
+          ? error.message
+          : 'error.werewolfTrumpSwapFailed',
+      )
+    }
+  })
+
+  socket.on('game:resolveDarkEyeChoice', async (payload) => {
+    try {
+      const input = resolveDarkEyeChoiceSchema.parse(payload)
+      const stateAfterResolution = await gameService.resolveDarkEyeChoice(input)
+      await resolveCompletedTrickAfterDelay(
+        io,
+        input.code,
+        stateAfterResolution,
+        sessionStore,
+        gameService,
+      )
+    } catch (error) {
+      emitError(
+        socket,
+        error instanceof Error ? error.message : 'error.darkEyeChoiceFailed',
+      )
+    }
   })
 
   socket.on('game:playCard', async (payload) => {

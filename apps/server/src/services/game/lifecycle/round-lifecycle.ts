@@ -18,6 +18,7 @@ import {
   nowIso,
   type LobbyWithPlayers,
 } from '../game-service-support.js'
+import { enqueueDarkEyeTrumpChoice } from '../specials/index.js'
 
 // Centralizes start-of-round decision flow so initial setup and next rounds stay in sync.
 export function applyRoundStartState(state: WizardGameState) {
@@ -26,6 +27,7 @@ export function applyRoundStartState(state: WizardGameState) {
   }
 
   const round = state.currentRound
+  const playerBeforeRoundLeaderId = getPlayerBeforeRoundLeader(state)
   const werewolfOwnerPlayerId = getWerewolfOwnerPlayerId(state)
 
   const pushSystemLog = (
@@ -47,7 +49,7 @@ export function applyRoundStartState(state: WizardGameState) {
     pendingLogParams?: Record<string, string>,
   ) => {
     state.phase = 'trumpSelection'
-    round.activePlayerId = getPlayerBeforeRoundLeader(state)
+    round.activePlayerId = playerBeforeRoundLeaderId
     state.pendingDecision = round.activePlayerId
       ? {
           id: crypto.randomUUID(),
@@ -64,6 +66,40 @@ export function applyRoundStartState(state: WizardGameState) {
         ...(pendingLogParams ?? {}),
       })
     }
+  }
+
+  if (
+    round.trumpCard?.type === 'special' &&
+    round.trumpCard.special === 'darkEye'
+  ) {
+    const drawnCards = enqueueDarkEyeTrumpChoice({
+      state,
+      playerId: playerBeforeRoundLeaderId,
+      getReadableCardLabel,
+    })
+
+    if (!drawnCards.length) {
+      state.phase = 'prediction'
+      round.activePlayerId = round.roundLeaderPlayerId
+      state.pendingDecision = null
+      round.trumpSuit = null
+
+      pushSystemLog('game.trump.noTrumpDueToCard', {
+        cardLabel: getReadableCardLabel(round.trumpCard),
+      })
+      return
+    }
+
+    state.phase = 'trumpSelection'
+    round.activePlayerId = playerBeforeRoundLeaderId
+
+    if (round.activePlayerId) {
+      pushSystemLog('game.trump.selection.pending.darkEye', {
+        playerId: round.activePlayerId,
+      })
+    }
+
+    return
   }
 
   if (werewolfOwnerPlayerId && round.trumpCard) {

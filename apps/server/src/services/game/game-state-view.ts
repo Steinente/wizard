@@ -94,7 +94,31 @@ export const createGameStateView = (
       !entry.visibleToPlayerId || entry.visibleToPlayerId === selfPlayerId,
   ),
   chatMessages: state.chatMessages,
-  pendingDecision: state.pendingDecision,
+  pendingDecision: (() => {
+    const decision = state.pendingDecision
+
+    if (!decision) {
+      return null
+    }
+
+    if (decision.playerId === selfPlayerId) {
+      return decision
+    }
+
+    if (
+      decision.type === 'darkEyeTrumpChoice' ||
+      decision.type === 'darkEyePlayChoice'
+    ) {
+      return {
+        ...decision,
+        options: [],
+        drawnCards: [],
+        playCard: undefined,
+      }
+    }
+
+    return decision
+  })(),
   resolvedCardEffects: state.resolvedCardEffects,
   createdAt: state.createdAt,
   updatedAt: state.updatedAt,

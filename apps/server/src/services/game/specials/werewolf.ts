@@ -10,9 +10,13 @@ interface ResolveWerewolfTrumpSwapContext {
   ) => void
 }
 
+interface ResolveWerewolfTrumpSwapResult {
+  playCardAfterSwap: Card | null
+}
+
 export const resolveWerewolfTrumpSwapDecision = (
   context: ResolveWerewolfTrumpSwapContext,
-) => {
+): ResolveWerewolfTrumpSwapResult => {
   if (!context.state.currentRound) {
     throw new Error('Round not initialized')
   }
@@ -31,6 +35,45 @@ export const resolveWerewolfTrumpSwapDecision = (
 
   if (!roundPlayer) {
     throw new Error('Player is not part of the round')
+  }
+
+  const stagedPlayCard = context.state.pendingDecision.playCard ?? null
+  const stagedWerewolfCardId = context.state.pendingDecision.cardId
+
+  if (stagedPlayCard && stagedWerewolfCardId) {
+    const werewolfCard: Card = {
+      id: stagedWerewolfCardId,
+      type: 'special',
+      special: 'werewolf',
+      labelKey: 'card.special.werewolf',
+    }
+
+    context.state.currentRound.trumpCard = werewolfCard
+    context.state.currentRound.trumpSuit = context.suit
+    context.state.pendingDecision = null
+
+    context.registerResolvedEffect({
+      cardId: werewolfCard.id,
+      ownerPlayerId: context.playerId,
+      special: 'werewolf',
+      note: 'dark eye werewolf swapped trump',
+    })
+
+    context.state.logs.push({
+      id: createDecisionId(),
+      createdAt: nowIso(),
+      type: 'specialEffect',
+      messageKey: 'special.werewolf.pendingTrumpEffect',
+      messageParams: {
+        playerId: context.playerId,
+        suit: context.suit ?? 'none',
+        swappedCardLabel: describeCard(stagedPlayCard),
+      },
+    })
+
+    return {
+      playCardAfterSwap: stagedPlayCard,
+    }
   }
 
   const werewolfCard = roundPlayer.hand.find(
@@ -77,6 +120,10 @@ export const resolveWerewolfTrumpSwapDecision = (
       swappedCardLabel: describeCard(currentTrumpCard),
     },
   })
+
+  return {
+    playCardAfterSwap: null,
+  }
 }
 
 const describeCard = (card: Card): string => {

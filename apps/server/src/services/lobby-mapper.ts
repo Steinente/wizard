@@ -7,7 +7,7 @@ import type {
   PredictionVisibility,
   SpecialCardKey,
 } from '@wizard/shared'
-import { SPECIAL_CARD_KEYS } from '@wizard/shared'
+import { ANNIVERSARY_SPECIALS_ENABLED_BY_DEFAULT } from '@wizard/shared'
 import type { Lobby, Player, PlayerRole } from '../generated/prisma/client.js'
 
 type LobbyWithPlayers = Lobby & {
@@ -37,7 +37,7 @@ const parseSpecialCardSettings = (
   specialCardsRandomizerEnabled: boolean
 } => {
   const fallback = {
-    includedSpecialCards: [...SPECIAL_CARD_KEYS],
+    includedSpecialCards: [...ANNIVERSARY_SPECIALS_ENABLED_BY_DEFAULT],
     cloudRuleTiming: 'endOfRound' as const,
     specialCardsRandomizerEnabled: false,
   }

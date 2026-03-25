@@ -23,6 +23,7 @@ const INTERACTION_EVENTS = [
   'game:playCard',
   'game:selectTrumpSuit',
   'game:resolveWerewolfTrumpSwap',
+  'game:resolveDarkEyeChoice',
   'game:resolveShapeShifter',
   'game:resolveCloud',
   'game:resolveCloudAdjustment',
@@ -252,6 +253,7 @@ export class GameFacadeService {
       | 'game:playCard'
       | 'game:selectTrumpSuit'
       | 'game:resolveWerewolfTrumpSwap'
+      | 'game:resolveDarkEyeChoice'
       | 'game:resolveShapeShifter'
       | 'game:resolveCloud'
       | 'game:resolveCloudAdjustment'
@@ -523,6 +525,12 @@ export class GameFacadeService {
   resolveWerewolfTrumpSwap(code: string, suit: Suit | null) {
     this.emitCodeScoped('game:resolveWerewolfTrumpSwap', code, {
       suit,
+    })
+  }
+
+  resolveDarkEyeChoice(code: string, selectedCardId: string) {
+    this.emitCodeScoped('game:resolveDarkEyeChoice', code, {
+      selectedCardId,
     })
   }
 

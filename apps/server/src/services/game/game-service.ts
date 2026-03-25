@@ -1,4 +1,10 @@
-import type { PlayerPrediction, SpecialCardKey, Suit } from '@wizard/shared'
+import type {
+  Card,
+  PlayerPrediction,
+  SpecialCardKey,
+  Suit,
+  WizardGameState,
+} from '@wizard/shared'
 import {
   getAllowedPredictionValues,
   isLegalPlay,
@@ -30,6 +36,7 @@ import {
 } from './game-service-support.js'
 import { createGameStateView } from './game-state-view.js'
 import {
+  applyRoundStartState,
   buildInitialState,
   continueOrResolveCurrentTrick,
   finishRoundAndAdvance,
@@ -37,8 +44,10 @@ import {
 } from './lifecycle/index.js'
 import {
   enqueueCloudPredictionAdjustmentDecision,
+  enqueueDarkEyePlayChoice,
   enqueuePendingWitchExchangeDecision,
   resolveCloudAdjustmentDecision,
+  resolveDarkEyeChoiceDecision,
   handleCloudBeforePlay,
   handleJugglerBeforePlay,
   handleShapeShifterBeforePlay,
@@ -58,6 +67,90 @@ export class GameService {
     const shuffled = [...SPECIAL_CARD_KEYS].sort(() => Math.random() - 0.5)
     const count = Math.floor(Math.random() * SPECIAL_CARD_KEYS.length) + 1
     return shuffled.slice(0, count)
+  }
+
+  private triggerSpecialBeforePlay(
+    state: WizardGameState,
+    playerId: string,
+    card: Extract<Card, { type: 'special' }>,
+    playCardFromPendingChoice?: Card,
+  ): boolean {
+    if (card.special === 'vampire') {
+      const before = handleVampireBeforePlay({
+        state,
+        playerId,
+        card,
+        registerResolvedEffect: (effect) =>
+          registerResolvedEffect(state, effect),
+        getReadableCardLabel,
+      })
+
+      if (
+        before.requiresDecision &&
+        state.pendingDecision &&
+        playCardFromPendingChoice
+      ) {
+        state.pendingDecision.playCard = playCardFromPendingChoice
+      }
+
+      return before.requiresDecision
+    }
+
+    if (card.special === 'shapeShifter') {
+      const before = handleShapeShifterBeforePlay({
+        state,
+        playerId,
+        card,
+      })
+
+      if (
+        before.requiresDecision &&
+        state.pendingDecision &&
+        playCardFromPendingChoice
+      ) {
+        state.pendingDecision.playCard = playCardFromPendingChoice
+      }
+
+      return before.requiresDecision
+    }
+
+    if (card.special === 'cloud') {
+      const before = handleCloudBeforePlay({
+        state,
+        playerId,
+        card,
+      })
+
+      if (
+        before.requiresDecision &&
+        state.pendingDecision &&
+        playCardFromPendingChoice
+      ) {
+        state.pendingDecision.playCard = playCardFromPendingChoice
+      }
+
+      return before.requiresDecision
+    }
+
+    if (card.special === 'juggler') {
+      const before = handleJugglerBeforePlay({
+        state,
+        playerId,
+        card,
+      })
+
+      if (
+        before.requiresDecision &&
+        state.pendingDecision &&
+        playCardFromPendingChoice
+      ) {
+        state.pendingDecision.playCard = playCardFromPendingChoice
+      }
+
+      return before.requiresDecision
+    }
+
+    return false
   }
 
   async startGame(input: { code: string; sessionToken: string }) {
@@ -336,15 +429,131 @@ export class GameService {
 
     const player = getPlayerBySessionToken(lobby, input.sessionToken)
 
-    resolveWerewolfTrumpSwapDecision({
+    const { playCardAfterSwap } = resolveWerewolfTrumpSwapDecision({
       state,
       playerId: player.id,
       suit: input.suit,
       registerResolvedEffect: (effect) => registerResolvedEffect(state, effect),
     })
 
+    if (playCardAfterSwap) {
+      if (playCardAfterSwap.type === 'special') {
+        const requiresDecision = this.triggerSpecialBeforePlay(
+          state,
+          player.id,
+          playCardAfterSwap,
+          playCardAfterSwap,
+        )
+
+        if (requiresDecision) {
+          await persistState(lobby.id, state)
+          return state
+        }
+      }
+
+      appendCardToCurrentTrick(state, player.id, playCardAfterSwap)
+      await continueOrResolveCurrentTrick(lobby, state, player.id)
+      return state
+    }
+
     await persistState(lobby.id, state)
 
+    return state
+  }
+
+  async resolveDarkEyeChoice(input: {
+    code: string
+    sessionToken: string
+    selectedCardId: string
+  }) {
+    const { lobby, state } = await loadStateOrThrow(input.code)
+
+    const player = getPlayerBySessionToken(lobby, input.sessionToken)
+
+    const { decisionType, selectedCard } = resolveDarkEyeChoiceDecision({
+      state,
+      playerId: player.id,
+      selectedCardId: input.selectedCardId,
+    })
+    const round = state.currentRound
+
+    if (!round) {
+      throw new Error('Round not initialized')
+    }
+
+    if (decisionType === 'darkEyeTrumpChoice') {
+      round.trumpCard = selectedCard
+      round.trumpSuit =
+        selectedCard.type === 'number' ? selectedCard.suit : null
+
+      state.logs.push({
+        id: crypto.randomUUID(),
+        createdAt: nowIso(),
+        type: 'specialEffect',
+        messageKey: 'special.darkEye.trumpChoice',
+        messageParams: {
+          playerId: player.id,
+          cardLabel: getReadableCardLabel(selectedCard),
+        },
+      })
+
+      applyRoundStartState(state)
+      await persistState(lobby.id, state)
+      return state
+    }
+
+    state.logs.push({
+      id: crypto.randomUUID(),
+      createdAt: nowIso(),
+      type: 'specialEffect',
+      messageKey: 'special.darkEye.choice',
+      messageParams: {
+        playerId: player.id,
+        cardLabel: getReadableCardLabel(selectedCard),
+      },
+    })
+
+    if (
+      selectedCard.type === 'special' &&
+      selectedCard.special === 'werewolf'
+    ) {
+      const currentTrumpCard = round.trumpCard
+
+      if (currentTrumpCard) {
+        state.pendingDecision = {
+          id: crypto.randomUUID(),
+          type: 'werewolfTrumpSwap',
+          playerId: player.id,
+          createdAt: nowIso(),
+          cardId: selectedCard.id,
+          special: 'werewolf',
+          playCard: currentTrumpCard,
+          allowedSuits: ['red', 'yellow', 'green', 'blue', null],
+        }
+
+        await persistState(lobby.id, state)
+        return state
+      }
+    }
+
+    if (selectedCard.type === 'special') {
+      const requiresDecision = this.triggerSpecialBeforePlay(
+        state,
+        player.id,
+        selectedCard,
+        selectedCard,
+      )
+
+      if (requiresDecision) {
+        await persistState(lobby.id, state)
+        return state
+      }
+    }
+
+    appendCardToCurrentTrick(state, player.id, selectedCard, {
+      suppressRegularPlayLog: true,
+    })
+    await continueOrResolveCurrentTrick(lobby, state, player.id)
     return state
   }
 
@@ -614,59 +823,48 @@ export class GameService {
     }
 
     if (card.type === 'special') {
-      if (card.special === 'vampire') {
-        const before = handleVampireBeforePlay({
+      if (card.special === 'darkEye') {
+        const playedDarkEye = removeCardFromHand(state, player.id, card.id)
+        const drawnCards = enqueueDarkEyePlayChoice({
           state,
           playerId: player.id,
-          card,
-          registerResolvedEffect: (effect) =>
-            registerResolvedEffect(state, effect),
+          sourceCardId: playedDarkEye.id,
           getReadableCardLabel,
         })
 
-        if (before.requiresDecision) {
-          await persistState(lobby.id, state)
-          return state
-        }
-      }
-
-      if (card.special === 'shapeShifter') {
-        const before = handleShapeShifterBeforePlay({
-          state,
-          playerId: player.id,
-          card,
+        state.logs.push({
+          id: crypto.randomUUID(),
+          createdAt: nowIso(),
+          type: 'specialEffect',
+          messageKey:
+            drawnCards.length === 1
+              ? 'special.darkEye.played.single'
+              : 'special.darkEye.played.multiple',
+          messageParams: {
+            playerId: player.id,
+            drawnCount: drawnCards.length,
+          },
         })
 
-        if (before.requiresDecision) {
-          await persistState(lobby.id, state)
+        if (!drawnCards.length) {
+          appendCardToCurrentTrick(state, player.id, playedDarkEye)
+          await continueOrResolveCurrentTrick(lobby, state, player.id)
           return state
         }
+
+        await persistState(lobby.id, state)
+        return state
       }
 
-      if (card.special === 'cloud') {
-        const before = handleCloudBeforePlay({
-          state,
-          playerId: player.id,
-          card,
-        })
+      const requiresDecision = this.triggerSpecialBeforePlay(
+        state,
+        player.id,
+        card,
+      )
 
-        if (before.requiresDecision) {
-          await persistState(lobby.id, state)
-          return state
-        }
-      }
-
-      if (card.special === 'juggler') {
-        const before = handleJugglerBeforePlay({
-          state,
-          playerId: player.id,
-          card,
-        })
-
-        if (before.requiresDecision) {
-          await persistState(lobby.id, state)
-          return state
-        }
+      if (requiresDecision) {
+        await persistState(lobby.id, state)
+        return state
       }
     }
 

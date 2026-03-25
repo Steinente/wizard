@@ -61,6 +61,9 @@ export function appendCardToCurrentTrick(
   state: WizardGameState,
   playerId: string,
   card: Card,
+  options?: {
+    suppressRegularPlayLog?: boolean
+  },
 ) {
   if (!state.currentRound) {
     throw new Error('Round not initialized')
@@ -116,6 +119,10 @@ export function appendCardToCurrentTrick(
 
     if (card.type === 'special' && card.special === 'witch') {
       logWitchPlayed(state, playerId)
+      return
+    }
+
+    if (options?.suppressRegularPlayLog) {
       return
     }
 

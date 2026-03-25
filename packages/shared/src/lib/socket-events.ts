@@ -111,6 +111,12 @@ export interface ClientToServerEvents {
     suit: Suit | null
   }) => void
 
+  'game:resolveDarkEyeChoice': (payload: {
+    code: string
+    sessionToken: string
+    selectedCardId: string
+  }) => void
+
   'game:sendChatMessage': (payload: {
     code: string
     sessionToken: string

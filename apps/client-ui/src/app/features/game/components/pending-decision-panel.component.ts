@@ -160,6 +160,40 @@ const NO_TRUMP_SPECIALS = new Set([
                 <p class="muted">{{ 'choosePassCard' | t }}</p>
               }
 
+              @case ('darkEyeTrumpChoice') {
+                <p class="muted">{{ 'chooseDarkEyeTrumpCard' | t }}</p>
+                <div class="row" style="flex-wrap: wrap;">
+                  @for (
+                    option of darkEyeOptions(decision);
+                    track option.cardId
+                  ) {
+                    <button
+                      class="btn"
+                      (click)="pickDarkEyeCard(option.cardId)"
+                    >
+                      {{ translateWitchCardLabel(option.cardLabel) }}
+                    </button>
+                  }
+                </div>
+              }
+
+              @case ('darkEyePlayChoice') {
+                <p class="muted">{{ 'chooseDarkEyePlayCard' | t }}</p>
+                <div class="row" style="flex-wrap: wrap;">
+                  @for (
+                    option of darkEyeOptions(decision);
+                    track option.cardId
+                  ) {
+                    <button
+                      class="btn"
+                      (click)="pickDarkEyeCard(option.cardId)"
+                    >
+                      {{ translateWitchCardLabel(option.cardLabel) }}
+                    </button>
+                  }
+                </div>
+              }
+
               @default {
                 <p class="muted">{{ 'unsupportedDecision' | t }}</p>
               }
@@ -194,6 +228,9 @@ export class PendingDecisionPanelComponent {
     handCardId: string
     trickCardId: string
   }) => void
+  @Input({ required: true }) onResolveDarkEyeChoice!: (
+    selectedCardId: string,
+  ) => void
 
   pickTrump(suit: Suit | null) {
     this.onSelectTrump(suit)
@@ -331,6 +368,18 @@ export class PendingDecisionPanelComponent {
       handCardId,
       trickCardId,
     })
+  }
+
+  darkEyeOptions(decision: PendingDecision) {
+    const maybeDecision = decision as {
+      options?: Array<{ cardId: string; cardLabel: string }>
+    }
+
+    return maybeDecision.options ?? []
+  }
+
+  pickDarkEyeCard(selectedCardId: string) {
+    this.onResolveDarkEyeChoice(selectedCardId)
   }
 
   canSelectNoTrump(decision: PendingDecision) {

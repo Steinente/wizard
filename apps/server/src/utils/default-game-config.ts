@@ -1,4 +1,4 @@
-import { SPECIAL_CARD_KEYS } from '@wizard/shared'
+import { ANNIVERSARY_SPECIALS_ENABLED_BY_DEFAULT } from '@wizard/shared'
 import type { GameConfig } from '@wizard/shared'
 
 export const defaultGameConfig: GameConfig = {
@@ -8,5 +8,5 @@ export const defaultGameConfig: GameConfig = {
   specialCardsRandomizerEnabled: false,
   readLogEnabledByDefault: false,
   languageDefault: 'en',
-  includedSpecialCards: [...SPECIAL_CARD_KEYS],
+  includedSpecialCards: [...ANNIVERSARY_SPECIALS_ENABLED_BY_DEFAULT],
 }

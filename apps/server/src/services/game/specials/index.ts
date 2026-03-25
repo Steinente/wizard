@@ -1,5 +1,6 @@
 export * from './bomb.js'
 export * from './cloud.js'
+export * from './dark-eye.js'
 export * from './dragon.js'
 export * from './fairy.js'
 export * from './juggler.js'

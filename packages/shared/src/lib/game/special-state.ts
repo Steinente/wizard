@@ -2,6 +2,8 @@ import type { Card, SpecialCardKey, Suit } from '../cards.js'
 
 export type PendingDecisionType =
   | 'selectTrumpSuit'
+  | 'darkEyeTrumpChoice'
+  | 'darkEyePlayChoice'
   | 'shapeShifterChoice'
   | 'cloudSuitChoice'
   | 'cloudPredictionAdjustment'
@@ -22,6 +24,24 @@ export interface PendingDecisionBase {
   createdAt: string
   cardId?: string
   special?: string
+  playCard?: Card
+}
+
+export interface DarkEyeChoiceOption {
+  cardId: string
+  cardLabel: string
+}
+
+export interface DarkEyeTrumpChoiceDecision extends PendingDecisionBase {
+  type: 'darkEyeTrumpChoice'
+  options: DarkEyeChoiceOption[]
+  drawnCards: Card[]
+}
+
+export interface DarkEyePlayChoiceDecision extends PendingDecisionBase {
+  type: 'darkEyePlayChoice'
+  options: DarkEyeChoiceOption[]
+  drawnCards: Card[]
 }
 
 export interface SelectTrumpSuitDecision extends PendingDecisionBase {
@@ -69,6 +89,8 @@ export interface WerewolfTrumpSwapDecision extends PendingDecisionBase {
 
 export type PendingDecision =
   | SelectTrumpSuitDecision
+  | DarkEyeTrumpChoiceDecision
+  | DarkEyePlayChoiceDecision
   | ShapeShifterChoiceDecision
   | CloudSuitChoiceDecision
   | CloudPredictionAdjustmentDecision

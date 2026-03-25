@@ -55,14 +55,9 @@ export const resolveJugglerDecision = (context: ResolveJugglerContext) => {
     throw new Error('No matching juggler decision pending')
   }
 
-  const roundPlayer = context.state.currentRound?.players.find(
-    (entry) => entry.playerId === context.playerId,
-  )
-  const pendingCard = roundPlayer?.hand.find(
-    (entry) => entry.id === context.cardId,
-  )
   const isVampireJugglerCopy =
-    pendingCard?.type === 'special' && pendingCard.special === 'vampire'
+    context.state.pendingDecision.special === 'vampire'
+  const stagedCard = context.state.pendingDecision.playCard
 
   context.registerResolvedEffect({
     cardId: context.cardId,
@@ -82,7 +77,10 @@ export const resolveJugglerDecision = (context: ResolveJugglerContext) => {
 
   context.state.pendingDecision = null
 
-  const card = context.removeCardFromHand(context.playerId, context.cardId)
+  const card =
+    stagedCard && stagedCard.id === context.cardId
+      ? stagedCard
+      : context.removeCardFromHand(context.playerId, context.cardId)
   context.appendCardToCurrentTrick(context.playerId, card)
 
   if (!isVampireJugglerCopy) {

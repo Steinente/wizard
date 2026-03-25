@@ -7,20 +7,31 @@ export const CARD_TYPES = ['number', 'wizard', 'jester', 'special'] as const
 export type CardType = (typeof CARD_TYPES)[number]
 
 export const SPECIAL_CARD_KEYS = [
-  'shapeShifter',
-  'bomb',
-  'werewolf',
   'vampire',
+  'shapeShifter',
+  'witch',
   'cloud',
   'juggler',
-  'dragon',
+  'werewolf',
+  'bomb',
   'fairy',
-  'witch',
+  'dragon',
+  'darkEye',
 ] as const
 
 export type SpecialCardKey = (typeof SPECIAL_CARD_KEYS)[number]
 
-export const ANNIVERSARY_SPECIALS_ENABLED_BY_DEFAULT = SPECIAL_CARD_KEYS
+export const ANNIVERSARY_SPECIALS_ENABLED_BY_DEFAULT = [
+  'vampire',
+  'shapeShifter',
+  'witch',
+  'cloud',
+  'juggler',
+  'werewolf',
+  'bomb',
+  'fairy',
+  'dragon',
+] as const satisfies ReadonlyArray<SpecialCardKey>
 
 export interface BaseCard {
   id: string
