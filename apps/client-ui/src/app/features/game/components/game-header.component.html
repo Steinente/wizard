@@ -74,6 +74,7 @@
         <button
           class="btn header-home-btn"
           type="button"
+          (pointerdown)="homeButtonUserGesture.emit()"
           (click)="confirmLeaveGame()"
         >
           {{ 'home' | t }}

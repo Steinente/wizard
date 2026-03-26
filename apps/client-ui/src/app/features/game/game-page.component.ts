@@ -7,6 +7,7 @@ import {
   type Suit,
 } from '@wizard/shared'
 import { GameFacadeService } from '../../core/services/game-facade.service'
+import { PwaInstallService } from '../../core/services/pwa-install.service'
 import { SessionService } from '../../core/services/session.service'
 import { AppStore } from '../../core/state/app.store'
 import { TPipe } from '../../shared/pipes/t.pipe'
@@ -80,6 +81,7 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
             (panelScoreboardChange)="setPanelScoreboardVisibleFn($event)"
             (panelLogChange)="setPanelLogVisibleFn($event)"
             (panelChatChange)="setPanelChatVisibleFn($event)"
+            (homeButtonUserGesture)="onHomeButtonUserGesture()"
           />
         </div>
 
@@ -324,6 +326,8 @@ export class GamePageComponent {
   protected readonly store = this.appStore
   private readonly manualHandOrder = signal<string[] | null>(null)
   private lastSeenRoundKey: string | null = null
+  private lastFinishedGamePromptKey: string | null = null
+  private pendingFinishedGamePromptKey: string | null = null
 
   readonly readLogEnabledSignal = computed(() => {
     const state = this.store.gameState()
@@ -420,6 +424,7 @@ export class GamePageComponent {
     private readonly appStore: AppStore,
     private readonly facade: GameFacadeService,
     protected readonly session: SessionService,
+    private readonly pwaInstall: PwaInstallService,
   ) {
     effect(() => {
       const state = this.store.gameState()
@@ -443,6 +448,41 @@ export class GamePageComponent {
         this.lastSeenRoundKey = currentRoundKey
       }
     })
+
+    effect((onCleanup) => {
+      const state = this.store.gameState()
+
+      if (!state || state.phase !== 'finished') {
+        this.pendingFinishedGamePromptKey = null
+        return
+      }
+
+      const finishedGameKey = `${state.lobbyCode}:${state.createdAt}`
+
+      if (this.lastFinishedGamePromptKey === finishedGameKey) {
+        return
+      }
+
+      this.lastFinishedGamePromptKey = finishedGameKey
+      this.pendingFinishedGamePromptKey = finishedGameKey
+
+      onCleanup(() => undefined)
+    })
+  }
+
+  onHomeButtonUserGesture() {
+    const state = this.store.gameState()
+    if (!state || state.phase !== 'finished') {
+      return
+    }
+
+    const finishedGameKey = `${state.lobbyCode}:${state.createdAt}`
+    if (this.pendingFinishedGamePromptKey !== finishedGameKey) {
+      return
+    }
+
+    this.pendingFinishedGamePromptKey = null
+    void this.pwaInstall.promptIfEligible()
   }
 
   setAudioVolume(volume: number) {

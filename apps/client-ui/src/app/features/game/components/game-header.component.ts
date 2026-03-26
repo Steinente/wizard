@@ -54,6 +54,7 @@ export class GameHeaderComponent {
   @Output() readonly panelScoreboardChange = new EventEmitter<boolean>()
   @Output() readonly panelLogChange = new EventEmitter<boolean>()
   @Output() readonly panelChatChange = new EventEmitter<boolean>()
+  @Output() readonly homeButtonUserGesture = new EventEmitter<void>()
 
   private get currentRound() {
     return this.state.currentRound

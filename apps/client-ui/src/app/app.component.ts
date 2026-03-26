@@ -2,6 +2,7 @@ import { Component } from '@angular/core'
 import { NgComponentOutlet } from '@angular/common'
 import { RouterOutlet } from '@angular/router'
 import { AppInitService } from './core/services/app-init.service'
+import { PwaInstallService } from './core/services/pwa-install.service'
 import { SiteFooterComponent } from './site-footer.component'
 
 @Component({
@@ -50,9 +51,13 @@ export class AppComponent {
   protected readonly siteFooterComponent = SiteFooterComponent
   protected readonly showLocalModeBanner = this.isLocalMode()
 
-  constructor(private readonly appInit: AppInitService) {
+  constructor(
+    private readonly appInit: AppInitService,
+    private readonly pwaInstall: PwaInstallService,
+  ) {
     this.applyLocalModeTitlePrefix()
     this.appInit.init()
+    this.pwaInstall.init()
   }
 
   private applyLocalModeTitlePrefix() {
