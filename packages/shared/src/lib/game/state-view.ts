@@ -71,6 +71,12 @@ export interface GameChatMessageView {
   systemMessageParams?: Record<string, string | number | boolean | null>
 }
 
+export interface GamePlayerInteractionStatsView {
+  playerId: string
+  totalInteractionTimeMs: number
+  interactionCount: number
+}
+
 export interface WizardGameViewState {
   selfPlayerId: string
   lobbyCode: string
@@ -81,6 +87,7 @@ export interface WizardGameViewState {
   phase: GamePhase
   maxRounds: number
   currentRound: RoundViewState | null
+  playerInteractionStats: GamePlayerInteractionStatsView[]
   scoreboard: PlayerScoreEntry[]
   logs: GameLogEntryView[]
   chatMessages: GameChatMessageView[]

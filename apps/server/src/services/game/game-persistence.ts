@@ -6,8 +6,10 @@ import {
   nowIso,
   toJson,
 } from './game-service-support.js'
+import { syncActionableInteractionTimers } from './player-interaction-timing.js'
 
 export async function persistState(lobbyId: string, state: WizardGameState) {
+  syncActionableInteractionTimers(state)
   state.updatedAt = nowIso()
 
   await prisma.gameState.upsert({

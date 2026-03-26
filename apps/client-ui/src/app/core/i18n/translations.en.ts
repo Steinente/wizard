@@ -232,6 +232,10 @@ export const en = {
   unsupportedDecision: 'Unsupported decision',
   gameFinishedTitle: 'Game over',
   finalRanking: 'Final ranking',
+  totalGameTime: 'Total game time',
+  interactionTime: 'Play time',
+  fastest: 'Fastest',
+  slowest: 'Slowest',
 
   // Lobby/game configuration labels
   predictionOpen: 'Open predictions',

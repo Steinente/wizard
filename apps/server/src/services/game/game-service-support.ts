@@ -160,6 +160,29 @@ export const fromJson = (value: unknown): WizardGameState => {
     state.currentRound.drawPile = []
   }
 
+  if (!Array.isArray(state.playerInteractionStats)) {
+    state.playerInteractionStats = []
+  }
+
+  const normalizedInteractionStats = state.players.map((player) => {
+    const existing = state.playerInteractionStats.find(
+      (entry) => entry.playerId === player.playerId,
+    )
+
+    return {
+      playerId: player.playerId,
+      totalInteractionTimeMs: Math.max(
+        0,
+        existing?.totalInteractionTimeMs ?? 0,
+      ),
+      interactionCount: Math.max(0, existing?.interactionCount ?? 0),
+      pendingInteractionStartedAt:
+        existing?.pendingInteractionStartedAt ?? null,
+    }
+  })
+
+  state.playerInteractionStats = normalizedInteractionStats
+
   return state as WizardGameState
 }
 

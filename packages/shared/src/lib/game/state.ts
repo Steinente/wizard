@@ -9,6 +9,13 @@ import type {
   ResolvedCardRuntimeEffect,
 } from './special-state.js'
 
+export interface GamePlayerInteractionStats {
+  playerId: string
+  totalInteractionTimeMs: number
+  interactionCount: number
+  pendingInteractionStartedAt: string | null
+}
+
 export interface GamePlayerMeta {
   playerId: string
   name: string
@@ -52,6 +59,7 @@ export interface WizardGameState {
   lobbyStatus: LobbyStatus
   config: GameConfig
   players: GamePlayerMeta[]
+  playerInteractionStats: GamePlayerInteractionStats[]
   phase: GamePhase
   maxRounds: number
   currentRound: RoundState | null

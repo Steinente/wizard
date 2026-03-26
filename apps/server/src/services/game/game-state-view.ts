@@ -88,6 +88,11 @@ export const createGameStateView = (
   currentRound: state.currentRound
     ? toRoundView(state.currentRound, selfPlayerId)
     : null,
+  playerInteractionStats: state.playerInteractionStats.map((entry) => ({
+    playerId: entry.playerId,
+    totalInteractionTimeMs: entry.totalInteractionTimeMs,
+    interactionCount: entry.interactionCount,
+  })),
   scoreboard: state.scoreboard,
   logs: state.logs.filter(
     (entry) =>

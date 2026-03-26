@@ -235,6 +235,10 @@ export const de = {
   unsupportedDecision: 'Nicht unterstützte Entscheidung',
   gameFinishedTitle: 'Spiel beendet',
   finalRanking: 'Endplatzierung',
+  totalGameTime: 'Gesamtspielzeit',
+  interactionTime: 'Spielzeit',
+  fastest: 'Schnellster',
+  slowest: 'Langsamster',
 
   // Lobby-/Spiel-Konfigurationslabels
   predictionOpen: 'Offene Ansagen',

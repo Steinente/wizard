@@ -84,6 +84,12 @@ export const createInitialGameState = (input: {
   lobbyStatus: 'running',
   config: input.config,
   players: input.players,
+  playerInteractionStats: input.players.map((player) => ({
+    playerId: player.playerId,
+    totalInteractionTimeMs: 0,
+    interactionCount: 0,
+    pendingInteractionStartedAt: null,
+  })),
   phase: 'roundSetup',
   maxRounds: Math.floor(60 / input.players.length),
   currentRound: null,

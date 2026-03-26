@@ -25,6 +25,7 @@ import {
   removeCardFromHand,
 } from './game-mutations.js'
 import { loadStateOrThrow, persistState } from './game-persistence.js'
+import { recordPlayerInteractionCompletion } from './player-interaction-timing.js'
 import {
   NO_TRUMP_SELECTABLE_SPECIALS,
   fromJson,
@@ -358,6 +359,8 @@ export class GameService {
       }
     }
 
+    recordPlayerInteractionCompletion(state, player.id)
+
     roundPlayer.prediction = {
       playerId: player.id,
       value: input.value,
@@ -465,6 +468,8 @@ export class GameService {
       throw new Error('error.trumpNotSelectable')
     }
 
+    recordPlayerInteractionCompletion(state, player.id)
+
     state.currentRound.trumpSuit = input.suit
     state.phase = 'prediction'
     state.currentRound.activePlayerId = state.currentRound.roundLeaderPlayerId
@@ -507,6 +512,8 @@ export class GameService {
       registerResolvedEffect: (effect) => registerResolvedEffect(state, effect),
     })
 
+    recordPlayerInteractionCompletion(state, player.id)
+
     if (playCardAfterSwap) {
       if (playCardAfterSwap.type === 'special') {
         const requiresDecision = this.triggerSpecialBeforePlay(
@@ -546,6 +553,7 @@ export class GameService {
       playerId: player.id,
       selectedCardId: input.selectedCardId,
     })
+    recordPlayerInteractionCompletion(state, player.id)
     const round = state.currentRound
 
     if (!round) {
@@ -649,6 +657,8 @@ export class GameService {
         appendCardToCurrentTrick(state, targetPlayerId, card),
     })
 
+    recordPlayerInteractionCompletion(state, player.id)
+
     await continueOrResolveCurrentTrick(lobby, state, player.id)
     return state
   }
@@ -674,6 +684,8 @@ export class GameService {
         appendCardToCurrentTrick(state, targetPlayerId, card),
     })
 
+    recordPlayerInteractionCompletion(state, player.id)
+
     await continueOrResolveCurrentTrick(lobby, state, player.id)
     return state
   }
@@ -685,6 +697,24 @@ export class GameService {
   }) {
     const { lobby, state } = await loadStateOrThrow(input.code)
     const player = getPlayerBySessionToken(lobby, input.sessionToken)
+
+    if (
+      !state.pendingDecision ||
+      state.pendingDecision.type !== 'cloudPredictionAdjustment' ||
+      state.pendingDecision.playerId !== player.id
+    ) {
+      throw new Error('No cloud prediction adjustment pending')
+    }
+
+    const roundPlayer = state.currentRound?.players.find(
+      (entry) => entry.playerId === player.id,
+    )
+
+    if (!roundPlayer?.prediction || !state.currentRound) {
+      throw new Error('Prediction not found')
+    }
+
+    recordPlayerInteractionCompletion(state, player.id)
 
     await resolveCloudAdjustmentDecision({
       state,
@@ -743,6 +773,8 @@ export class GameService {
         appendCardToCurrentTrick(state, targetPlayerId, card),
     })
 
+    recordPlayerInteractionCompletion(state, player.id)
+
     await continueOrResolveCurrentTrick(lobby, state, player.id)
     return state
   }
@@ -763,6 +795,8 @@ export class GameService {
         removeCardFromHand(state, targetPlayerId, cardId),
       getReadableCardLabel,
     })
+
+    recordPlayerInteractionCompletion(state, player.id)
 
     await persistState(lobby.id, state)
 
@@ -814,6 +848,8 @@ export class GameService {
       removeCardFromHand: (targetPlayerId, cardId) =>
         removeCardFromHand(state, targetPlayerId, cardId),
     })
+
+    recordPlayerInteractionCompletion(state, player.id)
 
     if (!state.currentRound) {
       await persistState(lobby.id, state)
@@ -892,6 +928,8 @@ export class GameService {
     if (!isLegalPlay(roundPlayer.hand, card, leadSuit)) {
       throw new Error('error.illegalCardPlay')
     }
+
+    recordPlayerInteractionCompletion(state, player.id)
 
     if (card.type === 'special') {
       if (card.special === SPECIAL_CARD_KEY.darkEye) {
