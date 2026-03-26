@@ -1,0 +1,246 @@
+.header-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.header-rules {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+}
+
+.header-rules-label {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding-top: 4px;
+  flex: 0 0 auto;
+}
+
+.header-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  min-width: 0;
+}
+
+.header-controls-top {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  order: 1;
+}
+
+.header-status-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  width: 100%;
+  order: 2;
+}
+
+.header-spectators-panel {
+  width: 100%;
+  box-sizing: border-box;
+  order: 3;
+}
+
+.header-rules-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 0;
+}
+
+.header-rule-chip {
+  display: inline-grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px;
+  align-items: baseline;
+  min-height: 28px;
+  padding: 5px 11px;
+  border: 1px solid rgb(148 163 184 / 0.24);
+  border-radius: 999px;
+  background: rgb(15 23 42 / 0.5);
+  color: var(--text);
+  font-size: 12px;
+  line-height: 1.25;
+  white-space: normal;
+}
+
+.header-rule-chip-label {
+  color: rgb(148 163 184);
+  font-weight: 600;
+}
+
+.header-rule-chip-value {
+  font-weight: 700;
+}
+
+.header-rule-details {
+  display: inline-block;
+  max-width: 100%;
+  min-height: 28px;
+  padding: 5px 11px;
+  border: 1px solid rgb(148 163 184 / 0.24);
+  border-radius: 16px;
+  background: rgb(15 23 42 / 0.5);
+  color: var(--text);
+  font-size: 12px;
+  line-height: 1.25;
+}
+
+.header-rule-chip-toggle {
+  cursor: pointer;
+  list-style: none;
+  display: block;
+  width: fit-content;
+}
+
+.header-rule-chip-toggle-text {
+  display: inline-grid;
+  grid-template-columns: auto auto;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.header-rule-details[open] .header-rule-chip-toggle {
+  width: 100%;
+}
+
+.header-rule-details[open] .header-rule-chip-toggle-text {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.header-rule-chip-toggle::-webkit-details-marker {
+  display: none;
+}
+
+.header-rule-chip-toggle::marker {
+  display: none;
+}
+
+.header-special-cards-list {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-width: 100%;
+}
+
+.header-special-card-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 4px 10px;
+  border: 1px solid rgb(148 163 184 / 0.22);
+  border-radius: 999px;
+  background: rgb(2 6 23 / 0.45);
+  color: var(--text);
+  font-size: 12px;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.header-special-card-info {
+  margin-top: 8px;
+  padding: 9px 11px;
+  border: 1px solid rgb(148 163 184 / 0.24);
+  border-radius: 10px;
+  background: rgb(2 6 23 / 0.65);
+  color: var(--text);
+  font-size: 12px;
+  line-height: 1.35;
+  cursor: pointer;
+}
+
+@media (max-width: 900px) {
+  .spread {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .header-rules {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .header-rules-label {
+    padding-top: 0;
+    text-align: center;
+  }
+
+  .header-rules-list {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .header-rule-chip,
+  .header-rule-details {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .header-rule-chip {
+    grid-template-columns: auto auto;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .header-rule-chip-toggle {
+    width: 100%;
+  }
+
+  .header-rule-chip-toggle-text {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .header-controls {
+    width: 100%;
+    align-items: stretch;
+    border-top: 1px solid rgb(148 163 184 / 0.24);
+    margin-top: 8px;
+    padding-top: 16px;
+  }
+
+  .header-status-row {
+    order: 1;
+    justify-content: flex-start;
+  }
+
+  .header-spectators-panel {
+    order: 2;
+  }
+
+  .header-controls-top {
+    order: 3;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .header-home-btn {
+    order: 1;
+    width: 100%;
+    text-align: center;
+  }
+
+  .header-panel-settings {
+    order: 2;
+    width: 100%;
+  }
+}

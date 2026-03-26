@@ -93,6 +93,24 @@ import { TPipe } from '../../../shared/pipes/t.pipe'
         padding: 10px 12px;
         min-width: 180px;
       }
+
+      @media (max-width: 900px) {
+        .panel-settings {
+          width: 100%;
+          align-items: stretch;
+        }
+
+        .panel-settings-toggle {
+          width: 100%;
+          justify-content: center;
+        }
+
+        .panel-settings-content {
+          width: 100%;
+          min-width: 0;
+          box-sizing: border-box;
+        }
+      }
     `,
   ],
 })

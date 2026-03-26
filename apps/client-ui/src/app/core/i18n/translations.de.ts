@@ -221,6 +221,7 @@ export const de = {
 
   // Punktestand- und Tischmetadaten
   phase: 'Phase',
+  deck: 'Deck',
   round: 'Runde',
   trick: 'Stich',
   trump: 'Trumpf',

@@ -31,256 +31,8 @@ const SPECIAL_TRUMP_REASON_CARDS = new Set([
   selector: 'wiz-game-header',
   standalone: true,
   imports: [TPipe, PanelSettingsComponent],
-  template: `
-    <div class="panel">
-      <div class="spread">
-        <div class="header-meta">
-          <h2 style="margin: 0;">{{ 'gameTable' | t }}</h2>
-          <div class="muted">{{ 'lobby' | t }} {{ state.lobbyCode }}</div>
-          <div class="header-rules" aria-label="Game rules summary">
-            <span class="header-rules-label">{{ 'rules' | t }}</span>
-            <div class="header-rules-list">
-              @for (rule of ruleItems; track rule.id) {
-                <span class="header-rule-chip">
-                  <span class="header-rule-chip-label">{{ rule.label }}:</span>
-                  <span class="header-rule-chip-value">{{ rule.value }}</span>
-                </span>
-              }
-
-              @if (
-                !state.config.specialCardsRandomizerEnabled &&
-                includedSpecialCardItems.length
-              ) {
-                <details
-                  class="header-rule-details"
-                  name="special-cards-summary"
-                >
-                  <summary class="header-rule-chip-toggle">
-                    <span class="header-rule-chip-toggle-text">
-                      <span class="header-rule-chip-label"
-                        >{{ 'specialCardsInMatch' | t }}:</span
-                      >
-                      <span class="header-rule-chip-value">{{
-                        includedSpecialCardItems.length
-                      }}</span>
-                    </span>
-                  </summary>
-                  <div class="header-special-cards-list" role="list">
-                    @for (item of includedSpecialCardItems; track item.key) {
-                      <span
-                        class="header-special-card-chip"
-                        role="listitem"
-                        [attr.title]="item.info"
-                      >
-                        {{ item.label }}
-                      </span>
-                    }
-                  </div>
-                </details>
-              }
-            </div>
-          </div>
-        </div>
-
-        <div class="row" style="flex-wrap: wrap; justify-content: flex-end;">
-          <span class="status-pill"
-            >{{ 'phase' | t }} {{ translatedPhase }}</span
-          >
-
-          <span
-            class="status-pill"
-            [style.background]="trumpBackground"
-            [style.color]="trumpForeground"
-            [style.borderColor]="trumpBorder"
-          >
-            {{ trumpDisplayText }}
-          </span>
-
-          <span class="status-pill">{{ 'round' | t }} {{ roundLabel }}</span>
-          <span class="status-pill">{{ 'trick' | t }} {{ trickLabel }}</span>
-          <span
-            class="status-pill"
-            [class.active-turn]="spectatorCount > 0"
-            role="button"
-            tabindex="0"
-            (click)="toggleSpectators()"
-            (keydown.enter)="toggleSpectators()"
-            (keydown.space)="toggleSpectators()"
-            style="cursor: pointer; user-select: none;"
-          >
-            {{ 'spectators' | t }} {{ spectatorCount }}
-          </span>
-          <wiz-panel-settings
-            [settingsVisible]="settingsVisible"
-            [playersVisible]="playersVisible"
-            [scoreboardVisible]="scoreboardVisible"
-            [logVisible]="logVisible"
-            [chatVisible]="chatVisible"
-            (settingsChange)="panelSettingsChange.emit($event)"
-            (playersChange)="panelPlayersChange.emit($event)"
-            (scoreboardChange)="panelScoreboardChange.emit($event)"
-            (logChange)="panelLogChange.emit($event)"
-            (chatChange)="panelChatChange.emit($event)"
-          />
-          <button class="btn" type="button" (click)="confirmLeaveGame()">
-            {{ 'home' | t }}
-          </button>
-        </div>
-      </div>
-
-      @if (showSpectators) {
-        <div class="panel" style="margin-top: 10px;">
-          <div class="label" style="margin-bottom: 8px;">
-            {{ 'spectators' | t }}:
-          </div>
-          @if (!state.spectators.length) {
-            <div class="muted">{{ 'noSpectators' | t }}</div>
-          } @else {
-            <div class="grid" style="gap: 6px;">
-              @for (spectator of state.spectators; track spectator) {
-                <div class="muted">{{ spectator }}</div>
-              }
-            </div>
-          }
-        </div>
-      }
-    </div>
-  `,
-  styles: [
-    `
-      .header-meta {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-        min-width: 0;
-      }
-
-      .header-rules {
-        display: flex;
-        align-items: flex-start;
-        gap: 10px;
-        min-width: 0;
-      }
-
-      .header-rules-label {
-        color: var(--muted);
-        font-size: 12px;
-        font-weight: 700;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
-        padding-top: 4px;
-        flex: 0 0 auto;
-      }
-
-      .header-rules-list {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-        min-width: 0;
-      }
-
-      .header-rule-chip {
-        display: inline-grid;
-        grid-template-columns: auto 1fr;
-        gap: 6px;
-        align-items: baseline;
-        min-height: 28px;
-        padding: 5px 11px;
-        border: 1px solid rgb(148 163 184 / 0.24);
-        border-radius: 999px;
-        background: rgb(15 23 42 / 0.5);
-        color: var(--text);
-        font-size: 12px;
-        line-height: 1.25;
-        white-space: normal;
-      }
-
-      .header-rule-chip-label {
-        color: rgb(148 163 184);
-        font-weight: 600;
-      }
-
-      .header-rule-chip-value {
-        font-weight: 700;
-      }
-
-      .header-rule-details {
-        display: inline-block;
-        max-width: 100%;
-        min-height: 28px;
-        padding: 5px 11px;
-        border: 1px solid rgb(148 163 184 / 0.24);
-        border-radius: 16px;
-        background: rgb(15 23 42 / 0.5);
-        color: var(--text);
-        font-size: 12px;
-        line-height: 1.25;
-      }
-
-      .header-rule-chip-toggle {
-        cursor: pointer;
-        list-style: none;
-        display: block;
-        width: fit-content;
-      }
-
-      .header-rule-chip-toggle-text {
-        display: inline-grid;
-        grid-template-columns: auto auto;
-        align-items: baseline;
-        gap: 6px;
-      }
-
-      .header-rule-details[open] .header-rule-chip-toggle {
-        width: 100%;
-      }
-
-      .header-rule-details[open] .header-rule-chip-toggle-text {
-        display: flex;
-        justify-content: center;
-        width: 100%;
-      }
-
-      .header-rule-chip-toggle::-webkit-details-marker {
-        display: none;
-      }
-
-      .header-rule-chip-toggle::marker {
-        display: none;
-      }
-
-      .header-special-cards-list {
-        margin-top: 8px;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-        max-width: 100%;
-      }
-
-      .header-special-card-chip {
-        display: inline-flex;
-        align-items: center;
-        min-height: 26px;
-        padding: 4px 10px;
-        border: 1px solid rgb(148 163 184 / 0.22);
-        border-radius: 999px;
-        background: rgb(2 6 23 / 0.45);
-        color: var(--text);
-        font-size: 12px;
-      }
-
-      @media (max-width: 900px) {
-        .header-rules {
-          flex-direction: column;
-          gap: 6px;
-        }
-
-        .header-rules-label {
-          padding-top: 0;
-        }
-      }
-    `,
-  ],
+  templateUrl: './game-header.component.html',
+  styleUrls: ['./game-header.component.css'],
 })
 export class GameHeaderComponent {
   private readonly i18n = inject(I18nService)
@@ -288,6 +40,7 @@ export class GameHeaderComponent {
   private readonly facade = inject(GameFacadeService)
   private readonly t = (key: TranslationKey) => this.i18n.t(key)
   showSpectators = false
+  activeSpecialCardInfo: string | null = null
 
   @Input({ required: true }) state!: WizardGameViewState
   @Input({ required: true }) settingsVisible = true
@@ -301,6 +54,10 @@ export class GameHeaderComponent {
   @Output() readonly panelScoreboardChange = new EventEmitter<boolean>()
   @Output() readonly panelLogChange = new EventEmitter<boolean>()
   @Output() readonly panelChatChange = new EventEmitter<boolean>()
+
+  private get currentRound() {
+    return this.state.currentRound
+  }
 
   get translatedPhase() {
     return this.i18n.t(`phase.${this.state.phase}` as TranslationKey)
@@ -342,30 +99,31 @@ export class GameHeaderComponent {
   }
 
   get ruleItems(): HeaderRuleItem[] {
-    const items: Array<HeaderRuleItem & { enabled: boolean }> = [
+    const items: HeaderRuleItem[] = [
       {
         id: 'predictionVisibility',
         label: this.i18n.t('predictionVisibilityLabel'),
         value: this.predictionVisibilityText,
-        enabled: true,
-      },
-      {
-        id: 'openPredictionRestriction',
-        label: this.i18n.t('openRestrictionLabel'),
-        value: this.openRestrictionText,
-        enabled: this.state.config.predictionVisibility === 'open',
-      },
-      {
-        id: 'cloudRuleTiming',
-        label: this.i18n.t('cloudRuleTimingLabel'),
-        value: this.cloudRuleTimingText,
-        enabled: this.isCloudEnabled,
       },
     ]
 
+    if (this.state.config.predictionVisibility === 'open') {
+      items.push({
+        id: 'openPredictionRestriction',
+        label: this.i18n.t('openRestrictionLabel'),
+        value: this.openRestrictionText,
+      })
+    }
+
+    if (this.isCloudEnabled) {
+      items.push({
+        id: 'cloudRuleTiming',
+        label: this.i18n.t('cloudRuleTimingLabel'),
+        value: this.cloudRuleTimingText,
+      })
+    }
+
     return items
-      .filter((item) => item.enabled)
-      .map(({ enabled: _enabled, ...item }) => item)
   }
 
   get includedSpecialCardItems() {
@@ -403,7 +161,7 @@ export class GameHeaderComponent {
   }
 
   get translatedTrump() {
-    const round = this.state.currentRound
+    const round = this.currentRound
 
     if (!round) {
       return '-'
@@ -446,7 +204,7 @@ export class GameHeaderComponent {
   }
 
   get trumpDisplayText() {
-    const round = this.state.currentRound
+    const round = this.currentRound
 
     if (!round?.trumpSuit) {
       return this.translatedTrump
@@ -456,11 +214,15 @@ export class GameHeaderComponent {
   }
 
   get roundLabel() {
-    return this.state.currentRound?.roundNumber ?? '-'
+    return this.currentRound?.roundNumber ?? '-'
+  }
+
+  get deckLabel() {
+    return this.currentRound?.deckRemainderCount ?? '-'
   }
 
   get trickLabel() {
-    const round = this.state.currentRound
+    const round = this.currentRound
 
     if (!round) {
       return '-'
@@ -473,8 +235,12 @@ export class GameHeaderComponent {
     return this.state.spectators.length
   }
 
+  get spectatorNames() {
+    return this.state.spectators.join(', ')
+  }
+
   get trumpBackground() {
-    const suit = this.state.currentRound?.trumpSuit
+    const suit = this.currentRound?.trumpSuit
 
     if (!suit) {
       return '#334155'
@@ -484,9 +250,7 @@ export class GameHeaderComponent {
   }
 
   get trumpForeground() {
-    return this.state.currentRound?.trumpSuit === 'yellow'
-      ? '#111827'
-      : '#ffffff'
+    return this.currentRound?.trumpSuit === 'yellow' ? '#111827' : '#ffffff'
   }
 
   get trumpBorder() {
@@ -495,6 +259,15 @@ export class GameHeaderComponent {
 
   toggleSpectators() {
     this.showSpectators = !this.showSpectators
+  }
+
+  toggleSpecialCardInfo(info: string) {
+    this.activeSpecialCardInfo =
+      this.activeSpecialCardInfo === info ? null : info
+  }
+
+  clearSpecialCardInfo() {
+    this.activeSpecialCardInfo = null
   }
 
   isSpectator() {

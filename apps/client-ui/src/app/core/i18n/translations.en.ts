@@ -218,6 +218,7 @@ export const en = {
 
   // Scoreboard and table metadata
   phase: 'Phase',
+  deck: 'Deck',
   round: 'Round',
   trick: 'Trick',
   trump: 'Trump',

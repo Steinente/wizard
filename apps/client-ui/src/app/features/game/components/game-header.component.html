@@ -1,0 +1,127 @@
+<div class="panel">
+  <div class="spread">
+    <div class="header-meta">
+      <h2 style="margin: 0">{{ 'gameTable' | t }}</h2>
+      <div class="muted">{{ 'lobby' | t }} {{ state.lobbyCode }}</div>
+      <div class="header-rules" aria-label="Game rules summary">
+        <span class="header-rules-label">{{ 'rules' | t }}</span>
+        <div class="header-rules-list">
+          @for (rule of ruleItems; track rule.id) {
+            <span class="header-rule-chip">
+              <span class="header-rule-chip-label">{{ rule.label }}:</span>
+              <span class="header-rule-chip-value">{{ rule.value }}</span>
+            </span>
+          }
+
+          @if (
+            !state.config.specialCardsRandomizerEnabled &&
+            includedSpecialCardItems.length
+          ) {
+            <details class="header-rule-details" name="special-cards-summary">
+              <summary class="header-rule-chip-toggle">
+                <span class="header-rule-chip-toggle-text">
+                  <span class="header-rule-chip-label"
+                    >{{ 'specialCardsInMatch' | t }}:</span
+                  >
+                  <span class="header-rule-chip-value">{{
+                    includedSpecialCardItems.length
+                  }}</span>
+                </span>
+              </summary>
+              <div class="header-special-cards-list" role="list">
+                @for (item of includedSpecialCardItems; track item.key) {
+                  <span
+                    class="header-special-card-chip"
+                    role="listitem"
+                    [attr.title]="item.info"
+                    (click)="toggleSpecialCardInfo(item.info)"
+                  >
+                    {{ item.label }}
+                  </span>
+                }
+              </div>
+
+              @if (activeSpecialCardInfo) {
+                <div
+                  class="header-special-card-info"
+                  role="note"
+                  (click)="clearSpecialCardInfo()"
+                >
+                  {{ activeSpecialCardInfo }}
+                </div>
+              }
+            </details>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="header-controls">
+      <div class="header-controls-top">
+        <wiz-panel-settings
+          class="header-panel-settings"
+          [settingsVisible]="settingsVisible"
+          [playersVisible]="playersVisible"
+          [scoreboardVisible]="scoreboardVisible"
+          [logVisible]="logVisible"
+          [chatVisible]="chatVisible"
+          (settingsChange)="panelSettingsChange.emit($event)"
+          (playersChange)="panelPlayersChange.emit($event)"
+          (scoreboardChange)="panelScoreboardChange.emit($event)"
+          (logChange)="panelLogChange.emit($event)"
+          (chatChange)="panelChatChange.emit($event)"
+        />
+        <button
+          class="btn header-home-btn"
+          type="button"
+          (click)="confirmLeaveGame()"
+        >
+          {{ 'home' | t }}
+        </button>
+      </div>
+
+      <div class="header-status-row">
+        <span class="status-pill">{{ 'phase' | t }} {{ translatedPhase }}</span>
+
+        <span class="status-pill">{{ 'deck' | t }} {{ deckLabel }}</span>
+
+        <span
+          class="status-pill"
+          [style.background]="trumpBackground"
+          [style.color]="trumpForeground"
+          [style.borderColor]="trumpBorder"
+        >
+          {{ trumpDisplayText }}
+        </span>
+
+        <span class="status-pill">{{ 'round' | t }} {{ roundLabel }}</span>
+        <span class="status-pill">{{ 'trick' | t }} {{ trickLabel }}</span>
+        <span
+          class="status-pill"
+          [class.active-turn]="spectatorCount > 0"
+          role="button"
+          tabindex="0"
+          (click)="toggleSpectators()"
+          (keydown.enter)="toggleSpectators()"
+          (keydown.space)="toggleSpectators()"
+          style="cursor: pointer; user-select: none"
+        >
+          {{ 'spectators' | t }} {{ spectatorCount }}
+        </span>
+      </div>
+
+      @if (showSpectators) {
+        <div class="panel header-spectators-panel">
+          <div class="label" style="margin-bottom: 8px">
+            {{ 'spectators' | t }}:
+          </div>
+          @if (!state.spectators.length) {
+            <div class="muted">{{ 'noSpectators' | t }}</div>
+          } @else {
+            <div class="muted">{{ spectatorNames }}</div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+</div>
