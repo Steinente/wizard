@@ -23,7 +23,15 @@
               }
             ],
             "serviceWorker": "apps/client-ui/ngsw-config.json",
-            "styles": ["apps/client-ui/src/styles.css"]
+            "styles": ["apps/client-ui/src/styles.css"],
+            "server": "apps/client-ui/src/main.server.ts",
+            "outputMode": "server",
+            "security": {
+              "allowedHosts": []
+            },
+            "ssr": {
+              "entry": "apps/client-ui/src/server.ts"
+            }
           }
         },
         "serve": {

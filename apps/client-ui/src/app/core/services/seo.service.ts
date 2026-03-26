@@ -166,8 +166,8 @@ export class SeoService {
   private setCanonicalLink(url: string) {
     const existing = this.document.head.querySelector('link[rel="canonical"]')
 
-    if (existing instanceof HTMLLinkElement) {
-      existing.href = url
+    if (existing) {
+      existing.setAttribute('href', url)
       return
     }
 

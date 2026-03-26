@@ -34,6 +34,19 @@ services:
     expose:
       - '${DOCKER_SERVER_PORT:-3000}'
 
+  client-ui-ssr:
+    build:
+      context: .
+      dockerfile: apps/client-ui/Dockerfile.ssr
+    container_name: wizard-client-ui-ssr
+    restart: unless-stopped
+    environment:
+      PORT: 4000
+    depends_on:
+      - server
+    expose:
+      - '4000'
+
   client-ui:
     build:
       context: .
@@ -41,6 +54,7 @@ services:
     container_name: wizard-client-ui
     restart: unless-stopped
     depends_on:
+      - client-ui-ssr
       - server
     ports:
       - '8080:80'

@@ -1,7 +1,10 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "outDir": "../../dist/client-ui"
+    "outDir": "../../dist/client-ui",
+    "types": [
+      "node"
+    ]
   },
   "include": ["src/**/*.ts"]
 }

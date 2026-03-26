@@ -48,6 +48,7 @@ export class GameFacadeService {
   private lastInteractionPromptKey: string | null = null
   private suppressNextSelfInteractionBing = false
   private wasConnected = false
+  private readonly isBrowser = typeof window !== 'undefined'
 
   private readonly interactionEvents = new Set<InteractionEvent>(
     INTERACTION_EVENTS,
@@ -62,6 +63,10 @@ export class GameFacadeService {
     private readonly i18n: I18nService,
   ) {
     this.syncSpeechSettings()
+
+    if (!this.isBrowser) {
+      return
+    }
 
     const socket = this.socketService.connect()
 
@@ -241,6 +246,10 @@ export class GameFacadeService {
     event: E,
     payload: Omit<Parameters<ClientToServerEvents[E]>[0], 'sessionToken'>,
   ) {
+    if (!this.isBrowser) {
+      return
+    }
+
     const args = [
       {
         ...payload,
@@ -495,6 +504,10 @@ export class GameFacadeService {
   }
 
   listLobbies() {
+    if (!this.isBrowser) {
+      return
+    }
+
     this.socketService.getSocket().emit('lobby:list')
   }
 

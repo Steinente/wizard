@@ -85,8 +85,10 @@ export class HomePageComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    const invalidCode = (history.state as { invalidLobbyCode?: string })
-      ?.invalidLobbyCode
+    const invalidCode =
+      typeof history !== 'undefined'
+        ? (history.state as { invalidLobbyCode?: string })?.invalidLobbyCode
+        : undefined
     if (invalidCode) {
       this.appStore.setError(
         this.language.format('lobbyNotFoundRedirect', { code: invalidCode }),

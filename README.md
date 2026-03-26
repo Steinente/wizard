@@ -114,7 +114,8 @@ DOCKER_CLIENT_UI_URL=http://192.168.178.50:8080 docker compose up -d --build
 ### Hinweise zum Docker-Betrieb
 
 - Der Client verbindet lokal im Dev-Modus weiter zu `http://localhost:3000`.
-- Im Docker-Betrieb nutzt der Client die gleiche Origin und Nginx proxyt `/socket.io` intern zum Server.
+- Im Docker-Betrieb laeuft das Client-Frontend mit Angular SSR (Node) hinter Nginx.
+- Nginx proxyt normale Seitenaufrufe an den SSR-Container und `/socket.io` intern zum Server.
 - Datenbankdaten sind persistent im Volume `postgres_data`.
 
 ### Datenbank-Migrationen im Docker-/Deploy-Kontext
