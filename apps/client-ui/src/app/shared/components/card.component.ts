@@ -39,6 +39,9 @@ const SPECIAL_CARD_ARTWORK: Record<string, string> = {
 @Component({
   selector: 'wiz-card',
   standalone: true,
+  host: {
+    '[class.wiz-card-host-showing-info]': 'cardInfoVisible',
+  },
   template: `
     <button
       class="wiz-card"
@@ -50,8 +53,8 @@ const SPECIAL_CARD_ARTWORK: Record<string, string> = {
       [style.border-color]="accent"
       [style.background]="background"
       [style.color]="foreground"
-      [style.opacity]="disabled ? '0.45' : '1'"
-      [style.filter]="disabled ? 'grayscale(0.4)' : 'none'"
+      [style.opacity]="disabled || dimmed ? '0.45' : '1'"
+      [style.filter]="disabled || dimmed ? 'grayscale(0.4)' : 'none'"
       [style.box-shadow]="playable ? '0 0 0 2px rgba(212,167,44,0.4)' : 'none'"
       (pointerdown)="onCardPointerDown($event)"
       (pointerup)="onCardPointerRelease()"
@@ -61,15 +64,6 @@ const SPECIAL_CARD_ARTWORK: Record<string, string> = {
     >
       @if (showSpecialInfo && specialInfoText) {
         <span class="info-icon wiz-card-info" [title]="specialInfoText">?</span>
-      }
-      @if (cardInfoVisible && showSpecialInfo && specialInfoText) {
-        <div
-          class="wiz-card-info-popover"
-          [style.left.px]="cardInfoLeftPx"
-          [style.width.px]="cardInfoWidthPx"
-        >
-          {{ specialInfoText }}
-        </div>
       }
       @if (showArtwork && artworkSrc) {
         <img class="wiz-card-artwork-image" [src]="artworkSrc" alt="" />
@@ -141,9 +135,30 @@ const SPECIAL_CARD_ARTWORK: Record<string, string> = {
         </div>
       }
     </button>
+    @if (showSpecialInfo && specialInfoText) {
+      @if (cardInfoVisible) {
+        <div
+          class="wiz-card-info-popover"
+          [style.left.px]="cardInfoLeftPx"
+          [style.width.px]="cardInfoWidthPx"
+        >
+          {{ specialInfoText }}
+        </div>
+        }
+      }
   `,
   styles: [
     `
+      :host {
+        position: relative;
+        display: inline-block;
+        z-index: 0;
+      }
+
+      :host(.wiz-card-host-showing-info) {
+        z-index: 40;
+      }
+
       .wiz-card {
         width: 96px;
         min-height: 150px;
@@ -231,7 +246,7 @@ const SPECIAL_CARD_ARTWORK: Record<string, string> = {
         transform: none;
         max-width: 260px;
         min-width: 170px;
-        z-index: 2;
+        z-index: 50;
         border: 1px solid var(--border);
         border-radius: 8px;
         background: rgb(15 23 42 / 0.9);
@@ -240,7 +255,6 @@ const SPECIAL_CARD_ARTWORK: Record<string, string> = {
         font-size: 11px;
         line-height: 1.25;
         text-align: left;
-        z-index: 3;
       }
 
       .wiz-card-title {
@@ -463,6 +477,7 @@ export class CardComponent {
   @Input() middleLabel: string | null = null
   @Input() playable = false
   @Input() disabled = false
+  @Input() dimmed = false
   @Input() play!: (card: Card) => void
   @Input() resolvedEffect?: ResolvedCardRuntimeEffect
   @Input() showSpecialInfo = false

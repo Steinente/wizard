@@ -376,8 +376,6 @@
             <button
               type="button"
               [style.cursor]="isHost() ? 'pointer' : 'default'"
-              [style.opacity]="isEnabled ? '1' : '0.45'"
-              [style.filter]="isEnabled ? 'none' : 'grayscale(0.4)'"
               [style.border]="'none'"
               [style.background]="'none'"
               [style.padding]="'0'"
@@ -388,6 +386,7 @@
               <wiz-card
                 [card]="card"
                 [disabled]="false"
+                [dimmed]="!isEnabled"
                 [showSpecialInfo]="true"
                 [useArtwork]="session.cardArtworkEnabled()"
                 [play]="noopPlay"
