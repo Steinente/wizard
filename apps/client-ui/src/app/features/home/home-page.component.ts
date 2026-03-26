@@ -14,289 +14,13 @@ import { TPipe } from '../../shared/pipes/t.pipe'
 const PLAYER_NAME_MAX_LENGTH = 15
 const PLAYER_NAME_EMOJI_PATTERN =
   /[\p{Extended_Pictographic}\p{Emoji_Presentation}\p{Regional_Indicator}\u200D\uFE0F]/u
+const LOBBY_REFRESH_INTERVAL_MS = 5000
 
 @Component({
   standalone: true,
   imports: [FormsModule, TPipe],
-  template: `
-    <div class="page-shell">
-      <div class="panel grid">
-        <div class="spread home-top-spread">
-          <div>
-            <h1 class="title">{{ 'homeTitle' | t }}</h1>
-            <p class="subtitle">{{ 'homeSubtitle' | t }}</p>
-          </div>
-
-          <div class="home-preferences-row">
-            <div class="home-language-box" style="min-width: 180px;">
-              <label class="label">{{ 'language' | t }}</label>
-              <select
-                class="select"
-                [ngModel]="language.language()"
-                (ngModelChange)="setLanguage($event)"
-              >
-                <option value="en">English</option>
-                <option value="de">Deutsch</option>
-              </select>
-            </div>
-
-            <div class="home-font-box" style="min-width: 220px;">
-              <label class="label">{{ 'fontLabel' | t }}</label>
-              <select
-                class="select"
-                [ngModel]="session.appFont()"
-                (ngModelChange)="setAppFont($event)"
-              >
-                <option
-                  value="simple"
-                  style="font-family: 'Segoe UI', 'Noto Sans', 'Helvetica Neue', Arial, sans-serif;"
-                >
-                  {{ 'fontSimple' | t }}
-                </option>
-                <option
-                  value="frances"
-                  style="font-family: 'Frances Uncial Std', serif;"
-                >
-                  {{ 'fontFrances' | t }}
-                </option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        @if (store.error()) {
-          <div class="error-box">{{ store.error() }}</div>
-        }
-
-        <div class="panel">
-          <label class="label">{{ 'playerName' | t }}</label>
-          <input
-            class="input"
-            [ngModel]="playerName"
-            (ngModelChange)="onPlayerNameChange($event)"
-            [attr.maxlength]="playerNameMaxLength"
-          />
-          @if (playerNameValidationErrorKey()) {
-            <div class="error-box" style="margin-top: 8px;">
-              {{ playerNameValidationErrorKey()! | t }}
-            </div>
-          }
-        </div>
-
-        <div class="grid home-actions-grid">
-          <div class="panel">
-            <h3 style="margin-top: 0;">{{ 'createLobby' | t }}</h3>
-
-            <label class="label">{{ 'lobbyPasswordOptional' | t }}</label>
-            <input class="input" [(ngModel)]="createPassword" type="password" />
-
-            <div class="row create-lobby-actions" style="margin-top: 16px;">
-              <button
-                class="btn btn-primary"
-                [disabled]="store.loading() || isPlayerNameInvalid()"
-                (click)="createLobby()"
-              >
-                {{ 'createLobby' | t }}
-              </button>
-            </div>
-          </div>
-
-          <div class="panel">
-            <h3 style="margin-top: 0;">{{ 'joinLobby' | t }}</h3>
-
-            <label class="label">{{ 'lobbyCode' | t }}</label>
-            <input class="input" [(ngModel)]="joinCode" />
-
-            <label class="label" style="margin-top: 12px;">{{
-              'lobbyPassword' | t
-            }}</label>
-            <input class="input" [(ngModel)]="joinPassword" type="password" />
-
-            <div style="margin-top: 16px;" class="row">
-              <button
-                class="btn btn-primary"
-                [disabled]="store.loading() || isPlayerNameInvalid()"
-                (click)="joinLobby()"
-              >
-                {{ 'joinLobby' | t }}
-              </button>
-
-              @if (session.lastLobbyCode()) {
-                <button
-                  class="btn"
-                  [disabled]="store.loading()"
-                  (click)="reconnectLast()"
-                >
-                  {{ 'reconnect' | t }}
-                </button>
-              }
-            </div>
-          </div>
-        </div>
-
-        <div class="panel">
-          <div style="margin-bottom: 12px;">
-            <h3 style="margin: 0;">{{ 'lobbyListTitle' | t }}</h3>
-          </div>
-
-          @if (!store.lobbyList().length) {
-            <div class="muted">{{ 'noLobbiesAvailable' | t }}</div>
-          } @else {
-            <div class="grid" style="gap: 10px;">
-              @for (lobby of store.lobbyList(); track lobby.code) {
-                <div class="panel" style="padding: 10px;">
-                  <div class="spread" style="align-items: center;">
-                    <div>
-                      <div>
-                        <strong>{{ lobby.code }}</strong>
-                        @if (lobby.hasPassword) {
-                          <span class="muted">
-                            • {{ 'passwordProtected' | t }}</span
-                          >
-                        }
-                        <span class="muted"> • </span
-                        ><span
-                          class="muted"
-                          [style.color]="
-                            isLobbyRunning(lobby.status)
-                              ? 'var(--color-warning, #e6a817)'
-                              : 'inherit'
-                          "
-                          >{{ statusLabel(lobby.status) }}</span
-                        >
-                      </div>
-                      <div class="muted">
-                        {{ 'players' | t }}: {{ playingPlayersCount(lobby) }}/6
-                        • {{ 'spectators' | t }}: {{ spectatorsCount(lobby) }}
-                      </div>
-                    </div>
-
-                    <div
-                      class="row open-lobbies-actions"
-                      style="align-items: center; gap: 8px;"
-                    >
-                      @if (lobby.hasPassword) {
-                        <input
-                          class="input open-lobbies-password-input"
-                          [(ngModel)]="lobbyPasswords[lobby.code]"
-                          type="password"
-                          [placeholder]="'lobbyPasswordShort' | t"
-                        />
-                      }
-                      @if (isLobbyRunning(lobby.status)) {
-                        @if (canReconnectLobby(lobby)) {
-                          <button
-                            class="btn"
-                            [disabled]="store.loading()"
-                            (click)="reconnectListedLobby(lobby.code)"
-                          >
-                            {{ 'reconnect' | t }}
-                          </button>
-                        } @else {
-                          <button
-                            class="btn"
-                            [disabled]="
-                              store.loading() || isPlayerNameInvalid()
-                            "
-                            (click)="
-                              spectateListedLobby(lobby.code, lobby.hasPassword)
-                            "
-                          >
-                            {{ 'watchAsSpectator' | t }}
-                          </button>
-                        }
-                      } @else {
-                        <button
-                          class="btn btn-primary"
-                          [disabled]="store.loading() || isPlayerNameInvalid()"
-                          (click)="
-                            joinListedLobby(lobby.code, lobby.hasPassword)
-                          "
-                        >
-                          {{ 'joinThisLobby' | t }}
-                        </button>
-                      }
-                    </div>
-                  </div>
-                </div>
-              }
-            </div>
-          }
-        </div>
-      </div>
-    </div>
-  `,
-  styles: [
-    `
-      .title {
-        font-family: 'Frances Uncial Std', serif;
-        font-size: 3rem;
-        margin: 20px 0;
-        background: linear-gradient(
-          to bottom,
-          #ffffff 0%,
-          #ffffff 30%,
-          #d4a017 100%
-        );
-        -webkit-background-clip: text;
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
-        color: transparent;
-      }
-
-      .home-actions-grid {
-        grid-template-columns: 1fr 1fr;
-      }
-
-      .home-preferences-row {
-        display: flex;
-        gap: 12px;
-        align-items: flex-end;
-      }
-
-      .open-lobbies-password-input {
-        width: 150px;
-      }
-
-      @media (max-width: 900px) {
-        .home-top-spread {
-          flex-direction: column;
-          align-items: flex-start;
-        }
-
-        .home-language-box {
-          width: 100%;
-          min-width: 0 !important;
-        }
-
-        .home-preferences-row {
-          width: 100%;
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 12px;
-        }
-
-        .home-font-box {
-          width: 100%;
-          min-width: 0 !important;
-        }
-
-        .home-actions-grid {
-          grid-template-columns: 1fr;
-        }
-
-        .open-lobbies-password-input {
-          width: 100% !important;
-          flex: 1 1 100%;
-        }
-
-        .open-lobbies-actions,
-        .create-lobby-actions {
-          width: 100%;
-        }
-      }
-    `,
-  ],
+  templateUrl: './home-page.component.html',
+  styleUrls: ['./home-page.component.css'],
 })
 export class HomePageComponent implements OnInit, OnDestroy {
   readonly playerNameMaxLength = PLAYER_NAME_MAX_LENGTH
@@ -345,6 +69,17 @@ export class HomePageComponent implements OnInit, OnDestroy {
     return null
   }
 
+  private validatedPlayerName() {
+    const nameError = this.playerNameValidationErrorKey()
+
+    if (nameError) {
+      this.appStore.setError(this.language.t(nameError))
+      return null
+    }
+
+    return this.playerName.trim()
+  }
+
   isPlayerNameInvalid() {
     return this.playerNameValidationErrorKey() !== null
   }
@@ -361,7 +96,7 @@ export class HomePageComponent implements OnInit, OnDestroy {
     this.refreshLobbies()
     this.refreshIntervalId = setInterval(() => {
       this.refreshLobbies()
-    }, 5000)
+    }, LOBBY_REFRESH_INTERVAL_MS)
   }
 
   ngOnDestroy() {
@@ -456,9 +191,8 @@ export class HomePageComponent implements OnInit, OnDestroy {
   }
 
   createLobby() {
-    const nameError = this.playerNameValidationErrorKey()
-    if (nameError) {
-      this.appStore.setError(this.language.t(nameError))
+    const playerName = this.validatedPlayerName()
+    if (!playerName) {
       return
     }
 
@@ -474,16 +208,15 @@ export class HomePageComponent implements OnInit, OnDestroy {
     }
 
     this.facade.createLobby(
-      this.playerName.trim(),
+      playerName,
       undefined,
       this.trimmedPassword(this.createPassword),
     )
   }
 
   joinLobby() {
-    const nameError = this.playerNameValidationErrorKey()
-    if (nameError) {
-      this.appStore.setError(this.language.t(nameError))
+    const playerName = this.validatedPlayerName()
+    if (!playerName) {
       return
     }
 
@@ -502,7 +235,7 @@ export class HomePageComponent implements OnInit, OnDestroy {
 
     this.facade.joinLobby(
       code,
-      this.playerName.trim(),
+      playerName,
       this.trimmedPassword(this.joinPassword),
     )
   }
@@ -522,9 +255,8 @@ export class HomePageComponent implements OnInit, OnDestroy {
   }
 
   spectateListedLobby(code: string, hasPassword: boolean) {
-    const nameError = this.playerNameValidationErrorKey()
-    if (nameError) {
-      this.appStore.setError(this.language.t(nameError))
+    const playerName = this.validatedPlayerName()
+    if (!playerName) {
       return
     }
 
@@ -538,17 +270,12 @@ export class HomePageComponent implements OnInit, OnDestroy {
       return
     }
 
-    this.facade.spectateLobby(
-      code,
-      this.playerName.trim(),
-      password || undefined,
-    )
+    this.facade.spectateLobby(code, playerName, password || undefined)
   }
 
   joinListedLobby(code: string, hasPassword: boolean) {
-    const nameError = this.playerNameValidationErrorKey()
-    if (nameError) {
-      this.appStore.setError(this.language.t(nameError))
+    const playerName = this.validatedPlayerName()
+    if (!playerName) {
       return
     }
 
@@ -562,7 +289,7 @@ export class HomePageComponent implements OnInit, OnDestroy {
       return
     }
 
-    this.facade.joinLobby(code, this.playerName.trim(), password || undefined)
+    this.facade.joinLobby(code, playerName, password || undefined)
   }
 
   refreshLobbies() {

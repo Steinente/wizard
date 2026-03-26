@@ -1,0 +1,115 @@
+.title {
+  font-family: 'Frances Uncial Std', serif;
+  font-size: 3rem;
+  margin: 20px 0;
+  background: linear-gradient(to bottom, #ffffff 0%, #ffffff 30%, #d4a017 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+.home-actions-grid {
+  grid-template-columns: 1fr 1fr;
+}
+
+.home-preferences-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.home-language-box {
+  min-width: 180px;
+}
+
+.home-font-box {
+  min-width: 220px;
+}
+
+.font-option-simple {
+  font-family: 'Segoe UI', 'Noto Sans', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.font-option-frances {
+  font-family: 'Frances Uncial Std', serif;
+}
+
+.player-name-error {
+  margin-top: 8px;
+}
+
+.panel-title {
+  margin-top: 0;
+}
+
+.field-gap-top {
+  margin-top: 12px;
+}
+
+.section-gap-top {
+  margin-top: 16px;
+}
+
+.lobby-list-header {
+  margin-bottom: 12px;
+}
+
+.lobby-list-title {
+  margin: 0;
+}
+
+.lobby-list-grid {
+  gap: 10px;
+}
+
+.lobby-list-item-panel {
+  padding: 10px;
+}
+
+.lobby-list-item-row {
+  align-items: center;
+}
+
+.open-lobbies-actions {
+  align-items: center;
+  gap: 8px;
+}
+
+.open-lobbies-password-input {
+  width: 150px;
+}
+
+@media (max-width: 900px) {
+  .home-top-spread {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .home-language-box,
+  .home-font-box {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .home-preferences-row {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .home-actions-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .open-lobbies-password-input {
+    width: 100%;
+    flex: 1 1 100%;
+  }
+
+  .open-lobbies-actions,
+  .create-lobby-actions {
+    width: 100%;
+  }
+}

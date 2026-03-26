@@ -1,0 +1,191 @@
+<div class="page-shell">
+  <div class="panel grid">
+    <div class="spread home-top-spread">
+      <div>
+        <h1 class="title">{{ 'homeTitle' | t }}</h1>
+        <p class="subtitle">{{ 'homeSubtitle' | t }}</p>
+      </div>
+
+      <div class="home-preferences-row">
+        <div class="home-language-box">
+          <label class="label">{{ 'language' | t }}</label>
+          <select
+            class="select"
+            [ngModel]="language.language()"
+            (ngModelChange)="setLanguage($event)"
+          >
+            <option value="en">English</option>
+            <option value="de">Deutsch</option>
+          </select>
+        </div>
+
+        <div class="home-font-box">
+          <label class="label">{{ 'fontLabel' | t }}</label>
+          <select
+            class="select"
+            [ngModel]="session.appFont()"
+            (ngModelChange)="setAppFont($event)"
+          >
+            <option value="simple" class="font-option-simple">
+              {{ 'fontSimple' | t }}
+            </option>
+            <option value="frances" class="font-option-frances">
+              {{ 'fontFrances' | t }}
+            </option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    @if (store.error()) {
+      <div class="error-box">{{ store.error() }}</div>
+    }
+
+    <div class="panel">
+      <label class="label">{{ 'playerName' | t }}</label>
+      <input
+        class="input"
+        [ngModel]="playerName"
+        (ngModelChange)="onPlayerNameChange($event)"
+        [attr.maxlength]="playerNameMaxLength"
+      />
+      @if (playerNameValidationErrorKey()) {
+        <div class="error-box player-name-error">
+          {{ playerNameValidationErrorKey()! | t }}
+        </div>
+      }
+    </div>
+
+    <div class="grid home-actions-grid">
+      <div class="panel">
+        <h3 class="panel-title">{{ 'createLobby' | t }}</h3>
+
+        <label class="label">{{ 'lobbyPasswordOptional' | t }}</label>
+        <input class="input" [(ngModel)]="createPassword" type="password" />
+
+        <div class="row create-lobby-actions section-gap-top">
+          <button
+            class="btn btn-primary"
+            [disabled]="store.loading() || isPlayerNameInvalid()"
+            (click)="createLobby()"
+          >
+            {{ 'createLobby' | t }}
+          </button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3 class="panel-title">{{ 'joinLobby' | t }}</h3>
+
+        <label class="label">{{ 'lobbyCode' | t }}</label>
+        <input class="input" [(ngModel)]="joinCode" />
+
+        <label class="label field-gap-top">{{ 'lobbyPassword' | t }}</label>
+        <input class="input" [(ngModel)]="joinPassword" type="password" />
+
+        <div class="row section-gap-top">
+          <button
+            class="btn btn-primary"
+            [disabled]="store.loading() || isPlayerNameInvalid()"
+            (click)="joinLobby()"
+          >
+            {{ 'joinLobby' | t }}
+          </button>
+
+          @if (session.lastLobbyCode()) {
+            <button
+              class="btn"
+              [disabled]="store.loading()"
+              (click)="reconnectLast()"
+            >
+              {{ 'reconnect' | t }}
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="lobby-list-header">
+        <h3 class="lobby-list-title">{{ 'lobbyListTitle' | t }}</h3>
+      </div>
+
+      @if (!store.lobbyList().length) {
+        <div class="muted">{{ 'noLobbiesAvailable' | t }}</div>
+      } @else {
+        <div class="grid lobby-list-grid">
+          @for (lobby of store.lobbyList(); track lobby.code) {
+            <div class="panel lobby-list-item-panel">
+              <div class="spread lobby-list-item-row">
+                <div>
+                  <div>
+                    <strong>{{ lobby.code }}</strong>
+                    @if (lobby.hasPassword) {
+                      <span class="muted">
+                        • {{ 'passwordProtected' | t }}</span
+                      >
+                    }
+                    <span class="muted"> • </span>
+                    <span
+                      class="muted"
+                      [style.color]="
+                        isLobbyRunning(lobby.status)
+                          ? 'var(--color-warning, #e6a817)'
+                          : 'inherit'
+                      "
+                      >{{ statusLabel(lobby.status) }}</span
+                    >
+                  </div>
+                  <div class="muted">
+                    {{ 'players' | t }}: {{ playingPlayersCount(lobby) }}/6 •
+                    {{ 'spectators' | t }}: {{ spectatorsCount(lobby) }}
+                  </div>
+                </div>
+
+                <div class="row open-lobbies-actions">
+                  @if (lobby.hasPassword) {
+                    <input
+                      class="input open-lobbies-password-input"
+                      [(ngModel)]="lobbyPasswords[lobby.code]"
+                      type="password"
+                      [placeholder]="'lobbyPasswordShort' | t"
+                    />
+                  }
+                  @if (isLobbyRunning(lobby.status)) {
+                    @if (canReconnectLobby(lobby)) {
+                      <button
+                        class="btn"
+                        [disabled]="store.loading()"
+                        (click)="reconnectListedLobby(lobby.code)"
+                      >
+                        {{ 'reconnect' | t }}
+                      </button>
+                    } @else {
+                      <button
+                        class="btn"
+                        [disabled]="store.loading() || isPlayerNameInvalid()"
+                        (click)="
+                          spectateListedLobby(lobby.code, lobby.hasPassword)
+                        "
+                      >
+                        {{ 'watchAsSpectator' | t }}
+                      </button>
+                    }
+                  } @else {
+                    <button
+                      class="btn btn-primary"
+                      [disabled]="store.loading() || isPlayerNameInvalid()"
+                      (click)="joinListedLobby(lobby.code, lobby.hasPassword)"
+                    >
+                      {{ 'joinThisLobby' | t }}
+                    </button>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+</div>
