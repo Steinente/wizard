@@ -3,6 +3,7 @@ import { NgComponentOutlet } from '@angular/common'
 import { RouterOutlet } from '@angular/router'
 import { AppInitService } from './core/services/app-init.service'
 import { PwaInstallService } from './core/services/pwa-install.service'
+import { SeoService } from './core/services/seo.service'
 import { SiteFooterComponent } from './site-footer.component'
 
 @Component({
@@ -54,10 +55,12 @@ export class AppComponent {
   constructor(
     private readonly appInit: AppInitService,
     private readonly pwaInstall: PwaInstallService,
+    private readonly seo: SeoService,
   ) {
     this.applyLocalModeTitlePrefix()
     this.appInit.init()
     this.pwaInstall.init()
+    this.seo.init()
   }
 
   private applyLocalModeTitlePrefix() {
