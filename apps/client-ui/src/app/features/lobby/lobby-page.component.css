@@ -6,6 +6,14 @@
   grid-column: 1 / -1;
 }
 
+.lobby-lock-indicator {
+  display: inline-block;
+  margin-left: 6px;
+  font-size: 0.85em;
+  vertical-align: text-top;
+  transform: translateY(2px);
+}
+
 .rule-info-box {
   margin-bottom: 10px;
   border: 1px solid var(--border);

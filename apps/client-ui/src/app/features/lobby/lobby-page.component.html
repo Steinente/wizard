@@ -19,6 +19,14 @@
           <div>
             <h2 style="margin: 0">
               {{ 'lobby' | t }} {{ store.lobby()!.code }}
+              @if (store.lobby()!.hasPassword) {
+                <span
+                  class="lobby-lock-indicator"
+                  [attr.aria-label]="'passwordProtected' | t"
+                  [title]="'passwordProtected' | t"
+                  >&#x1F512;</span
+                >
+              }
             </h2>
             <div class="row" style="margin-top: 8px">
               <button class="btn" (click)="copyCode()">
