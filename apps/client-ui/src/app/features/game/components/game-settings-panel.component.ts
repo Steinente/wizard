@@ -159,7 +159,7 @@ import { TPipe } from '../../../shared/pipes/t.pipe'
       @if (isHost && !confirmingEnd) {
         <div style="margin-top: 12px;">
           <button
-            class="btn btn-danger compact-btn"
+            class="btn btn-danger compact-btn close-lobby-btn"
             (click)="confirmingEnd = true"
           >
             {{ 'closeLobby' | t }}
@@ -168,7 +168,7 @@ import { TPipe } from '../../../shared/pipes/t.pipe'
       }
 
       @if (isHost && confirmingEnd) {
-        <div style="margin-top: 12px;" class="row">
+        <div style="margin-top: 12px;" class="row confirm-end-actions">
           <button class="btn btn-danger compact-btn" (click)="endLobby()">
             {{ 'confirmCloseLobby' | t }}
           </button>
@@ -204,6 +204,28 @@ import { TPipe } from '../../../shared/pipes/t.pipe'
         padding: 6px 10px;
         border-radius: 8px;
         font-size: 12px;
+      }
+
+      .confirm-end-actions {
+        flex-direction: row-reverse;
+        justify-content: space-between;
+        width: 100%;
+      }
+
+      @media (max-width: 700px) {
+        .close-lobby-btn {
+          width: 100%;
+        }
+
+        .confirm-end-actions {
+          flex-direction: column-reverse;
+          justify-content: flex-start;
+          align-items: stretch;
+        }
+
+        .confirm-end-actions .compact-btn {
+          width: 100%;
+        }
       }
     `,
   ],
