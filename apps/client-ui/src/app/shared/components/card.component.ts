@@ -144,8 +144,8 @@ const SPECIAL_CARD_ARTWORK: Record<string, string> = {
         >
           {{ specialInfoText }}
         </div>
-        }
       }
+    }
   `,
   styles: [
     `
