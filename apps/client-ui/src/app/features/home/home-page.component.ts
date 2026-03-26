@@ -90,7 +90,7 @@ const PLAYER_NAME_EMOJI_PATTERN =
             <label class="label">{{ 'lobbyPasswordOptional' | t }}</label>
             <input class="input" [(ngModel)]="createPassword" type="password" />
 
-            <div style="margin-top: 16px;">
+            <div class="row create-lobby-actions" style="margin-top: 16px;">
               <button
                 class="btn btn-primary"
                 [disabled]="store.loading() || isPlayerNameInvalid()"
@@ -171,7 +171,10 @@ const PLAYER_NAME_EMOJI_PATTERN =
                       </div>
                     </div>
 
-                    <div class="row" style="align-items: center; gap: 8px;">
+                    <div
+                      class="row open-lobbies-actions"
+                      style="align-items: center; gap: 8px;"
+                    >
                       @if (lobby.hasPassword) {
                         <input
                           class="input open-lobbies-password-input"
@@ -285,6 +288,11 @@ const PLAYER_NAME_EMOJI_PATTERN =
         .open-lobbies-password-input {
           width: 100% !important;
           flex: 1 1 100%;
+        }
+
+        .open-lobbies-actions,
+        .create-lobby-actions {
+          width: 100%;
         }
       }
     `,
