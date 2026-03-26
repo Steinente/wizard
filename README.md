@@ -103,7 +103,7 @@ Verwende bewusst die `DOCKER_`-Varianten, damit es keine Kollision mit deiner be
 - `DOCKER_SERVER_PORT` (Default: `3000`)
 - `DOCKER_DATABASE_URL` (Default: `postgresql://wizard:wizard@postgres:5432/wizard`)
 - `DOCKER_POSTGRES_USER` / `DOCKER_POSTGRES_PASSWORD` / `DOCKER_POSTGRES_DB`
-- `DOCKER_HOST_DISCONNECT_TIMEOUT_MS` (Default: `600000`)
+- `DOCKER_HOST_DISCONNECT_TIMEOUT_MS` (Default: `180000`)
 
 Beispiel für LAN:
 

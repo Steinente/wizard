@@ -70,7 +70,7 @@ const disconnectPlayerData = (disconnectedAt: Date) => ({
 const getHostDisconnectedLobbyData = (disconnectedAt: Date) => ({
   hostDisconnectedAt: disconnectedAt,
   hostDisconnectDeadline: new Date(
-    disconnectedAt.getTime() + env.LOBBY_INACTIVITY_TIMEOUT_MS,
+    disconnectedAt.getTime() + env.HOST_DISCONNECT_TIMEOUT_MS,
   ),
 })
 
