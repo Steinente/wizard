@@ -115,6 +115,7 @@
                 {{ 'specialCardsFilterLabel' | t }}
               </label>
               <select
+                #specialCardFilterSelect
                 class="select"
                 [disabled]="!isHost()"
                 [value]="activeSpecialCardFilter()"

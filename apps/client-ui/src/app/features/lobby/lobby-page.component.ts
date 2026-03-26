@@ -1,4 +1,12 @@
-import { Component, computed, inject, signal } from '@angular/core'
+import {
+  Component,
+  computed,
+  effect,
+  ElementRef,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { ActivatedRoute, RouterLink } from '@angular/router'
 import type { GameConfig, SpecialCard, SpecialCardKey } from '@wizard/shared'
@@ -41,6 +49,9 @@ export class LobbyPageComponent {
   protected readonly store = inject(AppStore)
   private readonly facade = inject(GameFacadeService)
   protected readonly session = inject(SessionService)
+  private readonly specialCardFilterSelect = viewChild<
+    ElementRef<HTMLSelectElement>
+  >('specialCardFilterSelect')
 
   private readonly activeRuleInfoState = signal<RuleInfoKey | null>(null)
   private readonly selectedSpecialCardFilterHintState =
@@ -48,6 +59,17 @@ export class LobbyPageComponent {
   readonly copied = signal(false)
   readonly chatSoundEnabledSignal = signal(this.session.chatSoundEnabled())
   private copiedTimeoutId: ReturnType<typeof setTimeout> | null = null
+
+  constructor() {
+    effect(() => {
+      const selectElement = this.specialCardFilterSelect()?.nativeElement
+      const activeFilter = this.activeSpecialCardFilter()
+
+      if (selectElement && selectElement.value !== activeFilter) {
+        selectElement.value = activeFilter
+      }
+    })
+  }
 
   routeCode = this.route.snapshot.paramMap.get('code')?.toUpperCase() ?? ''
 
