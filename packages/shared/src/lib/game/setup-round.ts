@@ -34,6 +34,21 @@ const getTrumpSuit = (trumpCard: Card | null): Suit | null => {
   return null
 }
 
+const isDarkEyeOnlyFinalRound = (input: SetupRoundInput): boolean => {
+  const isDarkEyeOnlySpecial =
+    input.includedSpecialCards.length === 1 &&
+    input.includedSpecialCards[0] === 'darkEye'
+
+  if (!isDarkEyeOnlySpecial) {
+    return false
+  }
+
+  const deckSize = 60 + input.includedSpecialCards.length
+  const maxPossibleRounds = Math.floor(deckSize / input.players.length)
+
+  return input.currentRoundNumber === maxPossibleRounds
+}
+
 export const setupRound = (input: SetupRoundInput): RoundState => {
   const cardsPerPlayer = input.currentRoundNumber
   const playerIds = input.players
@@ -49,6 +64,14 @@ export const setupRound = (input: SetupRoundInput): RoundState => {
   )
 
   const dealResult = dealCards(deck, playerIds, cardsPerPlayer)
+  const keepTrumpCardInDeck = isDarkEyeOnlyFinalRound(input)
+
+  const trumpCard = keepTrumpCardInDeck ? null : dealResult.trumpCard
+  const drawPile = keepTrumpCardInDeck
+    ? dealResult.trumpCard
+      ? [dealResult.trumpCard, ...dealResult.remainingDeck]
+      : dealResult.remainingDeck
+    : dealResult.remainingDeck
 
   const players: RoundPlayerState[] = playerIds.map((playerId) => ({
     playerId,
@@ -65,10 +88,10 @@ export const setupRound = (input: SetupRoundInput): RoundState => {
     dealerIndex: input.dealerIndex,
     activePlayerId: roundLeaderPlayerId,
     roundLeaderPlayerId,
-    trumpSuit: getTrumpSuit(dealResult.trumpCard),
-    trumpCard: dealResult.trumpCard,
-    drawPile: dealResult.remainingDeck,
-    deckRemainderCount: dealResult.remainingDeck.length,
+    trumpSuit: getTrumpSuit(trumpCard),
+    trumpCard,
+    drawPile,
+    deckRemainderCount: drawPile.length,
     players,
     currentTrick: null,
     completedTricks: [],
