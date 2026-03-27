@@ -86,14 +86,14 @@
 
         <span class="status-pill">{{ 'deck' | t }} {{ deckLabel }}</span>
 
-        <span
-          class="status-pill"
-          [style.background]="trumpBackground"
-          [style.color]="trumpForeground"
-          [style.borderColor]="trumpBorder"
-        >
-          {{ trumpDisplayText }}
-        </span>
+        @if (state.currentRound) {
+          <wiz-trump-badge
+            [trumpSuit]="state.currentRound.trumpSuit"
+            [trumpCard]="state.currentRound.trumpCard"
+          ></wiz-trump-badge>
+        } @else {
+          <span class="status-pill">-</span>
+        }
 
         <span class="status-pill">{{ 'round' | t }} {{ roundLabel }}</span>
         <span class="status-pill">{{ 'trick' | t }} {{ trickLabel }}</span>

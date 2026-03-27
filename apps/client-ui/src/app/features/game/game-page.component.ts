@@ -209,7 +209,9 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
                     [trumpSuit]="
                       store.gameState()!.currentRound?.trumpSuit ?? null
                     "
-                    [trumpValue]="trumpNumberValue()"
+                    [trumpCard]="
+                      store.gameState()!.currentRound?.trumpCard ?? null
+                    "
                   />
                 }
 
@@ -218,6 +220,12 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
                   [cards]="displayHand()"
                   [canPlay]="canPlayCardFn"
                   [play]="playCardFn"
+                  [trumpSuit]="
+                    store.gameState()!.currentRound?.trumpSuit ?? null
+                  "
+                  [trumpCard]="
+                    store.gameState()!.currentRound?.trumpCard ?? null
+                  "
                   [useArtwork]="cardArtworkEnabledSignal()"
                   [isSortActive]="handSortEnabledSignal()"
                   [onSort]="sortHandFn"
@@ -694,12 +702,6 @@ export class GamePageComponent {
       predictions: round.players.map((player) => player.prediction),
       trickCount: round.roundNumber,
     })
-  }
-
-  trumpNumberValue(): number | null {
-    const card = this.store.gameState()?.currentRound?.trumpCard
-
-    return card?.type === 'number' ? card.value : null
   }
 
   predict(value: number) {

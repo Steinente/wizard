@@ -5,12 +5,9 @@ import { I18nService } from '../../../core/i18n/i18n.service'
 import type { TranslationKey } from '../../../core/i18n/translations'
 import { GameFacadeService } from '../../../core/services/game-facade.service'
 import { TPipe } from '../../../shared/pipes/t.pipe'
-import { SUIT_BACKGROUNDS } from '../../../shared/utils/suit-colors.util'
 import { PanelSettingsComponent } from './panel-settings.component'
-import {
-  translateCardLabel,
-  translateSuitValue,
-} from '../utils/log-params.util'
+import { translateCardLabel } from '../utils/log-params.util'
+import { TrumpBadgeComponent } from './trump-badge.component'
 
 type HeaderRuleItem = {
   id: 'predictionVisibility' | 'openPredictionRestriction' | 'cloudRuleTiming'
@@ -18,19 +15,10 @@ type HeaderRuleItem = {
   value: string
 }
 
-const SPECIAL_TRUMP_REASON_CARDS = new Set([
-  'cloud',
-  'juggler',
-  'shapeShifter',
-  'dragon',
-  'fairy',
-  'werewolf',
-])
-
 @Component({
   selector: 'wiz-game-header',
   standalone: true,
-  imports: [TPipe, PanelSettingsComponent],
+  imports: [TPipe, PanelSettingsComponent, TrumpBadgeComponent],
   templateUrl: './game-header.component.html',
   styleUrls: ['./game-header.component.css'],
 })
@@ -140,80 +128,6 @@ export class GameHeaderComponent {
     return this.i18n.t(key)
   }
 
-  private getTranslatedCardReason() {
-    const card = this.state.currentRound?.trumpCard
-
-    if (!card) {
-      return ''
-    }
-
-    if (card.type === 'number') {
-      return ''
-    }
-
-    return translateCardLabel(
-      card.type === 'special' ? card.special : card.type,
-      this.t,
-    )
-  }
-
-  private appendReason(base: string, reason: string) {
-    return `${base} (${reason})`
-  }
-
-  get translatedTrump() {
-    const round = this.currentRound
-
-    if (!round) {
-      return '-'
-    }
-
-    if (!round.trumpSuit) {
-      const reason = this.getTranslatedCardReason()
-      return reason
-        ? `${this.i18n.t('noTrump')} (${reason})`
-        : this.i18n.t('noTrump')
-    }
-
-    const translatedSuit = translateSuitValue(round.trumpSuit, this.t)
-    const card = round.trumpCard
-
-    let base = translatedSuit
-    if (card && card.type === 'number') {
-      base = `${translatedSuit} ${card.value}`
-    }
-
-    // Check if trump card is a special card that required suit selection
-    if (
-      card &&
-      card.type === 'special' &&
-      SPECIAL_TRUMP_REASON_CARDS.has(card.special)
-    ) {
-      base = this.appendReason(base, translateCardLabel(card.special, this.t))
-    }
-
-    // Check if trump card is wizard or jester
-    if (card && card.type === 'wizard') {
-      base = this.appendReason(base, this.i18n.t('card.wizard'))
-    }
-
-    if (card && card.type === 'jester') {
-      base = this.appendReason(base, this.i18n.t('card.jester'))
-    }
-
-    return base
-  }
-
-  get trumpDisplayText() {
-    const round = this.currentRound
-
-    if (!round?.trumpSuit) {
-      return this.translatedTrump
-    }
-
-    return `${this.i18n.t('trump')} ${this.translatedTrump}`
-  }
-
   get roundLabel() {
     return this.currentRound?.roundNumber ?? '-'
   }
@@ -238,24 +152,6 @@ export class GameHeaderComponent {
 
   get spectatorNames() {
     return this.state.spectators.join(', ')
-  }
-
-  get trumpBackground() {
-    const suit = this.currentRound?.trumpSuit
-
-    if (!suit) {
-      return '#334155'
-    }
-
-    return SUIT_BACKGROUNDS[suit]
-  }
-
-  get trumpForeground() {
-    return this.currentRound?.trumpSuit === 'yellow' ? '#111827' : '#ffffff'
-  }
-
-  get trumpBorder() {
-    return this.trumpBackground
   }
 
   toggleSpectators() {

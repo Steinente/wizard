@@ -1,18 +1,24 @@
 import { Component, Input } from '@angular/core'
-import type { Card } from '@wizard/shared'
+import type { Card, Suit } from '@wizard/shared'
 import { CardComponent } from '../../../shared/components/card.component'
 import { TPipe } from '../../../shared/pipes/t.pipe'
+import { TrumpBadgeComponent } from './trump-badge.component'
 
 @Component({
   selector: 'wiz-hand-area',
   standalone: true,
-  imports: [CardComponent, TPipe],
+  imports: [CardComponent, TPipe, TrumpBadgeComponent],
   template: `
     <div class="panel">
       <div
         style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px;"
       >
-        <h3 style="margin: 0;">{{ 'yourHand' | t }}</h3>
+        <div
+          style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; min-width: 0;"
+        >
+          <h3 style="margin: 0;">{{ 'yourHand' | t }}</h3>
+          <wiz-trump-badge [trumpSuit]="trumpSuit" [trumpCard]="trumpCard" />
+        </div>
         <button
           class="btn"
           [class.btn-active]="isSortActive"
@@ -81,6 +87,8 @@ export class HandAreaComponent {
     targetCardId: string,
   ) => void
   @Input() useArtwork = false
+  @Input() trumpSuit: Suit | null = null
+  @Input() trumpCard: Card | null = null
 
   draggedCardId: string | null = null
   dropTargetCardId: string | null = null
