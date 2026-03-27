@@ -16,6 +16,7 @@ import {
   PANEL_CHAT_VISIBLE_KEY,
   LOG_SHOW_TIMESTAMP_KEY,
   SCOREBOARD_A11Y_MODE_KEY,
+  SCOREBOARD_A11Y_ROUND_SCOPE_KEY,
   CHAT_SOUND_ENABLED_KEY,
   CARD_ARTWORK_ENABLED_KEY,
   HAND_SORT_ENABLED_KEY,
@@ -52,6 +53,12 @@ export type AppFontChoice = 'simple' | 'frances'
 const normalizeAppFont = (value: string | null): AppFontChoice =>
   value === 'frances' ? 'frances' : 'simple'
 
+export type ScoreboardA11yRoundScope = 'all' | 'lastRound'
+
+const normalizeScoreboardA11yRoundScope = (
+  value: string | null,
+): ScoreboardA11yRoundScope => (value === 'lastRound' ? 'lastRound' : 'all')
+
 @Injectable({ providedIn: 'root' })
 export class SessionService {
   private readonly sessionTokenSignal = signal('')
@@ -70,6 +77,8 @@ export class SessionService {
   private readonly panelChatVisibleSignal = signal(true)
   private readonly logShowTimestampSignal = signal(true)
   private readonly scoreboardA11yModeSignal = signal(false)
+  private readonly scoreboardA11yRoundScopeSignal =
+    signal<ScoreboardA11yRoundScope>('all')
   private readonly chatSoundEnabledSignal = signal(true)
   private readonly cardArtworkEnabledSignal = signal(false)
   private readonly handSortEnabledSignal = signal(false)
@@ -99,6 +108,9 @@ export class SessionService {
   readonly panelChatVisible = computed(() => this.panelChatVisibleSignal())
   readonly logShowTimestamp = computed(() => this.logShowTimestampSignal())
   readonly scoreboardA11yMode = computed(() => this.scoreboardA11yModeSignal())
+  readonly scoreboardA11yRoundScope = computed(() =>
+    this.scoreboardA11yRoundScopeSignal(),
+  )
   readonly chatSoundEnabled = computed(() => this.chatSoundEnabledSignal())
   readonly cardArtworkEnabled = computed(() => this.cardArtworkEnabledSignal())
   readonly handSortEnabled = computed(() => this.handSortEnabledSignal())
@@ -159,6 +171,13 @@ export class SessionService {
 
     const storedScoreboardA11yMode = this.storage.get(SCOREBOARD_A11Y_MODE_KEY)
     this.scoreboardA11yModeSignal.set(storedScoreboardA11yMode === 'true')
+
+    const storedScoreboardA11yRoundScope = this.storage.get(
+      SCOREBOARD_A11Y_ROUND_SCOPE_KEY,
+    )
+    this.scoreboardA11yRoundScopeSignal.set(
+      normalizeScoreboardA11yRoundScope(storedScoreboardA11yRoundScope),
+    )
 
     const storedChatSoundEnabled = this.storage.get(CHAT_SOUND_ENABLED_KEY)
     this.chatSoundEnabledSignal.set(storedChatSoundEnabled !== 'false')
@@ -246,6 +265,12 @@ export class SessionService {
   setScoreboardA11yMode(enabled: boolean) {
     this.scoreboardA11yModeSignal.set(enabled)
     this.storage.set(SCOREBOARD_A11Y_MODE_KEY, String(enabled))
+  }
+
+  setScoreboardA11yRoundScope(scope: ScoreboardA11yRoundScope) {
+    const normalized = normalizeScoreboardA11yRoundScope(scope)
+    this.scoreboardA11yRoundScopeSignal.set(normalized)
+    this.storage.set(SCOREBOARD_A11Y_ROUND_SCOPE_KEY, normalized)
   }
 
   setChatSoundEnabled(enabled: boolean) {

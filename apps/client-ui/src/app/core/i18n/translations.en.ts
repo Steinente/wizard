@@ -192,6 +192,10 @@ export const en = {
   handSortDisabled: 'Hand sorting disabled',
   a11yScoreboardModeOn: 'Accessibility score view enabled',
   a11yScoreboardModeOff: 'Accessibility score view disabled',
+  scoreboardA11yRoundFilterLabel: 'Display in accessibility score view',
+  scoreboardA11yRoundFilterAll: 'Accessibility score view: all rounds',
+  scoreboardA11yRoundFilterLastRound:
+    'Accessibility score view: last round only',
   cardArtworkModeOn: 'Card artwork enabled',
   cardArtworkModeOff: 'Card artwork disabled',
   copyFailed: 'Copy failed',

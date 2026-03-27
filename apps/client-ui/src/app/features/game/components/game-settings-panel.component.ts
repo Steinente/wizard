@@ -1,6 +1,7 @@
 import { Component, Input } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import type { WizardGameViewState } from '@wizard/shared'
+import type { ScoreboardA11yRoundScope } from '../../../core/services/session.service'
 import {
   SPEECH_RATE_MAX,
   SPEECH_RATE_MIN,
@@ -67,6 +68,17 @@ import { TPipe } from '../../../shared/pipes/t.pipe'
                 : ('a11yScoreboardModeOff' | t)
             }}
           </span>
+        </label>
+      </div>
+
+      <div class="row" style="margin-top: 8px;">
+        <label class="row">
+          <input
+            type="checkbox"
+            [ngModel]="scoreboardA11yRoundScope === 'lastRound'"
+            (ngModelChange)="changeScoreboardA11yLastRoundOnly($event)"
+          />
+          <span>{{ 'scoreboardA11yRoundFilterLastRound' | t }}</span>
         </label>
       </div>
 
@@ -277,8 +289,13 @@ export class GameSettingsPanelComponent {
   @Input({ required: true }) showTimestamp = true
   @Input({ required: true }) onShowTimestampChange!: (show: boolean) => void
   @Input({ required: true }) scoreboardA11yMode = true
+  @Input({ required: true })
+  scoreboardA11yRoundScope: ScoreboardA11yRoundScope = 'all'
   @Input({ required: true }) onScoreboardA11yModeChange!: (
     enabled: boolean,
+  ) => void
+  @Input({ required: true }) onScoreboardA11yRoundScopeChange!: (
+    scope: ScoreboardA11yRoundScope,
   ) => void
   @Input({ required: true }) cardArtworkEnabled = false
   @Input({ required: true }) onCardArtworkEnabledChange!: (
@@ -321,6 +338,10 @@ export class GameSettingsPanelComponent {
 
   changeScoreboardA11yMode(enabled: boolean) {
     this.onScoreboardA11yModeChange(enabled)
+  }
+
+  changeScoreboardA11yLastRoundOnly(enabled: boolean) {
+    this.onScoreboardA11yRoundScopeChange(enabled ? 'lastRound' : 'all')
   }
 
   changeCardArtworkEnabled(enabled: boolean) {

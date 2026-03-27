@@ -5,16 +5,32 @@ import {
   OnChanges,
   ViewChild,
 } from '@angular/core'
+import { FormsModule } from '@angular/forms'
 import type { WizardGameViewState } from '@wizard/shared'
+import type { ScoreboardA11yRoundScope } from '../../../core/services/session.service'
 import { TPipe } from '../../../shared/pipes/t.pipe'
 
 @Component({
   selector: 'wiz-scoreboard-panel',
   standalone: true,
-  imports: [TPipe],
+  imports: [FormsModule, TPipe],
   template: `
     <div class="panel score-panel">
-      <h3 style="margin-top: 0;">{{ 'scoreboard' | t }}</h3>
+      <div class="score-panel-head">
+        <h3 style="margin: 0;">{{ 'scoreboard' | t }}</h3>
+
+        @if (a11yMode) {
+          <label class="score-a11y-round-filter">
+            <input
+              type="checkbox"
+              [ngModel]="a11yRoundScope === 'lastRound'"
+              (ngModelChange)="changeA11yLastRoundOnly($event)"
+              [attr.aria-label]="'scoreboardA11yRoundFilterLabel' | t"
+            />
+            <span>{{ 'scoreboardA11yRoundFilterLastRound' | t }}</span>
+          </label>
+        }
+      </div>
 
       <div
         #scrollContainer
@@ -23,7 +39,7 @@ import { TPipe } from '../../../shared/pipes/t.pipe'
       >
         @if (a11yMode) {
           <ul class="rounds-list" [attr.aria-label]="'scoreboard' | t">
-            @for (round of playedRoundNumbers(); track round) {
+            @for (round of displayedA11yRoundNumbers(); track round) {
               <li class="round-item">
                 <div class="round-label">{{ 'round' | t }} {{ round }}</div>
                 <ul class="players-list">
@@ -87,6 +103,24 @@ import { TPipe } from '../../../shared/pipes/t.pipe'
     `
       .score-panel {
         padding: 10px;
+      }
+
+      .score-panel-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+
+      .score-a11y-round-filter {
+        margin-left: auto;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11px;
+        line-height: 1.25;
+        color: var(--muted);
       }
 
       .score-scroll {
@@ -180,6 +214,10 @@ export class ScoreboardPanelComponent implements OnChanges {
 
   @Input({ required: true }) state!: WizardGameViewState
   @Input({ required: true }) a11yMode = true
+  @Input({ required: true }) a11yRoundScope: ScoreboardA11yRoundScope = 'all'
+  @Input({ required: true }) onA11yRoundScopeChange!: (
+    scope: ScoreboardA11yRoundScope,
+  ) => void
 
   private isAtBottom = true
 
@@ -219,6 +257,21 @@ export class ScoreboardPanelComponent implements OnChanges {
         ? this.state.maxRounds
         : (this.state.currentRound?.roundNumber ?? 0)
     return Array.from({ length: maxRound }, (_, i) => i + 1)
+  }
+
+  displayedA11yRoundNumbers() {
+    const rounds = this.playedRoundNumbers()
+
+    if (this.a11yRoundScope !== 'lastRound') {
+      return rounds
+    }
+
+    const lastRound = rounds.at(-1)
+    return typeof lastRound === 'number' ? [lastRound] : []
+  }
+
+  changeA11yLastRoundOnly(enabled: boolean) {
+    this.onA11yRoundScopeChange(enabled ? 'lastRound' : 'all')
   }
 
   private scoreEntry(playerId: string, round: number) {

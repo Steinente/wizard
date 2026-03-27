@@ -8,7 +8,10 @@ import {
 } from '@wizard/shared'
 import { GameFacadeService } from '../../core/services/game-facade.service'
 import { PwaInstallService } from '../../core/services/pwa-install.service'
-import { SessionService } from '../../core/services/session.service'
+import {
+  SessionService,
+  type ScoreboardA11yRoundScope,
+} from '../../core/services/session.service'
 import { AppStore } from '../../core/state/app.store'
 import { TPipe } from '../../shared/pipes/t.pipe'
 import {
@@ -93,6 +96,8 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
               <wiz-scoreboard-panel
                 [state]="store.gameState()!"
                 [a11yMode]="scoreboardA11yModeSignal()"
+                [a11yRoundScope]="scoreboardA11yRoundScopeSignal()"
+                [onA11yRoundScopeChange]="setScoreboardA11yRoundScopeFn"
               />
               <wiz-log-panel
                 [logs]="store.gameState()!.logs"
@@ -133,6 +138,7 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
                   [isHost]="isHost()"
                   [showTimestamp]="logShowTimestampSignal()"
                   [scoreboardA11yMode]="scoreboardA11yModeSignal()"
+                  [scoreboardA11yRoundScope]="scoreboardA11yRoundScopeSignal()"
                   [cardArtworkEnabled]="cardArtworkEnabledSignal()"
                   [onToggleAudio]="toggleReadLogFn"
                   [onBingToggle]="toggleBingFn"
@@ -144,6 +150,9 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
                   [onEndLobby]="endLobbyFn"
                   [onShowTimestampChange]="setLogShowTimestampFn"
                   [onScoreboardA11yModeChange]="setScoreboardA11yModeFn"
+                  [onScoreboardA11yRoundScopeChange]="
+                    setScoreboardA11yRoundScopeFn
+                  "
                   [onCardArtworkEnabledChange]="setCardArtworkEnabledFn"
                 />
               </div>
@@ -160,6 +169,8 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
                 <wiz-scoreboard-panel
                   [state]="store.gameState()!"
                   [a11yMode]="scoreboardA11yModeSignal()"
+                  [a11yRoundScope]="scoreboardA11yRoundScopeSignal()"
+                  [onA11yRoundScopeChange]="setScoreboardA11yRoundScopeFn"
                 />
               </div>
             }
@@ -380,6 +391,9 @@ export class GamePageComponent {
   readonly scoreboardA11yModeSignal = computed(() =>
     this.session.scoreboardA11yMode(),
   )
+  readonly scoreboardA11yRoundScopeSignal = computed(() =>
+    this.session.scoreboardA11yRoundScope(),
+  )
   readonly chatSoundEnabledSignal = computed(() =>
     this.session.chatSoundEnabled(),
   )
@@ -433,6 +447,8 @@ export class GamePageComponent {
     this.session.setLogShowTimestamp(v)
   readonly setScoreboardA11yModeFn = (v: boolean) =>
     this.session.setScoreboardA11yMode(v)
+  readonly setScoreboardA11yRoundScopeFn = (v: ScoreboardA11yRoundScope) =>
+    this.session.setScoreboardA11yRoundScope(v)
   readonly setCardArtworkEnabledFn = (v: boolean) =>
     this.session.setCardArtworkEnabled(v)
   readonly setHandSortEnabledFn = (v: boolean) => this.setHandSortEnabled(v)

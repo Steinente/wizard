@@ -192,6 +192,10 @@ export const de = {
   handSortDisabled: 'Sortierung der Hand deaktiviert',
   a11yScoreboardModeOn: 'Barrierefreier Punktestand aktiv',
   a11yScoreboardModeOff: 'Barrierefreier Punktestand deaktiviert',
+  scoreboardA11yRoundFilterLabel: 'Anzeige im barrierefreien Punktestand',
+  scoreboardA11yRoundFilterAll: 'Barrierefreier Punktestand: Alle Runden',
+  scoreboardA11yRoundFilterLastRound:
+    'Barrierefreier Punktestand: nur letzte Runde',
   cardArtworkModeOn: 'Kartenbilder aktiv',
   cardArtworkModeOff: 'Kartenbilder deaktiviert',
   copyFailed: 'Kopieren fehlgeschlagen',
