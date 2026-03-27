@@ -84,7 +84,9 @@
       <div class="header-status-row">
         <span class="status-pill">{{ 'phase' | t }} {{ translatedPhase }}</span>
 
-        <span class="status-pill">{{ 'deck' | t }} {{ deckLabel }}</span>
+        @if (showDeckBadge) {
+          <span class="status-pill">{{ 'deck' | t }} {{ deckLabel }}</span>
+        }
 
         @if (state.currentRound) {
           <wiz-trump-badge

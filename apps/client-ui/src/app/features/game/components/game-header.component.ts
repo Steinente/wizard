@@ -136,6 +136,10 @@ export class GameHeaderComponent {
     return this.currentRound?.deckRemainderCount ?? '-'
   }
 
+  get showDeckBadge() {
+    return !this.state.config.specialCardsRandomizerEnabled
+  }
+
   get trickLabel() {
     const round = this.currentRound
 
