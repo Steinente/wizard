@@ -2,7 +2,6 @@ import { Component, computed, effect, signal } from '@angular/core'
 import {
   getAllowedPredictionValues,
   isLegalPlay,
-  SUITS,
   type Card,
   type Suit,
 } from '@wizard/shared'
@@ -27,28 +26,15 @@ import {
   ScoreboardPanelComponent,
   TrickAreaComponent,
 } from './components'
-
-const SPECIAL_SORT_PRIORITY: Record<string, number> = {
-  dragon: 90,
-  shapeShifter: 80,
-  wizard: 70,
-  werewolf: 60,
-  darkEye: 55,
-  cloud: 50,
-  juggler: 40,
-  bomb: 30,
-  jester: 20,
-  fairy: 10,
-  witch: 5,
-}
-
-const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
-  (priority, suit, index) => {
-    priority[suit] = SUITS.length - index
-    return priority
-  },
-  {} as Record<Suit, number>,
-)
+import {
+  applyManualHandOrder,
+  reorderHandCards,
+  sortHandCards,
+} from './utils/hand-sort.util'
+import {
+  canPlayerPredict,
+  getOwnPendingDecision,
+} from './utils/game-state-selectors.util'
 
 @Component({
   standalone: true,
@@ -66,307 +52,8 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
     PendingDecisionPanelComponent,
     GameSettingsPanelComponent,
   ],
-  template: `
-    <div class="page-shell">
-      @if (!store.gameState()) {
-        <div class="panel">{{ 'waitingForPlayers' | t }}</div>
-      } @else {
-        <div class="game-top">
-          <wiz-game-header
-            [state]="store.gameState()!"
-            [settingsVisible]="panelSettingsVisibleSignal()"
-            [playersVisible]="panelPlayersVisibleSignal()"
-            [scoreboardVisible]="panelScoreboardVisibleSignal()"
-            [logVisible]="panelLogVisibleSignal()"
-            [chatVisible]="panelChatVisibleSignal()"
-            (panelSettingsChange)="setPanelSettingsVisibleFn($event)"
-            (panelPlayersChange)="setPanelPlayersVisibleFn($event)"
-            (panelScoreboardChange)="setPanelScoreboardVisibleFn($event)"
-            (panelLogChange)="setPanelLogVisibleFn($event)"
-            (panelChatChange)="setPanelChatVisibleFn($event)"
-            (homeButtonUserGesture)="onHomeButtonUserGesture()"
-          />
-        </div>
-
-        @if (store.gameState()!.phase === 'finished') {
-          <div class="game-finished-layout">
-            <wiz-game-finished-panel [state]="store.gameState()!" />
-
-            <div class="game-column">
-              <wiz-scoreboard-panel
-                [state]="store.gameState()!"
-                [a11yMode]="scoreboardA11yModeSignal()"
-                [a11yRoundScope]="scoreboardA11yRoundScopeSignal()"
-                [onA11yRoundScopeChange]="setScoreboardA11yRoundScopeFn"
-              />
-              <wiz-log-panel
-                [logs]="store.gameState()!.logs"
-                [players]="store.gameState()!.players"
-                [showTimestamp]="logShowTimestampSignal()"
-              />
-            </div>
-          </div>
-
-          @if (panelChatVisibleSignal()) {
-            <div class="game-chat-finished" style="margin-top: 16px;">
-              <wiz-chat-panel
-                [messages]="store.gameState()!.chatMessages"
-                [selfPlayerId]="store.gameState()!.selfPlayerId"
-                [selfRole]="selfRole()"
-                [spectatorChatAllowed]="spectatorChatAllowed()"
-                [canToggleSpectatorChat]="isHost()"
-                [chatSoundEnabled]="chatSoundEnabledSignal()"
-                (sendMessage)="sendChatMessageFn($event)"
-                (spectatorChatToggle)="setSpectatorChatAllowedFn($event)"
-                (chatSoundToggle)="setChatSoundEnabledFn($event)"
-              />
-            </div>
-          }
-        } @else {
-          <div class="game-layout">
-            @if (panelSettingsVisibleSignal()) {
-              <div class="game-block game-settings-block">
-                <wiz-game-settings-panel
-                  [state]="store.gameState()!"
-                  [audioEnabled]="readLogEnabledSignal()"
-                  [audioVolume]="speechVolumeSignal()"
-                  [audioSpeed]="speechSpeedSignal()"
-                  [bingEnabled]="bingEnabledSignal()"
-                  [chatSoundEnabled]="chatSoundEnabledSignal()"
-                  [spectatorChatAllowed]="spectatorChatAllowed()"
-                  [handSortEnabled]="handSortEnabledSignal()"
-                  [isHost]="isHost()"
-                  [showTimestamp]="logShowTimestampSignal()"
-                  [scoreboardA11yMode]="scoreboardA11yModeSignal()"
-                  [scoreboardA11yRoundScope]="scoreboardA11yRoundScopeSignal()"
-                  [cardArtworkEnabled]="cardArtworkEnabledSignal()"
-                  [onToggleAudio]="toggleReadLogFn"
-                  [onBingToggle]="toggleBingFn"
-                  [onChatSoundToggle]="setChatSoundEnabledFn"
-                  [onSpectatorChatToggle]="setSpectatorChatAllowedFn"
-                  [onHandSortToggle]="setHandSortEnabledFn"
-                  [onAudioVolumeChange]="setSpeechVolumeFn"
-                  [onAudioSpeedChange]="setSpeechSpeedFn"
-                  [onEndLobby]="endLobbyFn"
-                  [onShowTimestampChange]="setLogShowTimestampFn"
-                  [onScoreboardA11yModeChange]="setScoreboardA11yModeFn"
-                  [onScoreboardA11yRoundScopeChange]="
-                    setScoreboardA11yRoundScopeFn
-                  "
-                  [onCardArtworkEnabledChange]="setCardArtworkEnabledFn"
-                />
-              </div>
-            }
-
-            @if (panelPlayersVisibleSignal()) {
-              <div class="game-block game-players-block">
-                <wiz-player-list-panel [state]="store.gameState()!" />
-              </div>
-            }
-
-            @if (panelScoreboardVisibleSignal()) {
-              <div class="game-block game-scoreboard-block">
-                <wiz-scoreboard-panel
-                  [state]="store.gameState()!"
-                  [a11yMode]="scoreboardA11yModeSignal()"
-                  [a11yRoundScope]="scoreboardA11yRoundScopeSignal()"
-                  [onA11yRoundScopeChange]="setScoreboardA11yRoundScopeFn"
-                />
-              </div>
-            }
-
-            <div class="game-block game-trick-block">
-              <wiz-trick-area
-                [trick]="store.gameState()!.currentRound?.currentTrick ?? null"
-                [players]="store.gameState()!.players"
-                [resolvedCardEffects]="store.gameState()!.resolvedCardEffects"
-                [useArtwork]="cardArtworkEnabledSignal()"
-              />
-            </div>
-
-            <div class="game-block game-interaction-block">
-              @if (!isSpectator()) {
-                <div
-                  class="game-interaction-controls"
-                  [class.interaction-lock-active]="interactionFieldLocked()"
-                >
-                  @if (myPendingDecision()) {
-                    <wiz-pending-decision-panel
-                      class="active-turn"
-                      [decision]="myPendingDecision()"
-                      [cloudAdjustmentWonTricks]="myTricksWon()"
-                      [cloudAdjustmentRoundNumber]="
-                        cloudAdjustmentRoundNumber()
-                      "
-                      [cloudAdjustmentShowScorePreview]="
-                        shouldShowCloudAdjustmentScorePreview()
-                      "
-                      [onSelectTrump]="selectTrumpFn"
-                      [onResolveWerewolfTrumpSwap]="resolveWerewolfTrumpSwapFn"
-                      [onResolveShapeShifter]="resolveShapeShifterFn"
-                      [onResolveCloudSuit]="resolveCloudSuitFn"
-                      [onResolveCloudAdjustment]="resolveCloudAdjustmentFn"
-                      [onResolveJugglerSuit]="resolveJugglerSuitFn"
-                      [onResolveWitch]="resolveWitchFn"
-                      [onResolveDarkEyeChoice]="resolveDarkEyeChoiceFn"
-                    />
-                  } @else if (foreignPendingDecisionText()) {
-                    <div class="panel">
-                      <span class="muted">{{
-                        foreignPendingDecisionText()
-                      }}</span>
-                    </div>
-                  }
-
-                  @if (canPredict()) {
-                    <wiz-prediction-panel
-                      class="active-turn"
-                      [values]="predictionOptions()"
-                      [submit]="predictFn"
-                      [trumpSuit]="
-                        store.gameState()!.currentRound?.trumpSuit ?? null
-                      "
-                      [trumpCard]="
-                        store.gameState()!.currentRound?.trumpCard ?? null
-                      "
-                    />
-                  }
-                </div>
-
-                <wiz-hand-area
-                  [class.active-turn]="isMyTurnToPlay()"
-                  [cards]="displayHand()"
-                  [canPlay]="canPlayCardFn"
-                  [play]="playCardFn"
-                  [trumpSuit]="
-                    store.gameState()!.currentRound?.trumpSuit ?? null
-                  "
-                  [trumpCard]="
-                    store.gameState()!.currentRound?.trumpCard ?? null
-                  "
-                  [useArtwork]="cardArtworkEnabledSignal()"
-                  [isSortActive]="handSortEnabledSignal()"
-                  [onSort]="sortHandFn"
-                  [onReorder]="reorderHandFn"
-                />
-              } @else {
-                <div class="panel">
-                  <span class="muted">{{ 'spectatorMode' | t }}</span>
-                </div>
-              }
-            </div>
-
-            @if (panelLogVisibleSignal()) {
-              <div class="game-block game-log-block">
-                <wiz-log-panel
-                  [logs]="store.gameState()!.logs"
-                  [players]="store.gameState()!.players"
-                  [showTimestamp]="logShowTimestampSignal()"
-                />
-              </div>
-            }
-
-            @if (panelChatVisibleSignal()) {
-              <div class="game-block game-chat-block">
-                <wiz-chat-panel
-                  [messages]="store.gameState()!.chatMessages"
-                  [selfPlayerId]="store.gameState()!.selfPlayerId"
-                  [selfRole]="selfRole()"
-                  [spectatorChatAllowed]="spectatorChatAllowed()"
-                  [canToggleSpectatorChat]="isHost()"
-                  [chatSoundEnabled]="chatSoundEnabledSignal()"
-                  (sendMessage)="sendChatMessageFn($event)"
-                  (spectatorChatToggle)="setSpectatorChatAllowedFn($event)"
-                  (chatSoundToggle)="setChatSoundEnabledFn($event)"
-                />
-              </div>
-            }
-          </div>
-        }
-      }
-    </div>
-  `,
-  styles: [
-    `
-      .game-finished-layout {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) 320px;
-        gap: 16px;
-        align-items: start;
-        margin-top: 16px;
-      }
-
-      .game-block {
-        min-width: 0;
-      }
-
-      .game-settings-block {
-        grid-area: settings;
-      }
-
-      .game-players-block {
-        grid-area: players;
-      }
-
-      .game-scoreboard-block {
-        grid-area: scoreboard;
-      }
-
-      .game-trick-block {
-        grid-area: trick;
-      }
-
-      .game-interaction-block {
-        grid-area: interaction;
-        display: grid;
-        gap: 16px;
-      }
-
-      .game-interaction-controls {
-        display: grid;
-        gap: 16px;
-      }
-
-      .game-interaction-controls.interaction-lock-active {
-        pointer-events: none;
-        touch-action: none;
-      }
-
-      .game-log-block {
-        grid-area: log;
-      }
-
-      .game-chat-block {
-        grid-area: chat;
-      }
-
-      .game-layout {
-        grid-template-columns: 320px minmax(0, 1fr) 320px;
-        grid-template-areas:
-          'settings trick scoreboard'
-          'players interaction log'
-          'chat chat chat';
-      }
-
-      @media (max-width: 1100px) {
-        .game-finished-layout {
-          grid-template-columns: 1fr;
-        }
-
-        .game-layout {
-          grid-template-columns: 1fr;
-          grid-template-areas:
-            'settings'
-            'scoreboard'
-            'players'
-            'trick'
-            'interaction'
-            'log'
-            'chat';
-        }
-      }
-    `,
-  ],
+  templateUrl: './game-page.component.html',
+  styleUrl: './game-page.component.css',
 })
 export class GamePageComponent {
   protected readonly store = this.appStore
@@ -376,15 +63,60 @@ export class GamePageComponent {
   private lastFinishedGamePromptKey: string | null = null
   private pendingFinishedGamePromptKey: string | null = null
   private interactionGuardTimeoutId: ReturnType<typeof setTimeout> | null = null
+  readonly gameState = computed(() => this.store.gameState())
+  readonly selfPlayer = computed(() => {
+    const state = this.gameState()
 
-  readonly readLogEnabledSignal = computed(() => {
-    const state = this.store.gameState()
-    const selfId = state?.selfPlayerId
+    if (!state) {
+      return null
+    }
 
     return (
-      state?.players.find((player) => player.playerId === selfId)
-        ?.readLogEnabled ?? false
+      state.players.find((player) => player.playerId === state.selfPlayerId) ??
+      null
     )
+  })
+  readonly currentRoundPlayer = computed(() => {
+    const state = this.gameState()
+
+    if (!state) {
+      return null
+    }
+
+    return (
+      state.currentRound?.players.find(
+        (player) => player.playerId === state.selfPlayerId,
+      ) ?? null
+    )
+  })
+  readonly isSpectatorSignal = computed(() => {
+    const state = this.gameState()
+
+    if (!state) {
+      return false
+    }
+
+    return this.selfPlayer() === null
+  })
+  readonly isHostSignal = computed(() => this.selfPlayer()?.isHost ?? false)
+  readonly selfRoleSignal = computed<'host' | 'player' | 'spectator'>(() => {
+    const selfPlayer = this.selfPlayer()
+
+    if (!selfPlayer) {
+      return this.gameState() ? 'spectator' : 'player'
+    }
+
+    return selfPlayer.isHost ? 'host' : 'player'
+  })
+  readonly spectatorChatAllowedSignal = computed(
+    () =>
+      this.store.lobby()?.config.allowSpectatorChat ??
+      this.gameState()?.config.allowSpectatorChat ??
+      true,
+  )
+
+  readonly readLogEnabledSignal = computed(() => {
+    return this.selfPlayer()?.readLogEnabled ?? false
   })
   readonly speechVolumeSignal = computed(() => this.session.speechVolume())
   readonly speechSpeedSignal = computed(() => this.session.speechRate())
@@ -426,9 +158,9 @@ export class GamePageComponent {
     this.interactionFieldLockedSignal(),
   )
   readonly interactionAvailabilityKey = computed(() => {
-    const state = this.store.gameState()
+    const state = this.gameState()
 
-    if (!state || this.isSpectator()) {
+    if (!state || this.isSpectatorSignal()) {
       return 'none'
     }
 
@@ -510,7 +242,7 @@ export class GamePageComponent {
     private readonly pwaInstall: PwaInstallService,
   ) {
     effect(() => {
-      const state = this.store.gameState()
+      const state = this.gameState()
       const roundNumber = state?.currentRound?.roundNumber ?? null
       const lobbyCode = state?.lobbyCode ?? null
 
@@ -532,8 +264,8 @@ export class GamePageComponent {
       }
     })
 
-    effect((onCleanup) => {
-      const state = this.store.gameState()
+    effect(() => {
+      const state = this.gameState()
 
       if (!state || state.phase !== 'finished') {
         this.pendingFinishedGamePromptKey = null
@@ -548,8 +280,6 @@ export class GamePageComponent {
 
       this.lastFinishedGamePromptKey = finishedGameKey
       this.pendingFinishedGamePromptKey = finishedGameKey
-
-      onCleanup(() => undefined)
     })
 
     effect((onCleanup) => {
@@ -585,7 +315,7 @@ export class GamePageComponent {
   }
 
   onHomeButtonUserGesture() {
-    const state = this.store.gameState()
+    const state = this.gameState()
     if (!state || state.phase !== 'finished') {
       return
     }
@@ -607,65 +337,12 @@ export class GamePageComponent {
     this.facade.setSpeechRate(speed)
   }
 
-  isHost() {
-    const state = this.store.gameState()
-
-    return !!state?.players.find(
-      (entry) => entry.playerId === state.selfPlayerId && entry.isHost,
-    )
-  }
-
-  isSpectator() {
-    const state = this.store.gameState()
-
-    if (!state) return false
-    return !state.players.some((p) => p.playerId === state.selfPlayerId)
-  }
-
-  selfRole(): 'host' | 'player' | 'spectator' {
-    const state = this.store.gameState()
-
-    if (!state) {
-      return 'player'
-    }
-
-    const self = state.players.find(
-      (entry) => entry.playerId === state.selfPlayerId,
-    )
-
-    if (!self) {
-      return 'spectator'
-    }
-
-    return self.isHost ? 'host' : 'player'
-  }
-
-  spectatorChatAllowed() {
-    return (
-      this.store.lobby()?.config.allowSpectatorChat ??
-      this.store.gameState()?.config.allowSpectatorChat ??
-      true
-    )
-  }
-
   myHand() {
-    const state = this.store.gameState()
-    const selfId = state?.selfPlayerId
-
-    return (
-      state?.currentRound?.players.find((player) => player.playerId === selfId)
-        ?.hand ?? []
-    )
+    return this.currentRoundPlayer()?.hand ?? []
   }
 
   myTricksWon() {
-    const state = this.store.gameState()
-    const selfId = state?.selfPlayerId
-
-    return (
-      state?.currentRound?.players.find((player) => player.playerId === selfId)
-        ?.tricksWon ?? 0
-    )
+    return this.currentRoundPlayer()?.tricksWon ?? 0
   }
 
   displayHand() {
@@ -673,51 +350,24 @@ export class GamePageComponent {
     const manualOrder = this.manualHandOrder()
 
     if (manualOrder?.length) {
-      const orderIndex = new Map(
-        manualOrder.map((cardId, index) => [cardId, index] as const),
-      )
-
-      return [...hand].sort((left, right) => {
-        const leftIndex = orderIndex.get(left.id) ?? Number.MAX_SAFE_INTEGER
-        const rightIndex = orderIndex.get(right.id) ?? Number.MAX_SAFE_INTEGER
-
-        return leftIndex - rightIndex
-      })
+      return applyManualHandOrder(hand, manualOrder)
     }
 
     if (!this.handSortEnabledSignal()) {
       return hand
     }
 
-    const trumpSuit = this.store.gameState()?.currentRound?.trumpSuit ?? null
+    const trumpSuit = this.gameState()?.currentRound?.trumpSuit ?? null
 
-    return [...hand].sort((left, right) =>
-      this.compareCardsForHandSort(left, right, trumpSuit),
-    )
+    return sortHandCards(hand, trumpSuit)
   }
 
   myPendingDecision() {
-    const state = this.store.gameState()
-
-    if (!state?.pendingDecision) {
-      return null
-    }
-
-    if (state.pendingDecision.type === 'jugglerPassCard') {
-      return state.pendingDecision.remainingPlayerIds.includes(
-        state.selfPlayerId,
-      )
-        ? state.pendingDecision
-        : null
-    }
-
-    return state.pendingDecision.playerId === state.selfPlayerId
-      ? state.pendingDecision
-      : null
+    return getOwnPendingDecision(this.gameState())
   }
 
   foreignPendingDecisionText() {
-    const state = this.store.gameState()
+    const state = this.gameState()
     const pendingDecision = state?.pendingDecision
 
     if (
@@ -758,25 +408,8 @@ export class GamePageComponent {
   }
 
   canPredict() {
-    const state = this.store.gameState()
-
-    if (!state || state.phase !== 'prediction') {
-      return false
-    }
-
-    const ownRoundPlayer = state.currentRound?.players.find(
-      (entry) => entry.playerId === state.selfPlayerId,
-    )
-
-    if (!ownRoundPlayer || ownRoundPlayer.prediction) {
-      return false
-    }
-
-    if (state.config.predictionVisibility !== 'open') {
-      return true
-    }
-
-    return state.currentRound?.activePlayerId === state.selfPlayerId
+    const state = this.gameState()
+    return canPlayerPredict(state, state?.selfPlayerId ?? '')
   }
 
   isMyTurnToPlay() {
@@ -784,7 +417,7 @@ export class GamePageComponent {
   }
 
   predictionOptions() {
-    const state = this.store.gameState()
+    const state = this.gameState()
     const round = state?.currentRound
 
     if (!state || !round) {
@@ -799,7 +432,7 @@ export class GamePageComponent {
   }
 
   predict(value: number) {
-    const code = this.store.gameState()?.lobbyCode
+    const code = this.gameState()?.lobbyCode
 
     if (!code) {
       return
@@ -809,7 +442,7 @@ export class GamePageComponent {
   }
 
   canPlayCard(card: Card) {
-    const state = this.store.gameState()
+    const state = this.gameState()
 
     if (!state) {
       return false
@@ -841,7 +474,7 @@ export class GamePageComponent {
   }
 
   playCard(card: Card) {
-    const state = this.store.gameState()
+    const state = this.gameState()
 
     if (!state) {
       return
@@ -863,7 +496,7 @@ export class GamePageComponent {
   }
 
   selectTrump(suit: Suit | null) {
-    const code = this.store.gameState()?.lobbyCode
+    const code = this.gameState()?.lobbyCode
 
     if (!code) {
       return
@@ -873,7 +506,7 @@ export class GamePageComponent {
   }
 
   resolveWerewolfTrumpSwap(suit: Suit | null) {
-    const state = this.store.gameState()
+    const state = this.gameState()
 
     if (
       !state?.pendingDecision ||
@@ -886,7 +519,7 @@ export class GamePageComponent {
   }
 
   resolveShapeShifter(mode: 'wizard' | 'jester') {
-    const state = this.store.gameState()
+    const state = this.gameState()
 
     if (
       !state?.pendingDecision ||
@@ -903,7 +536,7 @@ export class GamePageComponent {
   }
 
   resolveCloudSuit(suit: Suit) {
-    const state = this.store.gameState()
+    const state = this.gameState()
 
     if (
       !state?.pendingDecision ||
@@ -920,7 +553,7 @@ export class GamePageComponent {
   }
 
   resolveCloudAdjustment(delta: 1 | -1) {
-    const state = this.store.gameState()
+    const state = this.gameState()
 
     if (
       !state?.pendingDecision ||
@@ -933,7 +566,7 @@ export class GamePageComponent {
   }
 
   shouldShowCloudAdjustmentScorePreview(): boolean {
-    const state = this.store.gameState()
+    const state = this.gameState()
 
     if (
       !state?.pendingDecision ||
@@ -959,11 +592,11 @@ export class GamePageComponent {
   }
 
   cloudAdjustmentRoundNumber(): number {
-    return this.store.gameState()?.currentRound?.roundNumber ?? 0
+    return this.gameState()?.currentRound?.roundNumber ?? 0
   }
 
   resolveJugglerSuit(suit: Suit) {
-    const state = this.store.gameState()
+    const state = this.gameState()
 
     if (
       !state?.pendingDecision ||
@@ -980,7 +613,7 @@ export class GamePageComponent {
   }
 
   resolveWitch(payload: { handCardId: string; trickCardId: string }) {
-    const state = this.store.gameState()
+    const state = this.gameState()
 
     if (
       !state?.pendingDecision ||
@@ -993,7 +626,7 @@ export class GamePageComponent {
   }
 
   resolveDarkEyeChoice(selectedCardId: string) {
-    const state = this.store.gameState()
+    const state = this.gameState()
 
     if (
       !state?.pendingDecision ||
@@ -1007,7 +640,7 @@ export class GamePageComponent {
   }
 
   toggleAudio(enabled: boolean) {
-    const state = this.store.gameState()
+    const state = this.gameState()
 
     if (!state) {
       return
@@ -1017,7 +650,7 @@ export class GamePageComponent {
   }
 
   endLobby() {
-    const state = this.store.gameState()
+    const state = this.gameState()
 
     if (!state) {
       return
@@ -1027,11 +660,11 @@ export class GamePageComponent {
   }
 
   setSpectatorChatAllowed(enabled: boolean) {
-    if (!this.isHost()) {
+    if (!this.isHostSignal()) {
       return
     }
 
-    const code = this.store.gameState()?.lobbyCode ?? this.store.lobby()?.code
+    const code = this.gameState()?.lobbyCode ?? this.store.lobby()?.code
 
     if (!code) {
       return
@@ -1041,13 +674,16 @@ export class GamePageComponent {
   }
 
   sendChatMessage(text: string) {
-    const state = this.store.gameState()
+    const state = this.gameState()
 
     if (!state) {
       return
     }
 
-    if (this.selfRole() === 'spectator' && !this.spectatorChatAllowed()) {
+    if (
+      this.selfRoleSignal() === 'spectator' &&
+      !this.spectatorChatAllowedSignal()
+    ) {
       return
     }
 
@@ -1061,31 +697,19 @@ export class GamePageComponent {
   }
 
   sortHand() {
-    const next = !this.handSortEnabledSignal()
-    if (next) {
-      this.setHandSortEnabled(true)
-    } else {
-      this.setHandSortEnabled(false)
-    }
+    this.setHandSortEnabled(!this.handSortEnabledSignal())
   }
 
   reorderHand(draggedCardId: string, targetCardId: string) {
-    const hand = this.displayHand()
-    const draggedIndex = hand.findIndex((card) => card.id === draggedCardId)
-    const targetIndex = hand.findIndex((card) => card.id === targetCardId)
+    const reordered = reorderHandCards(
+      this.displayHand(),
+      draggedCardId,
+      targetCardId,
+    )
 
-    if (draggedIndex < 0 || targetIndex < 0 || draggedIndex === targetIndex) {
+    if (!reordered) {
       return
     }
-
-    const reordered = [...hand]
-    const [draggedCard] = reordered.splice(draggedIndex, 1)
-
-    if (!draggedCard) {
-      return
-    }
-
-    reordered.splice(targetIndex, 0, draggedCard)
 
     this.setHandSortEnabled(false)
     this.manualHandOrder.set(reordered.map((card) => card.id))
@@ -1100,56 +724,6 @@ export class GamePageComponent {
     }
 
     this.session.setHandSortEnabled(enabled)
-  }
-
-  private compareCardsForHandSort(
-    left: Card,
-    right: Card,
-    trumpSuit: Suit | null,
-  ) {
-    const leftIsNumber = left.type === 'number'
-    const rightIsNumber = right.type === 'number'
-
-    if (leftIsNumber !== rightIsNumber) {
-      return leftIsNumber ? 1 : -1
-    }
-
-    if (!leftIsNumber && !rightIsNumber) {
-      return this.specialSortPriority(right) - this.specialSortPriority(left)
-    }
-
-    if (left.type !== 'number' || right.type !== 'number') {
-      return 0
-    }
-
-    const leftSuitPriority = this.numberSuitPriority(left.suit, trumpSuit)
-    const rightSuitPriority = this.numberSuitPriority(right.suit, trumpSuit)
-
-    if (leftSuitPriority !== rightSuitPriority) {
-      return rightSuitPriority - leftSuitPriority
-    }
-
-    return right.value - left.value
-  }
-
-  private specialSortPriority(card: Exclude<Card, { type: 'number' }>) {
-    if (card.type === 'wizard') {
-      return SPECIAL_SORT_PRIORITY.wizard
-    }
-
-    if (card.type === 'jester') {
-      return SPECIAL_SORT_PRIORITY.jester
-    }
-
-    return SPECIAL_SORT_PRIORITY[card.special] ?? 0
-  }
-
-  private numberSuitPriority(suit: Suit, trumpSuit: Suit | null) {
-    if (suit === trumpSuit) {
-      return 100
-    }
-
-    return SUIT_SORT_PRIORITY[suit]
   }
 
   private shouldUseMobileInteractionGuard() {

@@ -1,0 +1,82 @@
+.game-finished-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 16px;
+  align-items: start;
+  margin-top: 16px;
+}
+
+.game-column,
+.game-interaction-block,
+.game-interaction-controls {
+  display: grid;
+  gap: 16px;
+}
+
+.game-chat-finished {
+  margin-top: 16px;
+}
+
+.game-block {
+  min-width: 0;
+}
+
+.game-settings-block {
+  grid-area: settings;
+}
+
+.game-players-block {
+  grid-area: players;
+}
+
+.game-scoreboard-block {
+  grid-area: scoreboard;
+}
+
+.game-trick-block {
+  grid-area: trick;
+}
+
+.game-interaction-block {
+  grid-area: interaction;
+}
+
+.game-interaction-controls.interaction-lock-active {
+  pointer-events: none;
+  touch-action: none;
+}
+
+.game-log-block {
+  grid-area: log;
+}
+
+.game-chat-block {
+  grid-area: chat;
+}
+
+.game-layout {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr) 320px;
+  grid-template-areas:
+    'settings trick scoreboard'
+    'players interaction log'
+    'chat chat chat';
+}
+
+@media (max-width: 1100px) {
+  .game-finished-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .game-layout {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      'settings'
+      'scoreboard'
+      'players'
+      'trick'
+      'interaction'
+      'log'
+      'chat';
+  }
+}

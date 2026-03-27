@@ -2,6 +2,7 @@ import { Component, Input } from '@angular/core'
 import type { WizardGameViewState } from '@wizard/shared'
 import { PlayerBadgeComponent } from '../../../shared/components/player-badge.component'
 import { TPipe } from '../../../shared/pipes/t.pipe'
+import { isRoundPlayerActive } from '../utils/game-state-selectors.util'
 
 @Component({
   selector: 'wiz-player-list-panel',
@@ -64,26 +65,7 @@ export class PlayerListPanelComponent {
   }
 
   isActive(playerId: string) {
-    if (this.state.pendingDecision) {
-      if (this.state.pendingDecision.type === 'jugglerPassCard') {
-        return this.state.pendingDecision.remainingPlayerIds.includes(playerId)
-      }
-
-      return this.state.pendingDecision.playerId === playerId
-    }
-
-    if (
-      this.state.phase === 'prediction' &&
-      this.state.config.predictionVisibility !== 'open'
-    ) {
-      const roundPlayer = this.state.currentRound?.players.find(
-        (player) => player.playerId === playerId,
-      )
-
-      return !roundPlayer?.prediction
-    }
-
-    return this.state.currentRound?.activePlayerId === playerId
+    return isRoundPlayerActive(this.state, playerId)
   }
 
   hasPendingCloudAdjustment(playerId: string) {

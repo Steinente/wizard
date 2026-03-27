@@ -1,0 +1,204 @@
+<div class="page-shell">
+  @if (!gameState()) {
+    <div class="panel">{{ 'waitingForPlayers' | t }}</div>
+  } @else if (gameState(); as state) {
+    <div class="game-top">
+      <wiz-game-header
+        [state]="state"
+        [settingsVisible]="panelSettingsVisibleSignal()"
+        [playersVisible]="panelPlayersVisibleSignal()"
+        [scoreboardVisible]="panelScoreboardVisibleSignal()"
+        [logVisible]="panelLogVisibleSignal()"
+        [chatVisible]="panelChatVisibleSignal()"
+        (panelSettingsChange)="setPanelSettingsVisibleFn($event)"
+        (panelPlayersChange)="setPanelPlayersVisibleFn($event)"
+        (panelScoreboardChange)="setPanelScoreboardVisibleFn($event)"
+        (panelLogChange)="setPanelLogVisibleFn($event)"
+        (panelChatChange)="setPanelChatVisibleFn($event)"
+        (homeButtonUserGesture)="onHomeButtonUserGesture()"
+      />
+    </div>
+
+    @if (state.phase === 'finished') {
+      <div class="game-finished-layout">
+        <wiz-game-finished-panel [state]="state" />
+
+        <div class="game-column">
+          <wiz-scoreboard-panel
+            [state]="state"
+            [a11yMode]="scoreboardA11yModeSignal()"
+            [a11yRoundScope]="scoreboardA11yRoundScopeSignal()"
+            [onA11yRoundScopeChange]="setScoreboardA11yRoundScopeFn"
+          />
+          <wiz-log-panel
+            [logs]="state.logs"
+            [players]="state.players"
+            [showTimestamp]="logShowTimestampSignal()"
+          />
+        </div>
+      </div>
+
+      @if (panelChatVisibleSignal()) {
+        <div class="game-chat-finished">
+          <wiz-chat-panel
+            [messages]="state.chatMessages"
+            [selfPlayerId]="state.selfPlayerId"
+            [selfRole]="selfRoleSignal()"
+            [spectatorChatAllowed]="spectatorChatAllowedSignal()"
+            [canToggleSpectatorChat]="isHostSignal()"
+            [chatSoundEnabled]="chatSoundEnabledSignal()"
+            (sendMessage)="sendChatMessageFn($event)"
+            (spectatorChatToggle)="setSpectatorChatAllowedFn($event)"
+            (chatSoundToggle)="setChatSoundEnabledFn($event)"
+          />
+        </div>
+      }
+    } @else {
+      <div class="game-layout">
+        @if (panelSettingsVisibleSignal()) {
+          <div class="game-block game-settings-block">
+            <wiz-game-settings-panel
+              [state]="state"
+              [audioEnabled]="readLogEnabledSignal()"
+              [audioVolume]="speechVolumeSignal()"
+              [audioSpeed]="speechSpeedSignal()"
+              [bingEnabled]="bingEnabledSignal()"
+              [chatSoundEnabled]="chatSoundEnabledSignal()"
+              [spectatorChatAllowed]="spectatorChatAllowedSignal()"
+              [handSortEnabled]="handSortEnabledSignal()"
+              [isHost]="isHostSignal()"
+              [showTimestamp]="logShowTimestampSignal()"
+              [scoreboardA11yMode]="scoreboardA11yModeSignal()"
+              [scoreboardA11yRoundScope]="scoreboardA11yRoundScopeSignal()"
+              [cardArtworkEnabled]="cardArtworkEnabledSignal()"
+              [onToggleAudio]="toggleReadLogFn"
+              [onBingToggle]="toggleBingFn"
+              [onChatSoundToggle]="setChatSoundEnabledFn"
+              [onSpectatorChatToggle]="setSpectatorChatAllowedFn"
+              [onHandSortToggle]="setHandSortEnabledFn"
+              [onAudioVolumeChange]="setSpeechVolumeFn"
+              [onAudioSpeedChange]="setSpeechSpeedFn"
+              [onEndLobby]="endLobbyFn"
+              [onShowTimestampChange]="setLogShowTimestampFn"
+              [onScoreboardA11yModeChange]="setScoreboardA11yModeFn"
+              [onScoreboardA11yRoundScopeChange]="setScoreboardA11yRoundScopeFn"
+              [onCardArtworkEnabledChange]="setCardArtworkEnabledFn"
+            />
+          </div>
+        }
+
+        @if (panelPlayersVisibleSignal()) {
+          <div class="game-block game-players-block">
+            <wiz-player-list-panel [state]="state" />
+          </div>
+        }
+
+        @if (panelScoreboardVisibleSignal()) {
+          <div class="game-block game-scoreboard-block">
+            <wiz-scoreboard-panel
+              [state]="state"
+              [a11yMode]="scoreboardA11yModeSignal()"
+              [a11yRoundScope]="scoreboardA11yRoundScopeSignal()"
+              [onA11yRoundScopeChange]="setScoreboardA11yRoundScopeFn"
+            />
+          </div>
+        }
+
+        <div class="game-block game-trick-block">
+          <wiz-trick-area
+            [trick]="state.currentRound?.currentTrick ?? null"
+            [players]="state.players"
+            [resolvedCardEffects]="state.resolvedCardEffects"
+            [useArtwork]="cardArtworkEnabledSignal()"
+          />
+        </div>
+
+        <div class="game-block game-interaction-block">
+          @if (!isSpectatorSignal()) {
+            <div
+              class="game-interaction-controls"
+              [class.interaction-lock-active]="interactionFieldLocked()"
+            >
+              @if (myPendingDecision(); as pendingDecision) {
+                <wiz-pending-decision-panel
+                  class="active-turn"
+                  [decision]="pendingDecision"
+                  [cloudAdjustmentWonTricks]="myTricksWon()"
+                  [cloudAdjustmentRoundNumber]="cloudAdjustmentRoundNumber()"
+                  [cloudAdjustmentShowScorePreview]="
+                    shouldShowCloudAdjustmentScorePreview()
+                  "
+                  [onSelectTrump]="selectTrumpFn"
+                  [onResolveWerewolfTrumpSwap]="resolveWerewolfTrumpSwapFn"
+                  [onResolveShapeShifter]="resolveShapeShifterFn"
+                  [onResolveCloudSuit]="resolveCloudSuitFn"
+                  [onResolveCloudAdjustment]="resolveCloudAdjustmentFn"
+                  [onResolveJugglerSuit]="resolveJugglerSuitFn"
+                  [onResolveWitch]="resolveWitchFn"
+                  [onResolveDarkEyeChoice]="resolveDarkEyeChoiceFn"
+                />
+              } @else if (foreignPendingDecisionText()) {
+                <div class="panel">
+                  <span class="muted">{{ foreignPendingDecisionText() }}</span>
+                </div>
+              }
+
+              @if (canPredict()) {
+                <wiz-prediction-panel
+                  class="active-turn"
+                  [values]="predictionOptions()"
+                  [submit]="predictFn"
+                  [trumpSuit]="state.currentRound?.trumpSuit ?? null"
+                  [trumpCard]="state.currentRound?.trumpCard ?? null"
+                />
+              }
+            </div>
+
+            <wiz-hand-area
+              [class.active-turn]="isMyTurnToPlay()"
+              [cards]="displayHand()"
+              [canPlay]="canPlayCardFn"
+              [play]="playCardFn"
+              [trumpSuit]="state.currentRound?.trumpSuit ?? null"
+              [trumpCard]="state.currentRound?.trumpCard ?? null"
+              [useArtwork]="cardArtworkEnabledSignal()"
+              [isSortActive]="handSortEnabledSignal()"
+              [onSort]="sortHandFn"
+              [onReorder]="reorderHandFn"
+            />
+          } @else {
+            <div class="panel">
+              <span class="muted">{{ 'spectatorMode' | t }}</span>
+            </div>
+          }
+        </div>
+
+        @if (panelLogVisibleSignal()) {
+          <div class="game-block game-log-block">
+            <wiz-log-panel
+              [logs]="state.logs"
+              [players]="state.players"
+              [showTimestamp]="logShowTimestampSignal()"
+            />
+          </div>
+        }
+
+        @if (panelChatVisibleSignal()) {
+          <div class="game-block game-chat-block">
+            <wiz-chat-panel
+              [messages]="state.chatMessages"
+              [selfPlayerId]="state.selfPlayerId"
+              [selfRole]="selfRoleSignal()"
+              [spectatorChatAllowed]="spectatorChatAllowedSignal()"
+              [canToggleSpectatorChat]="isHostSignal()"
+              [chatSoundEnabled]="chatSoundEnabledSignal()"
+              (sendMessage)="sendChatMessageFn($event)"
+              (spectatorChatToggle)="setSpectatorChatAllowedFn($event)"
+              (chatSoundToggle)="setChatSoundEnabledFn($event)"
+            />
+          </div>
+        }
+      </div>
+    }
+  }
+</div>
