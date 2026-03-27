@@ -313,13 +313,20 @@ export const isFollowSuitDisabledInTrick = (
   trick: NonNullable<WizardGameState['currentRound']>['currentTrick'] | null,
   state: WizardGameState,
 ): boolean => {
-  const firstPlay = trick?.plays[0]
-
-  if (!firstPlay) {
+  if (!trick || !trick.plays.length) {
     return false
   }
 
-  return disablesFollowSuitAsLeadCard(firstPlay.card, state)
+  // Once a lead suit has been established, follow-suit rules are active.
+  if (trick.leadSuit) {
+    return false
+  }
+
+  // Before the first lead suit is established, any played card that disables
+  // follow-suit lifting should keep the trick in "no follow-suit" mode.
+  return trick.plays.some((play) =>
+    disablesFollowSuitAsLeadCard(play.card, state),
+  )
 }
 
 export const getHypotheticalNextLeaderPlayerId = (
