@@ -9,6 +9,10 @@ import {
 import type { WizardGameViewState } from '@wizard/shared'
 import { I18nService } from '../../../core/i18n/i18n.service'
 import { TPipe } from '../../../shared/pipes/t.pipe'
+import {
+  ALL_SUITS,
+  getSuitBackground,
+} from '../../../shared/utils/suit-colors.util'
 import { getLogTranslationKey } from '../utils/log-label.util'
 import {
   addDerivedCardLabelForSpecialPlay,
@@ -30,8 +34,12 @@ import {
         (scroll)="onScroll()"
       >
         <div class="grid" style="gap: 5px;">
-          @for (entry of logs; track entry.id) {
-            <div class="panel log-entry">
+          @for (entry of logs; track entry.id; let index = $index) {
+            <div
+              class="panel log-entry"
+              [style.borderLeftColor]="roundAccentColor(index)"
+              [style.background]="roundTintColor(index)"
+            >
               <div class="log-message">
                 {{ format(entry.messageKey, entry.messageParams) }}
               </div>
@@ -48,6 +56,7 @@ import {
     `
       .log-entry {
         padding: 6px 8px;
+        border-left: 3px solid transparent;
       }
 
       .log-message {
@@ -65,6 +74,7 @@ import {
 })
 export class LogPanelComponent implements OnChanges {
   private readonly i18n = inject(I18nService)
+  private readonly roundColorIndexByLogId = new Map<string, number>()
 
   @ViewChild('scrollContainer')
   private scrollContainer?: ElementRef<HTMLElement>
@@ -84,6 +94,8 @@ export class LogPanelComponent implements OnChanges {
   }
 
   ngOnChanges() {
+    this.recomputeRoundColorMap()
+
     if (!this.isAtBottom) return
     requestAnimationFrame(() => {
       const el = this.scrollContainer?.nativeElement
@@ -141,5 +153,47 @@ export class LogPanelComponent implements OnChanges {
       translationKey,
       this.formatLogParams(messageKey, params),
     )
+  }
+
+  roundAccentColor(logIndex: number) {
+    const entry = this.logs[logIndex]
+    if (!entry) {
+      return getSuitBackground(ALL_SUITS[0])
+    }
+
+    const colorIndex = this.roundColorIndexByLogId.get(entry.id) ?? 0
+    return getSuitBackground(ALL_SUITS[colorIndex])
+  }
+
+  roundTintColor(logIndex: number) {
+    const accent = this.roundAccentColor(logIndex)
+    return `color-mix(in srgb, ${accent} 14%, transparent)`
+  }
+
+  private recomputeRoundColorMap() {
+    this.roundColorIndexByLogId.clear()
+
+    let colorIndex = 0
+    let roundNumber = 1
+    let completedTricksInRound = 0
+
+    const isTrickCompletionLog = (entry: WizardGameViewState['logs'][number]) =>
+      entry.type === 'trickWon' ||
+      entry.messageKey === 'game.trick.canceledByBomb'
+
+    for (const entry of this.logs) {
+      this.roundColorIndexByLogId.set(entry.id, colorIndex)
+
+      if (!isTrickCompletionLog(entry)) {
+        continue
+      }
+
+      completedTricksInRound += 1
+      if (completedTricksInRound >= roundNumber) {
+        completedTricksInRound = 0
+        roundNumber += 1
+        colorIndex = (colorIndex + 1) % ALL_SUITS.length
+      }
+    }
   }
 }
