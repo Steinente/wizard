@@ -26,17 +26,36 @@ const QUICK_EMOTES = ['😀', '🎉', '👏', '😅', '🤔', '❤️']
     <div #panelRoot class="panel chat-panel">
       <div class="chat-header">
         <h3 style="margin: 0;">{{ 'chat' | t }}</h3>
-        <button
-          class="btn chat-sound-btn"
-          [class.btn-active]="chatSoundEnabled"
-          type="button"
-          [title]="
-            (chatSoundEnabled ? 'chatSoundEnabled' : 'chatSoundDisabled') | t
-          "
-          (click)="toggleChatSound()"
-        >
-          {{ chatSoundEnabled ? '🔔' : '🔕' }}
-        </button>
+        <div class="chat-header-actions">
+          @if (canToggleSpectatorChat) {
+            <button
+              class="btn spectator-chat-btn"
+              [class.btn-active]="spectatorChatAllowed"
+              type="button"
+              [title]="
+                (spectatorChatAllowed
+                  ? 'spectatorChatEnabled'
+                  : 'spectatorChatDisabled'
+                ) | t
+              "
+              (click)="toggleSpectatorChat()"
+            >
+              {{ spectatorChatAllowed ? '👥' : '🚫👥' }}
+            </button>
+          }
+
+          <button
+            class="btn chat-sound-btn"
+            [class.btn-active]="chatSoundEnabled"
+            type="button"
+            [title]="
+              (chatSoundEnabled ? 'chatSoundEnabled' : 'chatSoundDisabled') | t
+            "
+            (click)="toggleChatSound()"
+          >
+            {{ chatSoundEnabled ? '🔔' : '🔕' }}
+          </button>
+        </div>
       </div>
 
       <div
@@ -78,6 +97,7 @@ const QUICK_EMOTES = ['😀', '🎉', '👏', '😅', '🤔', '❤️']
           <button
             class="btn emote-btn"
             type="button"
+            [disabled]="!canSendMessage()"
             (click)="appendEmote(emote)"
           >
             {{ emote }}
@@ -91,13 +111,24 @@ const QUICK_EMOTES = ['😀', '🎉', '👏', '😅', '🤔', '❤️']
           name="chatMessage"
           class="input"
           type="text"
+          [disabled]="!canSendMessage()"
           [ngModel]="draft"
           (ngModelChange)="draft = $event"
-          [placeholder]="'chatInputPlaceholder' | t"
+          [placeholder]="
+            (canSendMessage()
+              ? 'chatInputPlaceholder'
+              : 'chatInputDisabledForSpectator'
+            ) | t
+          "
           maxlength="300"
           (keydown.enter)="send()"
         />
-        <button class="btn" type="button" (click)="send()">
+        <button
+          class="btn"
+          type="button"
+          [disabled]="!canSendMessage()"
+          (click)="send()"
+        >
           {{ 'chatSend' | t }}
         </button>
       </div>
@@ -208,6 +239,12 @@ const QUICK_EMOTES = ['😀', '🎉', '👏', '😅', '🤔', '❤️']
         gap: 8px;
       }
 
+      .chat-header-actions {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
       .chat-sound-btn {
         padding: 4px 8px;
         border-radius: 8px;
@@ -215,6 +252,21 @@ const QUICK_EMOTES = ['😀', '🎉', '👏', '😅', '🤔', '❤️']
         line-height: 1;
         flex-shrink: 0;
       }
+
+      .spectator-chat-btn {
+        padding: 4px 8px;
+        border-radius: 8px;
+        font-size: 14px;
+        line-height: 1;
+        flex-shrink: 0;
+      }
+
+      .spectator-chat-btn.btn-active {
+        background: #22304a;
+        color: var(--text);
+        border-color: var(--border);
+      }
+
       .chat-sound-btn.btn-active {
         background: #22304a;
         color: var(--text);
@@ -256,6 +308,10 @@ export class ChatPanelComponent implements OnChanges {
   @Input({ required: true }) messages: GameChatMessageView[] = []
   @Input({ required: true }) selfPlayerId = ''
   @Output() readonly sendMessage = new EventEmitter<string>()
+  @Input() selfRole: 'host' | 'player' | 'spectator' = 'player'
+  @Input() spectatorChatAllowed = true
+  @Input() canToggleSpectatorChat = false
+  @Output() readonly spectatorChatToggle = new EventEmitter<boolean>()
   @Input() chatSoundEnabled = true
   @Output() readonly chatSoundToggle = new EventEmitter<boolean>()
 
@@ -407,12 +463,28 @@ export class ChatPanelComponent implements OnChanges {
     this.chatSoundToggle.emit(!this.chatSoundEnabled)
   }
 
+  toggleSpectatorChat() {
+    this.spectatorChatToggle.emit(!this.spectatorChatAllowed)
+  }
+
+  canSendMessage() {
+    return this.selfRole !== 'spectator' || this.spectatorChatAllowed
+  }
+
   appendEmote(emote: string) {
+    if (!this.canSendMessage()) {
+      return
+    }
+
     const prefix = this.draft.trim().length ? ' ' : ''
     this.draft = `${this.draft}${prefix}${emote}`.slice(0, 300)
   }
 
   send() {
+    if (!this.canSendMessage()) {
+      return
+    }
+
     const text = this.draft.trim()
 
     if (!text.length) {

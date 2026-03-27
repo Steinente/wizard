@@ -5,6 +5,7 @@ export type SpecialCardSettings = Pick<
   GameConfig,
   | 'includedSpecialCards'
   | 'cloudRuleTiming'
+  | 'allowSpectatorChat'
   | 'specialCardsRandomizerEnabled'
   | 'twoPlayerModeEnabled'
 >
@@ -12,6 +13,7 @@ export type SpecialCardSettings = Pick<
 const DEFAULT_SPECIAL_CARD_SETTINGS: SpecialCardSettings = {
   includedSpecialCards: [...SPECIAL_CARD_KEYS],
   cloudRuleTiming: 'endOfRound',
+  allowSpectatorChat: true,
   specialCardsRandomizerEnabled: false,
   twoPlayerModeEnabled: false,
 }
@@ -28,6 +30,7 @@ export const parseSpecialCardSettings = (
       return {
         includedSpecialCards: parsed as SpecialCardKey[],
         cloudRuleTiming: DEFAULT_SPECIAL_CARD_SETTINGS.cloudRuleTiming,
+        allowSpectatorChat: DEFAULT_SPECIAL_CARD_SETTINGS.allowSpectatorChat,
         specialCardsRandomizerEnabled:
           DEFAULT_SPECIAL_CARD_SETTINGS.specialCardsRandomizerEnabled,
         twoPlayerModeEnabled:
@@ -43,6 +46,9 @@ export const parseSpecialCardSettings = (
       const maybeRandomizer = (
         parsed as { specialCardsRandomizerEnabled?: unknown }
       ).specialCardsRandomizerEnabled
+      const maybeAllowSpectatorChat = (
+        parsed as { allowSpectatorChat?: unknown }
+      ).allowSpectatorChat
       const maybeTwoPlayerMode = (parsed as { twoPlayerModeEnabled?: unknown })
         .twoPlayerModeEnabled
 
@@ -54,6 +60,7 @@ export const parseSpecialCardSettings = (
           maybeTiming === 'immediateAfterTrick'
             ? 'immediateAfterTrick'
             : 'endOfRound',
+        allowSpectatorChat: maybeAllowSpectatorChat !== false,
         specialCardsRandomizerEnabled: maybeRandomizer === true,
         twoPlayerModeEnabled: maybeTwoPlayerMode === true,
       }

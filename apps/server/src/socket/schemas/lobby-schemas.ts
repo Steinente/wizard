@@ -37,6 +37,7 @@ export const createLobbySchema = z.object({
         .enum(['none', 'mustEqualTricks', 'mustNotEqualTricks'])
         .optional(),
       cloudRuleTiming: z.enum(['endOfRound', 'immediateAfterTrick']).optional(),
+      allowSpectatorChat: z.boolean().optional(),
       specialCardsRandomizerEnabled: z.boolean().optional(),
       twoPlayerModeEnabled: z.boolean().optional(),
       languageDefault: z.enum(['en', 'de']).optional(),
@@ -75,6 +76,7 @@ export const updateConfigSchema = z.object({
       .enum(['none', 'mustEqualTricks', 'mustNotEqualTricks'])
       .optional(),
     cloudRuleTiming: z.enum(['endOfRound', 'immediateAfterTrick']).optional(),
+    allowSpectatorChat: z.boolean().optional(),
     specialCardsRandomizerEnabled: z.boolean().optional(),
     twoPlayerModeEnabled: z.boolean().optional(),
     languageDefault: z.enum(['en', 'de']).optional(),

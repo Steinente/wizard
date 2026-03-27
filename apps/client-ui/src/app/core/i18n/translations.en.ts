@@ -71,9 +71,13 @@ export const en = {
   chooseTrumpSuit: 'Choose trump suit',
   submitPrediction: 'Submit prediction',
   chatInputPlaceholder: 'Write a message...',
+  chatInputDisabledForSpectator:
+    'Spectator chat has been disabled by the host.',
   chatSend: 'Send',
   chatNoMessages: 'No messages yet',
   chatEmotesLabel: 'Quick emotes',
+  spectatorChatEnabled: 'Spectators can send chat messages',
+  spectatorChatDisabled: 'Spectators cannot send chat messages',
   'chat.system.inGameContinuation': 'Chat now continues in-game.',
   'chat.system.hostOpenedLobby': '{name} opened the lobby.',
   'chat.system.playerJoinedLobby': '{name} joined the lobby.',
@@ -345,6 +349,8 @@ export const en = {
   'error.chatMessageFailed': 'Sending chat message failed',
   'error.chatMessageEmpty': 'Chat message must not be empty',
   'error.chatMessageTooLong': 'Chat message is too long',
+  'error.spectatorChatDisabled':
+    'The host has disabled chat messages for spectators',
   'error.shapeShifterResolutionFailed': 'Shape Shifter resolution failed',
   'error.cloudResolutionFailed': 'Cloud resolution failed',
   'error.cloudAdjustmentFailed': 'Cloud adjustment failed',

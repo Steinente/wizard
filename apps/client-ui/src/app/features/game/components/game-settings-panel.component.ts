@@ -156,6 +156,25 @@ import { TPipe } from '../../../shared/pipes/t.pipe'
         </label>
       </div>
 
+      @if (isHost) {
+        <div class="row" style="margin-top: 8px;">
+          <label class="row">
+            <input
+              type="checkbox"
+              [ngModel]="spectatorChatAllowed"
+              (ngModelChange)="toggleSpectatorChat($event)"
+            />
+            <span>
+              {{
+                spectatorChatAllowed
+                  ? ('spectatorChatEnabled' | t)
+                  : ('spectatorChatDisabled' | t)
+              }}
+            </span>
+          </label>
+        </div>
+      }
+
       @if (isHost && !confirmingEnd) {
         <div style="margin-top: 12px;">
           <button
@@ -244,11 +263,13 @@ export class GameSettingsPanelComponent {
   @Input({ required: true }) audioSpeed = 1
   @Input({ required: true }) bingEnabled = true
   @Input({ required: true }) chatSoundEnabled = true
+  @Input({ required: true }) spectatorChatAllowed = true
   @Input({ required: true }) handSortEnabled = false
   @Input({ required: true }) isHost = false
   @Input({ required: true }) onToggleAudio!: (enabled: boolean) => void
   @Input({ required: true }) onBingToggle!: (enabled: boolean) => void
   @Input({ required: true }) onChatSoundToggle!: (enabled: boolean) => void
+  @Input({ required: true }) onSpectatorChatToggle!: (enabled: boolean) => void
   @Input({ required: true }) onHandSortToggle!: (enabled: boolean) => void
   @Input({ required: true }) onAudioVolumeChange!: (volume: number) => void
   @Input({ required: true }) onAudioSpeedChange!: (speed: number) => void
@@ -276,6 +297,10 @@ export class GameSettingsPanelComponent {
 
   toggleChatSound(enabled: boolean) {
     this.onChatSoundToggle(enabled)
+  }
+
+  toggleSpectatorChat(enabled: boolean) {
+    this.onSpectatorChatToggle(enabled)
   }
 
   toggleHandSort(enabled: boolean) {

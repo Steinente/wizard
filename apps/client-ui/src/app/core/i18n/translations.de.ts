@@ -71,9 +71,12 @@ export const de = {
   chooseTrumpSuit: 'Trumpffarbe wählen',
   submitPrediction: 'Ansage abgeben',
   chatInputPlaceholder: 'Nachricht schreiben...',
+  chatInputDisabledForSpectator: 'Der Host hat den Zuschauer-Chat deaktiviert.',
   chatSend: 'Senden',
   chatNoMessages: 'Noch keine Nachrichten',
   chatEmotesLabel: 'Schnell-Emotes',
+  spectatorChatEnabled: 'Zuschauer dürfen im Chat schreiben',
+  spectatorChatDisabled: 'Zuschauer dürfen nicht im Chat schreiben',
   'chat.system.inGameContinuation': 'Der Chat findet ab jetzt ingame statt.',
   'chat.system.hostOpenedLobby': '{name} hat die Lobby eröffnet.',
   'chat.system.playerJoinedLobby': '{name} ist der Lobby beigetreten.',
@@ -352,6 +355,8 @@ export const de = {
   'error.chatMessageFailed': 'Chat-Nachricht konnte nicht gesendet werden',
   'error.chatMessageEmpty': 'Chat-Nachricht darf nicht leer sein',
   'error.chatMessageTooLong': 'Chat-Nachricht ist zu lang',
+  'error.spectatorChatDisabled':
+    'Der Host hat Chat-Nachrichten für Zuschauer deaktiviert',
   'error.shapeShifterResolutionFailed':
     'Gestaltenwandler-Auflösung fehlgeschlagen',
   'error.cloudResolutionFailed': 'Wolken-Auflösung fehlgeschlagen',

@@ -203,6 +203,7 @@ export class GameService {
       lobby.includedSpecialCards = serializeSpecialCardSettings({
         includedSpecialCards: randomizedIncludedSpecialCards,
         cloudRuleTiming: specialCardSettings.cloudRuleTiming,
+        allowSpectatorChat: specialCardSettings.allowSpectatorChat,
         specialCardsRandomizerEnabled:
           specialCardSettings.specialCardsRandomizerEnabled,
         twoPlayerModeEnabled: specialCardSettings.twoPlayerModeEnabled,
@@ -1049,6 +1050,13 @@ export class GameService {
 
     if (text.length > 300) {
       throw new Error('error.chatMessageTooLong')
+    }
+
+    if (
+      player.role === PlayerRole.SPECTATOR &&
+      !parseSpecialCardSettings(lobby.includedSpecialCards).allowSpectatorChat
+    ) {
+      throw new Error('error.spectatorChatDisabled')
     }
 
     const senderRole: 'host' | 'player' | 'spectator' =

@@ -5,6 +5,7 @@ export const defaultGameConfig: GameConfig = {
   predictionVisibility: 'open',
   openPredictionRestriction: 'none',
   cloudRuleTiming: 'immediateAfterTrick',
+  allowSpectatorChat: true,
   specialCardsRandomizerEnabled: false,
   twoPlayerModeEnabled: false,
   readLogEnabledByDefault: false,

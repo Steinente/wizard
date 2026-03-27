@@ -29,12 +29,14 @@ export const parseSpecialCardSettings = (
 ): {
   includedSpecialCards: SpecialCardKey[]
   cloudRuleTiming: GameConfig['cloudRuleTiming']
+  allowSpectatorChat: boolean
   specialCardsRandomizerEnabled: boolean
   twoPlayerModeEnabled: boolean
 } => {
   const fallback = {
     includedSpecialCards: [...SPECIAL_CARD_KEYS],
     cloudRuleTiming: 'endOfRound' as const,
+    allowSpectatorChat: true,
     specialCardsRandomizerEnabled: false,
     twoPlayerModeEnabled: false,
   }
@@ -48,6 +50,7 @@ export const parseSpecialCardSettings = (
       return {
         includedSpecialCards: parsed as SpecialCardKey[],
         cloudRuleTiming: fallback.cloudRuleTiming,
+        allowSpectatorChat: fallback.allowSpectatorChat,
         specialCardsRandomizerEnabled: fallback.specialCardsRandomizerEnabled,
         twoPlayerModeEnabled: fallback.twoPlayerModeEnabled,
       }
@@ -61,6 +64,9 @@ export const parseSpecialCardSettings = (
       const maybeRandomizer = (
         parsed as { specialCardsRandomizerEnabled?: unknown }
       ).specialCardsRandomizerEnabled
+      const maybeAllowSpectatorChat = (
+        parsed as { allowSpectatorChat?: unknown }
+      ).allowSpectatorChat
       const maybeTwoPlayerMode = (parsed as { twoPlayerModeEnabled?: unknown })
         .twoPlayerModeEnabled
 
@@ -72,6 +78,7 @@ export const parseSpecialCardSettings = (
           maybeTiming === 'immediateAfterTrick'
             ? 'immediateAfterTrick'
             : 'endOfRound',
+        allowSpectatorChat: maybeAllowSpectatorChat !== false,
         specialCardsRandomizerEnabled: maybeRandomizer === true,
         twoPlayerModeEnabled: maybeTwoPlayerMode === true,
       }
@@ -142,6 +149,7 @@ export const lobbyConfigToShared = (
 export const serializeSpecialCardSettings = (settings: {
   includedSpecialCards: SpecialCardKey[]
   cloudRuleTiming: GameConfig['cloudRuleTiming']
+  allowSpectatorChat: boolean
   specialCardsRandomizerEnabled: boolean
   twoPlayerModeEnabled: boolean
 }) => JSON.stringify(settings)

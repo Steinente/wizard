@@ -107,8 +107,12 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
               <wiz-chat-panel
                 [messages]="store.gameState()!.chatMessages"
                 [selfPlayerId]="store.gameState()!.selfPlayerId"
+                [selfRole]="selfRole()"
+                [spectatorChatAllowed]="spectatorChatAllowed()"
+                [canToggleSpectatorChat]="isHost()"
                 [chatSoundEnabled]="chatSoundEnabledSignal()"
                 (sendMessage)="sendChatMessageFn($event)"
+                (spectatorChatToggle)="setSpectatorChatAllowedFn($event)"
                 (chatSoundToggle)="setChatSoundEnabledFn($event)"
               />
             </div>
@@ -124,6 +128,7 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
                   [audioSpeed]="speechSpeedSignal()"
                   [bingEnabled]="bingEnabledSignal()"
                   [chatSoundEnabled]="chatSoundEnabledSignal()"
+                  [spectatorChatAllowed]="spectatorChatAllowed()"
                   [handSortEnabled]="handSortEnabledSignal()"
                   [isHost]="isHost()"
                   [showTimestamp]="logShowTimestampSignal()"
@@ -132,6 +137,7 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
                   [onToggleAudio]="toggleReadLogFn"
                   [onBingToggle]="toggleBingFn"
                   [onChatSoundToggle]="setChatSoundEnabledFn"
+                  [onSpectatorChatToggle]="setSpectatorChatAllowedFn"
                   [onHandSortToggle]="setHandSortEnabledFn"
                   [onAudioVolumeChange]="setSpeechVolumeFn"
                   [onAudioSpeedChange]="setSpeechSpeedFn"
@@ -239,8 +245,12 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
                 <wiz-chat-panel
                   [messages]="store.gameState()!.chatMessages"
                   [selfPlayerId]="store.gameState()!.selfPlayerId"
+                  [selfRole]="selfRole()"
+                  [spectatorChatAllowed]="spectatorChatAllowed()"
+                  [canToggleSpectatorChat]="isHost()"
                   [chatSoundEnabled]="chatSoundEnabledSignal()"
                   (sendMessage)="sendChatMessageFn($event)"
+                  (spectatorChatToggle)="setSpectatorChatAllowedFn($event)"
                   (chatSoundToggle)="setChatSoundEnabledFn($event)"
                 />
               </div>
@@ -418,6 +428,8 @@ export class GamePageComponent {
   readonly setCardArtworkEnabledFn = (v: boolean) =>
     this.session.setCardArtworkEnabled(v)
   readonly setHandSortEnabledFn = (v: boolean) => this.setHandSortEnabled(v)
+  readonly setSpectatorChatAllowedFn = (enabled: boolean) =>
+    this.setSpectatorChatAllowed(enabled)
   readonly sendChatMessageFn = (text: string) => this.sendChatMessage(text)
 
   constructor(
@@ -506,6 +518,32 @@ export class GamePageComponent {
 
     if (!state) return false
     return !state.players.some((p) => p.playerId === state.selfPlayerId)
+  }
+
+  selfRole(): 'host' | 'player' | 'spectator' {
+    const state = this.store.gameState()
+
+    if (!state) {
+      return 'player'
+    }
+
+    const self = state.players.find(
+      (entry) => entry.playerId === state.selfPlayerId,
+    )
+
+    if (!self) {
+      return 'spectator'
+    }
+
+    return self.isHost ? 'host' : 'player'
+  }
+
+  spectatorChatAllowed() {
+    return (
+      this.store.lobby()?.config.allowSpectatorChat ??
+      this.store.gameState()?.config.allowSpectatorChat ??
+      true
+    )
   }
 
   myHand() {
@@ -892,8 +930,32 @@ export class GamePageComponent {
     this.facade.endLobby(state.lobbyCode)
   }
 
+  setSpectatorChatAllowed(enabled: boolean) {
+    if (!this.isHost()) {
+      return
+    }
+
+    const code = this.store.gameState()?.lobbyCode ?? this.store.lobby()?.code
+
+    if (!code) {
+      return
+    }
+
+    this.facade.updateConfig(code, { allowSpectatorChat: enabled })
+  }
+
   sendChatMessage(text: string) {
-    const code = this.store.gameState()?.lobbyCode
+    const state = this.store.gameState()
+
+    if (!state) {
+      return
+    }
+
+    if (this.selfRole() === 'spectator' && !this.spectatorChatAllowed()) {
+      return
+    }
+
+    const code = state.lobbyCode
 
     if (!code) {
       return

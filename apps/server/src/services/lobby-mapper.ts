@@ -39,6 +39,7 @@ export const mapLobbyToSummary = (lobby: LobbyWithPlayers): LobbySummary => {
       lobby.openPredictionRestriction,
     ),
     cloudRuleTiming: specialCardSettings.cloudRuleTiming,
+    allowSpectatorChat: specialCardSettings.allowSpectatorChat,
     specialCardsRandomizerEnabled:
       specialCardSettings.specialCardsRandomizerEnabled,
     twoPlayerModeEnabled: specialCardSettings.twoPlayerModeEnabled,

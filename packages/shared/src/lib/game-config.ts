@@ -21,6 +21,7 @@ export interface GameConfig {
   predictionVisibility: PredictionVisibility
   openPredictionRestriction: OpenPredictionRestriction
   cloudRuleTiming: CloudRuleTiming
+  allowSpectatorChat: boolean
   specialCardsRandomizerEnabled: boolean
   twoPlayerModeEnabled: boolean
   readLogEnabledByDefault: boolean

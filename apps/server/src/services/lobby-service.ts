@@ -416,6 +416,7 @@ export class LobbyService {
         includedSpecialCards: serializeSpecialCardSettings({
           includedSpecialCards: mergedConfig.includedSpecialCards,
           cloudRuleTiming: mergedConfig.cloudRuleTiming,
+          allowSpectatorChat: mergedConfig.allowSpectatorChat,
           specialCardsRandomizerEnabled:
             mergedConfig.specialCardsRandomizerEnabled,
           twoPlayerModeEnabled: mergedConfig.twoPlayerModeEnabled,
@@ -677,6 +678,7 @@ export class LobbyService {
         includedSpecialCards:
           input.config.includedSpecialCards ||
           input.config.cloudRuleTiming ||
+          typeof input.config.allowSpectatorChat === 'boolean' ||
           typeof input.config.specialCardsRandomizerEnabled === 'boolean' ||
           typeof input.config.twoPlayerModeEnabled === 'boolean'
             ? serializeSpecialCardSettings({
@@ -686,6 +688,9 @@ export class LobbyService {
                 cloudRuleTiming:
                   input.config.cloudRuleTiming ??
                   previousSpecialCardSettings.cloudRuleTiming,
+                allowSpectatorChat:
+                  input.config.allowSpectatorChat ??
+                  previousSpecialCardSettings.allowSpectatorChat,
                 specialCardsRandomizerEnabled:
                   input.config.specialCardsRandomizerEnabled ??
                   previousSpecialCardSettings.specialCardsRandomizerEnabled,
@@ -797,6 +802,13 @@ export class LobbyService {
 
     if (text.length > 300) {
       throw new Error('error.chatMessageTooLong')
+    }
+
+    if (
+      player.role === PlayerRole.SPECTATOR &&
+      !parseSpecialCardSettings(lobby.includedSpecialCards).allowSpectatorChat
+    ) {
+      throw new Error('error.spectatorChatDisabled')
     }
 
     const senderRole: 'host' | 'player' | 'spectator' =
