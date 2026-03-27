@@ -6,6 +6,8 @@ import type { TranslationLanguage } from './core/i18n/translations'
 import { AppStore } from './core/state/app.store'
 import { TPipe } from './shared/pipes/t.pipe'
 
+type RulesDocumentVariant = 'official' | 'unofficial'
+
 @Component({
   selector: 'wiz-site-footer',
   standalone: true,
@@ -17,6 +19,34 @@ import { TPipe } from './shared/pipes/t.pipe'
           @if (rulesOpen()) {
             <div class="site-rules-popover">
               <h4 class="site-rules-title">{{ 'rulesPopoverTitle' | t }}</h4>
+
+              <div class="site-rules-tabs" role="tablist">
+                <button
+                  type="button"
+                  class="site-rules-tab"
+                  role="tab"
+                  [class.site-rules-tab-active]="
+                    selectedRulesVariant() === 'official'
+                  "
+                  [attr.aria-selected]="selectedRulesVariant() === 'official'"
+                  (click)="setRulesVariant('official')"
+                >
+                  {{ 'officialRules' | t }}
+                </button>
+
+                <button
+                  type="button"
+                  class="site-rules-tab"
+                  role="tab"
+                  [class.site-rules-tab-active]="
+                    selectedRulesVariant() === 'unofficial'
+                  "
+                  [attr.aria-selected]="selectedRulesVariant() === 'unofficial'"
+                  (click)="setRulesVariant('unofficial')"
+                >
+                  {{ 'unofficialRules' | t }}
+                </button>
+              </div>
 
               @if (rulesLoading()) {
                 <p class="site-rules-loading">{{ 'loading' | t }}...</p>
@@ -221,6 +251,51 @@ import { TPipe } from './shared/pipes/t.pipe'
         color: rgb(255 240 226 / 0.95);
         font-size: 12px;
         line-height: 1.45;
+      }
+
+      .site-rules-tabs {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 10px;
+      }
+
+      .site-rules-tab {
+        appearance: none;
+        border: 1px solid rgb(236 187 137 / 0.28);
+        border-radius: 999px;
+        background: rgb(255 255 255 / 0.06);
+        color: rgb(255 238 221 / 0.88);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        line-height: 1;
+        padding: 7px 12px;
+        transition:
+          border-color 160ms ease,
+          background-color 160ms ease,
+          color 160ms ease,
+          transform 160ms ease;
+      }
+
+      .site-rules-tab:hover {
+        transform: translateY(-1px);
+        border-color: rgb(255 204 158 / 0.56);
+      }
+
+      .site-rules-tab:focus-visible {
+        outline: 2px solid rgb(255 213 172 / 0.88);
+        outline-offset: 2px;
+      }
+
+      .site-rules-tab-active {
+        background: linear-gradient(
+          135deg,
+          rgb(214 145 84 / 0.3),
+          rgb(255 190 132 / 0.24)
+        );
+        border-color: rgb(255 211 168 / 0.58);
+        color: #fff7ee;
       }
 
       .site-rules-markdown {
@@ -481,11 +556,16 @@ export class SiteFooterComponent {
   protected readonly rulesOpen = signal(false)
   protected readonly rulesHtml = signal('')
   protected readonly rulesLoading = signal(false)
+  protected readonly selectedRulesVariant =
+    signal<RulesDocumentVariant>('official')
 
   private readonly rulesDocumentCache: Partial<
-    Record<TranslationLanguage, string>
+    Record<TranslationLanguage, Partial<Record<RulesDocumentVariant, string>>>
   > = {}
-  private rulesLanguageLoaded: TranslationLanguage | null = null
+  private rulesContextLoaded: {
+    language: TranslationLanguage
+    variant: RulesDocumentVariant
+  } | null = null
 
   constructor(
     private readonly appStore: AppStore,
@@ -557,34 +637,54 @@ export class SiteFooterComponent {
     this.rulesOpen.set(opening)
 
     if (opening) {
-      void this.loadRulesDocument()
+      this.selectedRulesVariant.set('official')
+      void this.loadRulesDocument('official')
     }
   }
 
-  private async loadRulesDocument() {
-    const language = this.i18n.language()
-
-    if (this.rulesLanguageLoaded === language && this.rulesHtml()) {
+  setRulesVariant(variant: RulesDocumentVariant) {
+    if (this.selectedRulesVariant() === variant) {
       return
     }
 
-    if (this.rulesDocumentCache[language]) {
-      this.rulesHtml.set(this.rulesDocumentCache[language] ?? '')
-      this.rulesLanguageLoaded = language
+    this.selectedRulesVariant.set(variant)
+    void this.loadRulesDocument(variant)
+  }
+
+  private async loadRulesDocument(variant: RulesDocumentVariant) {
+    const language = this.i18n.language()
+
+    if (
+      this.rulesContextLoaded?.language === language &&
+      this.rulesContextLoaded?.variant === variant &&
+      this.rulesHtml()
+    ) {
+      return
+    }
+
+    const cachedForLanguage = this.rulesDocumentCache[language]?.[variant]
+    if (cachedForLanguage) {
+      this.rulesHtml.set(cachedForLanguage)
+      this.rulesContextLoaded = { language, variant }
       return
     }
 
     this.rulesLoading.set(true)
 
     try {
-      const loaded = await this.fetchRulesForLanguage(language)
+      const loaded = await this.fetchRulesForLanguage(language, variant)
       const rendered = this.renderMarkdown(loaded)
-      this.rulesDocumentCache[language] = rendered
+
+      if (!this.rulesDocumentCache[language]) {
+        this.rulesDocumentCache[language] = {}
+      }
+
+      this.rulesDocumentCache[language]![variant] = rendered
       this.rulesHtml.set(rendered)
-      this.rulesLanguageLoaded = language
+      this.rulesContextLoaded = { language, variant }
     } catch {
       this.rulesHtml.set(this.i18n.t('rulesLoadFailed'))
-      this.rulesLanguageLoaded = language
+      this.rulesContextLoaded = { language, variant }
     } finally {
       this.rulesLoading.set(false)
     }
@@ -611,9 +711,13 @@ export class SiteFooterComponent {
     return marked.parser(tokens as Parameters<typeof marked.parser>[0])
   }
 
-  private async fetchRulesForLanguage(language: TranslationLanguage) {
-    const primaryUrl = `/content/rules.${language}.md`
-    const fallbackUrl = '/content/rules.de.md'
+  private async fetchRulesForLanguage(
+    language: TranslationLanguage,
+    variant: RulesDocumentVariant,
+  ) {
+    const documentFileName = variant === 'official' ? 'rules' : 'special-rules'
+    const primaryUrl = `/content/${documentFileName}.${language}.md`
+    const fallbackUrl = `/content/${documentFileName}.de.md`
 
     const primaryResponse = await fetch(primaryUrl)
     if (primaryResponse.ok) {
