@@ -626,8 +626,30 @@ export class LobbyService {
       throw new Error('error.playerNotFound')
     }
 
-    if (player.id === lobby.hostPlayerId) {
+    const isHost = player.id === lobby.hostPlayerId
+
+    if (isHost && lobby.status !== LobbyStatus.FINISHED) {
       throw new Error('error.hostCannotLeave')
+    }
+
+    if (isHost) {
+      lobbyPasswordHashes.delete(lobby.code)
+
+      await prisma.lobby.update({
+        where: { id: lobby.id },
+        data: {
+          status: LobbyStatus.CLOSED,
+          hostPlayerId: null,
+          hostDisconnectedAt: null,
+          hostDisconnectDeadline: null,
+        },
+      })
+
+      await prisma.player.delete({
+        where: { id: player.id },
+      })
+
+      return this.refreshLobbySummary(lobby.id)
     }
 
     await prisma.player.delete({
