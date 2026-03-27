@@ -186,45 +186,52 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
 
             <div class="game-block game-interaction-block">
               @if (!isSpectator()) {
-                @if (myPendingDecision()) {
-                  <wiz-pending-decision-panel
-                    class="active-turn"
-                    [decision]="myPendingDecision()"
-                    [cloudAdjustmentWonTricks]="myTricksWon()"
-                    [cloudAdjustmentRoundNumber]="cloudAdjustmentRoundNumber()"
-                    [cloudAdjustmentShowScorePreview]="
-                      shouldShowCloudAdjustmentScorePreview()
-                    "
-                    [onSelectTrump]="selectTrumpFn"
-                    [onResolveWerewolfTrumpSwap]="resolveWerewolfTrumpSwapFn"
-                    [onResolveShapeShifter]="resolveShapeShifterFn"
-                    [onResolveCloudSuit]="resolveCloudSuitFn"
-                    [onResolveCloudAdjustment]="resolveCloudAdjustmentFn"
-                    [onResolveJugglerSuit]="resolveJugglerSuitFn"
-                    [onResolveWitch]="resolveWitchFn"
-                    [onResolveDarkEyeChoice]="resolveDarkEyeChoiceFn"
-                  />
-                } @else if (foreignPendingDecisionText()) {
-                  <div class="panel">
-                    <span class="muted">{{
-                      foreignPendingDecisionText()
-                    }}</span>
-                  </div>
-                }
+                <div
+                  class="game-interaction-controls"
+                  [class.interaction-lock-active]="interactionFieldLocked()"
+                >
+                  @if (myPendingDecision()) {
+                    <wiz-pending-decision-panel
+                      class="active-turn"
+                      [decision]="myPendingDecision()"
+                      [cloudAdjustmentWonTricks]="myTricksWon()"
+                      [cloudAdjustmentRoundNumber]="
+                        cloudAdjustmentRoundNumber()
+                      "
+                      [cloudAdjustmentShowScorePreview]="
+                        shouldShowCloudAdjustmentScorePreview()
+                      "
+                      [onSelectTrump]="selectTrumpFn"
+                      [onResolveWerewolfTrumpSwap]="resolveWerewolfTrumpSwapFn"
+                      [onResolveShapeShifter]="resolveShapeShifterFn"
+                      [onResolveCloudSuit]="resolveCloudSuitFn"
+                      [onResolveCloudAdjustment]="resolveCloudAdjustmentFn"
+                      [onResolveJugglerSuit]="resolveJugglerSuitFn"
+                      [onResolveWitch]="resolveWitchFn"
+                      [onResolveDarkEyeChoice]="resolveDarkEyeChoiceFn"
+                    />
+                  } @else if (foreignPendingDecisionText()) {
+                    <div class="panel">
+                      <span class="muted">{{
+                        foreignPendingDecisionText()
+                      }}</span>
+                    </div>
+                  }
 
-                @if (canPredict()) {
-                  <wiz-prediction-panel
-                    class="active-turn"
-                    [values]="predictionOptions()"
-                    [submit]="predictFn"
-                    [trumpSuit]="
-                      store.gameState()!.currentRound?.trumpSuit ?? null
-                    "
-                    [trumpCard]="
-                      store.gameState()!.currentRound?.trumpCard ?? null
-                    "
-                  />
-                }
+                  @if (canPredict()) {
+                    <wiz-prediction-panel
+                      class="active-turn"
+                      [values]="predictionOptions()"
+                      [submit]="predictFn"
+                      [trumpSuit]="
+                        store.gameState()!.currentRound?.trumpSuit ?? null
+                      "
+                      [trumpCard]="
+                        store.gameState()!.currentRound?.trumpCard ?? null
+                      "
+                    />
+                  }
+                </div>
 
                 <wiz-hand-area
                   [class.active-turn]="isMyTurnToPlay()"
@@ -315,6 +322,16 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
         gap: 16px;
       }
 
+      .game-interaction-controls {
+        display: grid;
+        gap: 16px;
+      }
+
+      .game-interaction-controls.interaction-lock-active {
+        pointer-events: none;
+        touch-action: none;
+      }
+
       .game-log-block {
         grid-area: log;
       }
@@ -354,9 +371,11 @@ const SUIT_SORT_PRIORITY = [...SUITS].reverse().reduce(
 export class GamePageComponent {
   protected readonly store = this.appStore
   private readonly manualHandOrder = signal<string[] | null>(null)
+  private readonly interactionFieldLockedSignal = signal(false)
   private lastSeenRoundKey: string | null = null
   private lastFinishedGamePromptKey: string | null = null
   private pendingFinishedGamePromptKey: string | null = null
+  private interactionGuardTimeoutId: ReturnType<typeof setTimeout> | null = null
 
   readonly readLogEnabledSignal = computed(() => {
     const state = this.store.gameState()
@@ -403,6 +422,34 @@ export class GamePageComponent {
   readonly handSortEnabledSignal = computed(() =>
     this.session.handSortEnabled(),
   )
+  readonly interactionFieldLocked = computed(() =>
+    this.interactionFieldLockedSignal(),
+  )
+  readonly interactionAvailabilityKey = computed(() => {
+    const state = this.store.gameState()
+
+    if (!state || this.isSpectator()) {
+      return 'none'
+    }
+
+    const pendingDecision = this.myPendingDecision()
+    if (pendingDecision) {
+      return `decision:${pendingDecision.id}`
+    }
+
+    const roundNumber = state.currentRound?.roundNumber ?? 0
+
+    if (this.canPredict()) {
+      return `predict:${state.lobbyCode}:${roundNumber}:${state.selfPlayerId}`
+    }
+
+    if (this.isMyTurnToPlay()) {
+      const trickPlayCount = state.currentRound?.currentTrick?.plays.length ?? 0
+      return `play:${state.lobbyCode}:${roundNumber}:${trickPlayCount}:${state.selfPlayerId}`
+    }
+
+    return 'none'
+  })
 
   readonly playCardFn = (card: Card) => this.playCard(card)
   readonly canPlayCardFn = (card: Card) => this.canPlayCard(card)
@@ -503,6 +550,37 @@ export class GamePageComponent {
       this.pendingFinishedGamePromptKey = finishedGameKey
 
       onCleanup(() => undefined)
+    })
+
+    effect((onCleanup) => {
+      const interactionKey = this.interactionAvailabilityKey()
+
+      if (
+        interactionKey === 'none' ||
+        !this.shouldUseMobileInteractionGuard()
+      ) {
+        this.interactionFieldLockedSignal.set(false)
+        return
+      }
+
+      this.interactionFieldLockedSignal.set(true)
+
+      if (this.interactionGuardTimeoutId) {
+        clearTimeout(this.interactionGuardTimeoutId)
+      }
+
+      const timeoutId = setTimeout(() => {
+        if (this.interactionGuardTimeoutId === timeoutId) {
+          this.interactionFieldLockedSignal.set(false)
+          this.interactionGuardTimeoutId = null
+        }
+      }, 200)
+
+      this.interactionGuardTimeoutId = timeoutId
+
+      onCleanup(() => {
+        clearTimeout(timeoutId)
+      })
     })
   }
 
@@ -1072,5 +1150,16 @@ export class GamePageComponent {
     }
 
     return SUIT_SORT_PRIORITY[suit]
+  }
+
+  private shouldUseMobileInteractionGuard() {
+    if (
+      typeof window === 'undefined' ||
+      typeof window.matchMedia !== 'function'
+    ) {
+      return false
+    }
+
+    return window.matchMedia('(pointer: coarse)').matches
   }
 }
