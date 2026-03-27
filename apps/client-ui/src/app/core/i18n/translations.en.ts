@@ -386,9 +386,7 @@ export const en = {
   'log.game.trump.noTrumpFinalRound':
     'There is no trump in the final round to allow Dark Eye to draw a card',
   'log.game.trump.selected.bySpecial':
-    '{playerId} selected trump by {special} - {suit}',
-  'log.game.trump.selected.werewolfRevealed':
-    '{playerId} chooses {suit} as trump suit',
+    '{playerId} chose {suit} as trump suit because {special} was revealed',
   'log.game.prediction.made': '{playerId} bid {value}',
   'log.game.card.played': '{playerId} played {cardLabel}',
   'log.game.card.played.asSuit': '{playerId} played {cardLabel} as {suit}',

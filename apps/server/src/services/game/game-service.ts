@@ -481,9 +481,7 @@ export class GameService {
       createdAt: nowIso(),
       type: 'system',
       messageKey: triggeringSpecial
-        ? triggeringSpecial === SPECIAL_CARD_KEY.werewolf
-          ? 'game.trump.selected.werewolfRevealed'
-          : 'game.trump.selected.bySpecial'
+        ? 'game.trump.selected.bySpecial'
         : 'game.trump.selected',
       messageParams: {
         ...(triggeringSpecial && { playerId: player.id }),

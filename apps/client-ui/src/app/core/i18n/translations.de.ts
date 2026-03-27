@@ -394,9 +394,7 @@ export const de = {
   'log.game.trump.noTrumpFinalRound':
     'Es gibt keinen Trumpf in der finalen Runde, damit Das Schwarze Auge eine Karte ziehen kann',
   'log.game.trump.selected.bySpecial':
-    '{playerId} wählt Trumpf durch {special} - {suit}',
-  'log.game.trump.selected.werewolfRevealed':
-    '{playerId} wählt {suit} als Trumpffarbe',
+    '{playerId} hat {suit} als Trumpffarbe gewählt, da {special} aufgedeckt wurde',
   'log.game.prediction.made': '{playerId} sagt {value} an',
   'log.game.card.played': '{playerId} spielt {cardLabel}',
   'log.game.card.played.asSuit': '{playerId} spielt {cardLabel} als {suit}',
