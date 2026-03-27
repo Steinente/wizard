@@ -185,9 +185,12 @@ export class LogPanelComponent implements OnChanges {
       (colorIndex + ALL_SUITS.length - 1) % ALL_SUITS.length
 
     for (const entry of this.logs) {
-      // This Witch message is emitted right after the final trick resolution,
-      // but still semantically belongs to the just-finished round.
-      if (entry.messageKey === 'special.witch.noHandCard') {
+      // These messages are emitted right after round completion but still
+      // semantically belong to the just-finished round.
+      if (
+        entry.messageKey === 'special.witch.noHandCard' ||
+        entry.messageKey === 'game.round.scored'
+      ) {
         this.roundColorIndexByLogId.set(entry.id, previousColorIndex())
       } else {
         this.roundColorIndexByLogId.set(entry.id, colorIndex)
