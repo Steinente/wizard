@@ -9,10 +9,14 @@ import {
 } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { ActivatedRoute, RouterLink } from '@angular/router'
+import { marked } from 'marked'
 import type { GameConfig, SpecialCard, SpecialCardKey } from '@wizard/shared'
 import { SPECIAL_CARD_KEY, SPECIAL_CARD_KEYS } from '@wizard/shared'
 import { I18nService } from '../../core/i18n/i18n.service'
-import type { TranslationKey } from '../../core/i18n/translations'
+import type {
+  TranslationKey,
+  TranslationLanguage,
+} from '../../core/i18n/translations'
 import { GameFacadeService } from '../../core/services/game-facade.service'
 import { SessionService } from '../../core/services/session.service'
 import { AppStore } from '../../core/state/app.store'
@@ -37,6 +41,11 @@ type RuleInfoKey =
   | 'twoPlayerMode'
   | 'specialCards'
 
+type CombinationRuleBlockKey =
+  | 'darkEyeAnySpecial'
+  | 'darkEyeWerewolf'
+  | 'vampireOrWitchCloud25'
+
 @Component({
   standalone: true,
   imports: [FormsModule, TPipe, RouterLink, CardComponent, ChatPanelComponent],
@@ -56,9 +65,22 @@ export class LobbyPageComponent {
   private readonly activeRuleInfoState = signal<RuleInfoKey | null>(null)
   private readonly selectedSpecialCardFilterHintState =
     signal<PresetSpecialCardFilterId | null>(null)
+  private readonly combinationRuleBlocksState = signal<
+    Partial<Record<CombinationRuleBlockKey, string>>
+  >({})
+  readonly combinationRuleHintsExpanded = signal(false)
+  readonly combinationRuleHintsLoading = signal(false)
   readonly copied = signal(false)
   readonly chatSoundEnabledSignal = signal(this.session.chatSoundEnabled())
   private copiedTimeoutId: ReturnType<typeof setTimeout> | null = null
+
+  private readonly combinationRuleBlocksCache: Partial<
+    Record<
+      TranslationLanguage,
+      Partial<Record<CombinationRuleBlockKey, string>>
+    >
+  > = {}
+  private combinationRuleBlocksLanguageLoaded: TranslationLanguage | null = null
 
   constructor() {
     effect(() => {
@@ -67,6 +89,17 @@ export class LobbyPageComponent {
 
       if (selectElement && selectElement.value !== activeFilter) {
         selectElement.value = activeFilter
+      }
+    })
+
+    effect(() => {
+      const language = this.i18n.language()
+      void this.loadCombinationRuleBlocks(language)
+    })
+
+    effect(() => {
+      if (this.activeCombinationRuleBlockKeys().length === 0) {
+        this.combinationRuleHintsExpanded.set(false)
       }
     })
   }
@@ -86,6 +119,54 @@ export class LobbyPageComponent {
   readonly specialCardFilterPresets = SPECIAL_CARD_FILTER_PRESETS
 
   readonly activeRuleInfo = this.activeRuleInfoState.asReadonly()
+  readonly activeCombinationRuleBlockKeys = computed<CombinationRuleBlockKey[]>(
+    () => {
+      const lobby = this.store.lobby()
+
+      if (!lobby) {
+        return []
+      }
+
+      const includedCards = lobby.config.includedSpecialCards ?? [
+        ...SPECIAL_CARD_KEYS,
+      ]
+      const includedCardSet = new Set<SpecialCardKey>(includedCards)
+      const hasDarkEye = includedCardSet.has(SPECIAL_CARD_KEY.darkEye)
+      const hasWerewolf = includedCardSet.has(SPECIAL_CARD_KEY.werewolf)
+      const hasCloud = includedCardSet.has(SPECIAL_CARD_KEY.cloud)
+      const hasVampireOrWitch =
+        includedCardSet.has(SPECIAL_CARD_KEY.vampire) ||
+        includedCardSet.has(SPECIAL_CARD_KEY.witch)
+      const isTwentyFiveYearCloudTiming =
+        lobby.config.cloudRuleTiming === 'endOfRound'
+
+      const matchingKeys: CombinationRuleBlockKey[] = []
+
+      if (
+        hasDarkEye &&
+        includedCards.some((cardKey) => cardKey !== SPECIAL_CARD_KEY.darkEye)
+      ) {
+        matchingKeys.push('darkEyeAnySpecial')
+      }
+
+      if (hasDarkEye && hasWerewolf) {
+        matchingKeys.push('darkEyeWerewolf')
+      }
+
+      if (isTwentyFiveYearCloudTiming && hasCloud && hasVampireOrWitch) {
+        matchingKeys.push('vampireOrWitchCloud25')
+      }
+
+      return matchingKeys
+    },
+  )
+  readonly activeCombinationRuleHintBlocks = computed(() => {
+    const loadedBlocks = this.combinationRuleBlocksState()
+
+    return this.activeCombinationRuleBlockKeys()
+      .map((key) => ({ key, html: loadedBlocks[key] ?? '' }))
+      .filter((block) => block.html.length > 0)
+  })
   readonly isHost = computed(() => {
     const lobby = this.store.lobby()
     const playerId = this.store.playerId()
@@ -319,5 +400,128 @@ export class LobbyPageComponent {
   setChatSoundEnabledFn(enabled: boolean) {
     this.chatSoundEnabledSignal.set(enabled)
     this.session.setChatSoundEnabled(enabled)
+  }
+
+  toggleCombinationRuleHints() {
+    this.combinationRuleHintsExpanded.update((isExpanded) => !isExpanded)
+  }
+
+  private async loadCombinationRuleBlocks(language: TranslationLanguage) {
+    if (
+      this.combinationRuleBlocksLanguageLoaded === language &&
+      Object.keys(this.combinationRuleBlocksState()).length > 0
+    ) {
+      return
+    }
+
+    const cachedBlocks = this.combinationRuleBlocksCache[language]
+    if (cachedBlocks) {
+      this.combinationRuleBlocksState.set(cachedBlocks)
+      this.combinationRuleBlocksLanguageLoaded = language
+      return
+    }
+
+    this.combinationRuleHintsLoading.set(true)
+
+    try {
+      const markdown = await this.fetchSpecialRulesDocument(language)
+      const parsedBlocks = this.parseCombinationRuleBlocks(markdown)
+      this.combinationRuleBlocksCache[language] = parsedBlocks
+      this.combinationRuleBlocksState.set(parsedBlocks)
+      this.combinationRuleBlocksLanguageLoaded = language
+    } catch {
+      this.combinationRuleBlocksState.set({})
+      this.combinationRuleBlocksLanguageLoaded = language
+    } finally {
+      this.combinationRuleHintsLoading.set(false)
+    }
+  }
+
+  private parseCombinationRuleBlocks(markdown: string) {
+    const sections = this.extractLevelTwoSections(markdown)
+    const blockKeys: CombinationRuleBlockKey[] = [
+      'darkEyeAnySpecial',
+      'darkEyeWerewolf',
+      'vampireOrWitchCloud25',
+    ]
+    const renderer = new marked.Renderer()
+
+    renderer.link = ({ href, title, tokens }) => {
+      const text = this.parseInlineMarkdownTokens(tokens)
+      const titleAttribute = title ? ` title="${title}"` : ''
+
+      return `<a href="${href}" target="_blank" rel="noreferrer noopener"${titleAttribute}>${text}</a>`
+    }
+
+    const parsedBlocks: Partial<Record<CombinationRuleBlockKey, string>> = {}
+
+    for (
+      let index = 0;
+      index < sections.length && index < blockKeys.length;
+      index += 1
+    ) {
+      parsedBlocks[blockKeys[index]] = marked.parse(sections[index], {
+        gfm: true,
+        breaks: true,
+        renderer,
+      }) as string
+    }
+
+    return parsedBlocks
+  }
+
+  private parseInlineMarkdownTokens(tokens: unknown[]) {
+    return marked.parser(tokens as Parameters<typeof marked.parser>[0])
+  }
+
+  private extractLevelTwoSections(markdown: string) {
+    const normalized = markdown.replace(/\r\n/g, '\n')
+    const lines = normalized.split('\n')
+    const sections: string[] = []
+    let currentSection: string[] | null = null
+
+    for (const line of lines) {
+      if (line.startsWith('## ')) {
+        if (currentSection && currentSection.length > 0) {
+          sections.push(currentSection.join('\n').trim())
+        }
+
+        currentSection = [line]
+        continue
+      }
+
+      if (!currentSection) {
+        continue
+      }
+
+      if (line.trim() === '---') {
+        continue
+      }
+
+      currentSection.push(line)
+    }
+
+    if (currentSection && currentSection.length > 0) {
+      sections.push(currentSection.join('\n').trim())
+    }
+
+    return sections.filter((section) => section.length > 0)
+  }
+
+  private async fetchSpecialRulesDocument(language: TranslationLanguage) {
+    const primaryUrl = `/content/special-rules.${language}.md`
+    const fallbackUrl = '/content/special-rules.de.md'
+
+    const primaryResponse = await fetch(primaryUrl)
+    if (primaryResponse.ok) {
+      return primaryResponse.text()
+    }
+
+    const fallbackResponse = await fetch(fallbackUrl)
+    if (fallbackResponse.ok) {
+      return fallbackResponse.text()
+    }
+
+    throw new Error('special-rules-fetch-failed')
   }
 }

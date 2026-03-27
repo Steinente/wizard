@@ -252,6 +252,7 @@ export const en = {
   predictionVisibilityLabel: 'Prediction visibility',
   officialRules: 'Official rules',
   unofficialRules: 'Unofficial rules',
+  unofficialCombinationHintsTitle: 'Notes for active combinations',
   twoPlayerModeLabel: '2-player rule',
   twoPlayerModeEnabled: 'Allow game start with 2 players',
   twoPlayerModeInfo:
