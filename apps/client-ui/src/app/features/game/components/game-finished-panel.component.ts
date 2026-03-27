@@ -159,9 +159,26 @@ interface RankedPlayer {
 export class GameFinishedPanelComponent {
   @Input({ required: true }) state!: WizardGameViewState
 
+  private finishedAtMs(): number | null {
+    for (let index = this.state.logs.length - 1; index >= 0; index -= 1) {
+      const entry = this.state.logs[index]
+
+      if (!entry || entry.type !== 'gameFinished') {
+        continue
+      }
+
+      const finishedAt = Date.parse(entry.createdAt)
+      if (Number.isFinite(finishedAt)) {
+        return finishedAt
+      }
+    }
+
+    return null
+  }
+
   totalGameDurationMs(): number {
     const startedAt = Date.parse(this.state.createdAt)
-    const endedAt = Date.parse(this.state.updatedAt)
+    const endedAt = this.finishedAtMs() ?? Date.parse(this.state.updatedAt)
 
     if (!Number.isFinite(startedAt) || !Number.isFinite(endedAt)) {
       return 0
