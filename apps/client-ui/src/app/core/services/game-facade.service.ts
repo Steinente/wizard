@@ -114,20 +114,11 @@ export class GameFacadeService {
     })
 
     socket.on('lobby:updated', (payload) => {
-      const previousPlayers = this.store.lobby()?.players ?? []
       const currentPlayerId = this.store.playerId()
 
       this.store.setLobby(payload.lobby)
       this.session.setLobbyConfig(payload.lobby.config)
 
-      const newOtherPlayers = payload.lobby.players.filter(
-        (p) =>
-          p.id !== currentPlayerId &&
-          !previousPlayers.some((prev) => prev.id === p.id),
-      )
-      if (newOtherPlayers.length > 0) {
-        this.audio.lobbyJoinPing()
-      }
       if (
         currentPlayerId &&
         !payload.lobby.players.some((player) => player.id === currentPlayerId)
@@ -755,7 +746,10 @@ export class GameFacadeService {
     const unseen = input.messages.slice(startIndex)
 
     for (const entry of unseen) {
-      if (
+      if (this.isLobbyJoinSystemMessage(entry)) {
+        this.audio.lobbyJoinPing()
+      } else if (
+        entry.senderRole !== 'system' &&
         entry.senderPlayerId !== input.selfPlayerId &&
         this.session.chatSoundEnabled()
       ) {
@@ -767,6 +761,14 @@ export class GameFacadeService {
         messageId: entry.id,
       })
     }
+  }
+
+  private isLobbyJoinSystemMessage(entry: GameChatMessageView): boolean {
+    return (
+      entry.senderRole === 'system' &&
+      (entry.systemMessageKey === 'chat.system.playerJoinedLobby' ||
+        entry.systemMessageKey === 'chat.system.spectatorJoinedLobby')
+    )
   }
 
   private resetLobbyChatCursor() {
