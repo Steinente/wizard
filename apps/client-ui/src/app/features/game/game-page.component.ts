@@ -41,6 +41,14 @@ import {
   TrickDragPlayService,
 } from './services'
 
+type TouchDragFloatingCardState = {
+  card: Card
+  width: number
+  height: number
+  left: number
+  top: number
+}
+
 @Component({
   standalone: true,
   imports: [
@@ -70,6 +78,8 @@ export class GamePageComponent {
   protected readonly store = this.appStore
   private readonly manualHandOrder = signal<string[] | null>(null)
   private readonly interactionFieldLockedSignal = signal(false)
+  private readonly touchDragFloatingCardSignal =
+    signal<TouchDragFloatingCardState | null>(null)
   private lastSeenRoundKey: string | null = null
   private lastFinishedGamePromptKey: string | null = null
   private pendingFinishedGamePromptKey: string | null = null
@@ -171,6 +181,9 @@ export class GamePageComponent {
   readonly playedCardAnimation = computed(() =>
     this.animation.playedCardAnimation(),
   )
+  readonly touchDragFloatingCard = computed(() =>
+    this.touchDragFloatingCardSignal(),
+  )
   readonly trickDropPreviewCard = computed(() =>
     this.trickDrag.trickDropPreviewCard(),
   )
@@ -217,6 +230,20 @@ export class GamePageComponent {
   readonly startPlayDragFn = (payload: { card: Card; sourceRect: DOMRect }) =>
     this.startPlayDrag(payload)
   readonly endPlayDragFn = () => this.endPlayDrag()
+  readonly touchPlayDragStartFn = (payload: {
+    card: Card
+    sourceRect: DOMRect
+    clientX: number
+    clientY: number
+  }) => this.onTouchPlayDragStart(payload)
+  readonly touchPlayDragMoveFn = (payload: {
+    clientX: number
+    clientY: number
+  }) => this.onTouchPlayDragMove(payload)
+  readonly touchPlayDragEndFn = (payload: {
+    clientX: number
+    clientY: number
+  }) => this.onTouchPlayDragEnd(payload)
   readonly canPlayCardFn = (card: Card) => this.canPlayCard(card)
   readonly predictFn = (value: number) => this.actions.predict(value)
   readonly selectTrumpFn = (suit: Suit | null) => this.actions.selectTrump(suit)
@@ -542,6 +569,7 @@ export class GamePageComponent {
 
   endPlayDrag() {
     this.trickDrag.endPlayDrag()
+    this.touchDragFloatingCardSignal.set(null)
   }
 
   onTrickDragOver(event: DragEvent) {
@@ -555,10 +583,55 @@ export class GamePageComponent {
   onTrickDrop(event: DragEvent) {
     const draggedPlayCard = this.trickDrag.consumeDrop(event)
     if (!draggedPlayCard) {
+      this.touchDragFloatingCardSignal.set(null)
       return
     }
 
     this.playCardWithSource(draggedPlayCard)
+    this.touchDragFloatingCardSignal.set(null)
+  }
+
+  onTouchPlayDragStart(payload: {
+    card: Card
+    sourceRect: DOMRect
+    clientX: number
+    clientY: number
+  }) {
+    this.touchDragFloatingCardSignal.set(
+      this.createTouchFloatingCardState(
+        payload.card,
+        payload.sourceRect,
+        payload.clientX,
+        payload.clientY,
+      ),
+    )
+  }
+
+  onTouchPlayDragMove(payload: { clientX: number; clientY: number }) {
+    this.updateTouchFloatingCardPosition(payload.clientX, payload.clientY)
+    this.trickDrag.onTrickPointerMove(
+      payload.clientX,
+      payload.clientY,
+      (card) => this.canPlayCard(card),
+    )
+  }
+
+  onTouchPlayDragEnd(payload: { clientX: number; clientY: number }) {
+    this.updateTouchFloatingCardPosition(payload.clientX, payload.clientY)
+
+    const draggedPlayCard = this.trickDrag.consumeDropAtPoint(
+      payload.clientX,
+      payload.clientY,
+      (card) => this.canPlayCard(card),
+    )
+
+    if (!draggedPlayCard) {
+      this.endPlayDrag()
+      return
+    }
+
+    this.playCardWithSource(draggedPlayCard)
+    this.touchDragFloatingCardSignal.set(null)
   }
 
   shouldShowCloudAdjustmentScorePreview(): boolean {
@@ -632,6 +705,53 @@ export class GamePageComponent {
     return window.matchMedia('(pointer: coarse)').matches
   }
 
+  private updateTouchFloatingCardPosition(clientX: number, clientY: number) {
+    const current = this.touchDragFloatingCardSignal()
+
+    if (!current) {
+      return
+    }
+
+    this.touchDragFloatingCardSignal.set({
+      ...current,
+      ...this.computeTouchFloatingCardPosition(
+        current.width,
+        current.height,
+        clientX,
+        clientY,
+      ),
+    })
+  }
+
+  private createTouchFloatingCardState(
+    card: Card,
+    sourceRect: DOMRect,
+    clientX: number,
+    clientY: number,
+  ): TouchDragFloatingCardState {
+    const width = sourceRect.width
+    const height = sourceRect.height
+
+    return {
+      card,
+      width,
+      height,
+      ...this.computeTouchFloatingCardPosition(width, height, clientX, clientY),
+    }
+  }
+
+  private computeTouchFloatingCardPosition(
+    width: number,
+    height: number,
+    clientX: number,
+    clientY: number,
+  ): { left: number; top: number } {
+    return {
+      left: clientX - width / 2,
+      top: clientY - height * 0.72,
+    }
+  }
+
   ngOnDestroy() {
     if (this.interactionGuardTimeoutId) {
       clearTimeout(this.interactionGuardTimeoutId)
@@ -639,5 +759,6 @@ export class GamePageComponent {
     }
 
     this.trickDrag.reset()
+    this.touchDragFloatingCardSignal.set(null)
   }
 }

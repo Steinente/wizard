@@ -39,6 +39,50 @@ export class TrickDragPlayService {
   }
 
   onTrickDragOver(event: DragEvent, canPlayCard: (card: Card) => boolean) {
+    this.updatePreviewStateAtPoint(event.clientX, event.clientY, canPlayCard)
+
+    if (!this.trickDropPreviewActiveSignal()) {
+      return
+    }
+
+    event.preventDefault()
+
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = 'move'
+    }
+  }
+
+  onTrickPointerMove(
+    clientX: number,
+    clientY: number,
+    canPlayCard: (card: Card) => boolean,
+  ) {
+    this.updatePreviewStateAtPoint(clientX, clientY, canPlayCard)
+  }
+
+  consumeDropAtPoint(
+    clientX: number,
+    clientY: number,
+    canPlayCard: (card: Card) => boolean,
+  ): PendingCardPlayAnimation | null {
+    this.updatePreviewStateAtPoint(clientX, clientY, canPlayCard)
+
+    const draggedPlayCard = this.draggedPlayCardSignal()
+
+    if (!draggedPlayCard || !this.trickDropPreviewActiveSignal()) {
+      return null
+    }
+
+    this.reset()
+
+    return draggedPlayCard
+  }
+
+  private updatePreviewStateAtPoint(
+    clientX: number,
+    clientY: number,
+    canPlayCard: (card: Card) => boolean,
+  ) {
     const draggedPlayCard = this.draggedPlayCardSignal()
 
     if (!draggedPlayCard) {
@@ -53,20 +97,14 @@ export class TrickDragPlayService {
     }
 
     const isOverGrid = isPointInsideRect(
-      event.clientX,
-      event.clientY,
+      clientX,
+      clientY,
       trickGrid.getBoundingClientRect(),
     )
 
     if (!isOverGrid || !canPlayCard(draggedPlayCard.card)) {
       this.trickDropPreviewActiveSignal.set(false)
       return
-    }
-
-    event.preventDefault()
-
-    if (event.dataTransfer) {
-      event.dataTransfer.dropEffect = 'move'
     }
 
     this.trickDropPreviewActiveSignal.set(true)

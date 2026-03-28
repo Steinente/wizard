@@ -49,6 +49,10 @@ import { TrumpBadgeComponent } from './trump-badge.component'
             (dragover)="allowDrop(card.id, $event)"
             (dragleave)="leaveDropTarget(card.id)"
             (drop)="dropOnCard(card.id, $event)"
+            (pointerdown)="onTouchDragStart(card.id, $event)"
+            (pointermove)="onTouchDragMove($event)"
+            (pointerup)="onTouchDragEnd($event)"
+            (pointercancel)="onTouchDragCancel($event)"
           >
             <wiz-card
               [card]="card"
@@ -67,6 +71,7 @@ import { TrumpBadgeComponent } from './trump-badge.component'
     `
       .hand-card {
         border-radius: 14px;
+        touch-action: none;
         transition:
           transform 0.15s ease,
           opacity 0.15s ease,
@@ -100,6 +105,20 @@ export class HandAreaComponent {
     sourceRect: DOMRect
   }) => void
   @Input() onPlayDragEnd?: () => void
+  @Input() onPlayTouchStart?: (payload: {
+    card: Card
+    sourceRect: DOMRect
+    clientX: number
+    clientY: number
+  }) => void
+  @Input() onPlayTouchMove?: (payload: {
+    clientX: number
+    clientY: number
+  }) => void
+  @Input() onPlayTouchEnd?: (payload: {
+    clientX: number
+    clientY: number
+  }) => void
   @Input({ required: true }) onSort!: () => void
   @Input() isSortActive = false
   @Input({ required: true }) onReorder!: (
@@ -112,6 +131,8 @@ export class HandAreaComponent {
 
   draggedCardId: string | null = null
   dropTargetCardId: string | null = null
+  private touchDraggedCardId: string | null = null
+  private touchDraggedPointerId: number | null = null
   readonly playCardFromHand = (card: Card) => this.handlePlay(card)
 
   sortCards() {
@@ -189,5 +210,139 @@ export class HandAreaComponent {
     }
 
     this.onReorder(draggedCardId, targetCardId)
+  }
+
+  onTouchDragStart(cardId: string, event: PointerEvent) {
+    if (event.pointerType !== 'touch') {
+      return
+    }
+
+    const card = this.cards.find((entry) => entry.id === cardId)
+    const sourceRect = this.getCardSourceRect(cardId)
+
+    if (!card || !sourceRect) {
+      return
+    }
+
+    this.touchDraggedCardId = cardId
+    this.touchDraggedPointerId = event.pointerId
+    this.draggedCardId = cardId
+    this.dropTargetCardId = null
+
+    if (this.canPlay(card)) {
+      this.onPlayDragStart?.({ card, sourceRect })
+    }
+
+    this.onPlayTouchStart?.({
+      card,
+      sourceRect,
+      clientX: event.clientX,
+      clientY: event.clientY,
+    })
+
+    const touchTarget = event.currentTarget
+    if (touchTarget instanceof HTMLElement) {
+      touchTarget.setPointerCapture(event.pointerId)
+    }
+  }
+
+  onTouchDragMove(event: PointerEvent) {
+    if (
+      event.pointerType !== 'touch' ||
+      this.touchDraggedPointerId !== event.pointerId ||
+      !this.touchDraggedCardId
+    ) {
+      return
+    }
+
+    event.preventDefault()
+    this.dropTargetCardId = this.resolveTouchDropTargetCardId(
+      event.clientX,
+      event.clientY,
+    )
+    this.onPlayTouchMove?.({ clientX: event.clientX, clientY: event.clientY })
+  }
+
+  onTouchDragEnd(event: PointerEvent) {
+    if (
+      event.pointerType !== 'touch' ||
+      this.touchDraggedPointerId !== event.pointerId ||
+      !this.touchDraggedCardId
+    ) {
+      return
+    }
+
+    event.preventDefault()
+
+    const targetCardId = this.resolveTouchDropTargetCardId(
+      event.clientX,
+      event.clientY,
+    )
+
+    if (targetCardId && this.touchDraggedCardId !== targetCardId) {
+      const draggedCardId = this.touchDraggedCardId
+      this.onPlayDragEnd?.()
+      this.clearTouchDragState()
+      this.onReorder(draggedCardId, targetCardId)
+      return
+    }
+
+    this.onPlayTouchEnd?.({ clientX: event.clientX, clientY: event.clientY })
+    this.clearTouchDragState()
+  }
+
+  onTouchDragCancel(event: PointerEvent) {
+    if (
+      event.pointerType !== 'touch' ||
+      this.touchDraggedPointerId !== event.pointerId
+    ) {
+      return
+    }
+
+    this.onPlayDragEnd?.()
+    this.clearTouchDragState()
+  }
+
+  private clearTouchDragState() {
+    this.touchDraggedCardId = null
+    this.touchDraggedPointerId = null
+    this.draggedCardId = null
+    this.dropTargetCardId = null
+  }
+
+  private resolveTouchDropTargetCardId(
+    clientX: number,
+    clientY: number,
+  ): string | null {
+    if (typeof document === 'undefined' || !this.touchDraggedCardId) {
+      return null
+    }
+
+    const targetElement = document.elementFromPoint(clientX, clientY)
+
+    if (!(targetElement instanceof HTMLElement)) {
+      return null
+    }
+
+    const handCardRoot = targetElement.closest('[data-card-id]')
+
+    if (!(handCardRoot instanceof HTMLElement)) {
+      return null
+    }
+
+    const targetCardId = handCardRoot.dataset['cardId'] ?? null
+
+    if (!targetCardId || targetCardId === this.touchDraggedCardId) {
+      return null
+    }
+
+    const isOwnHandCard =
+      this.handCardRoots
+        ?.toArray()
+        .some(
+          (entry) => entry.nativeElement.dataset['cardId'] === targetCardId,
+        ) ?? false
+
+    return isOwnHandCard ? targetCardId : null
   }
 }

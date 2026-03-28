@@ -60,6 +60,7 @@ import { TPipe } from '../../../shared/pipes/t.pipe'
       .trick-cards-grid {
         min-height: 154px;
         align-content: flex-start;
+        justify-content: flex-start;
       }
 
       .trick-empty-label {
@@ -69,26 +70,34 @@ import { TPipe } from '../../../shared/pipes/t.pipe'
       .trick-drag-preview-slot {
         border-radius: 14px;
         outline: 2px dashed rgba(212, 167, 44, 0.75);
-        outline-offset: 4px;
       }
 
       .trick-drag-placeholder-slot {
         border-radius: 14px;
         outline: 2px dashed rgba(212, 167, 44, 0.4);
-        outline-offset: 4px;
         width: 96px;
         min-height: 154px;
       }
 
       @media (max-width: 700px) {
         .trick-cards-grid {
-          min-height: 126px;
+          min-height: 130px;
+        }
+
+        .trick-drag-placeholder-slot {
+          width: 92px;
+          min-height: 130px;
         }
       }
 
       @media (max-width: 460px) {
         .trick-cards-grid {
-          min-height: 110px;
+          min-height: 114px;
+        }
+
+        .trick-drag-placeholder-slot {
+          width: 78px;
+          min-height: 114px;
         }
       }
     `,

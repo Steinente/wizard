@@ -172,6 +172,9 @@
               [playWithSource]="playCardWithSourceFn"
               [onPlayDragStart]="startPlayDragFn"
               [onPlayDragEnd]="endPlayDragFn"
+              [onPlayTouchStart]="touchPlayDragStartFn"
+              [onPlayTouchMove]="touchPlayDragMoveFn"
+              [onPlayTouchEnd]="touchPlayDragEndFn"
               [trumpSuit]="state.currentRound?.trumpSuit ?? null"
               [trumpCard]="state.currentRound?.trumpCard ?? null"
               [useArtwork]="cardArtworkEnabledSignal()"
@@ -235,6 +238,23 @@
     >
       <wiz-card
         [card]="animation.card"
+        [disabled]="true"
+        [showSpecialInfo]="true"
+        [useArtwork]="cardArtworkEnabledSignal()"
+      />
+    </div>
+  }
+
+  @if (touchDragFloatingCard(); as floatingCard) {
+    <div
+      class="touch-drag-floating-card-layer"
+      [style.left.px]="floatingCard.left"
+      [style.top.px]="floatingCard.top"
+      [style.width.px]="floatingCard.width"
+      [style.height.px]="floatingCard.height"
+    >
+      <wiz-card
+        [card]="floatingCard.card"
         [disabled]="true"
         [showSpecialInfo]="true"
         [useArtwork]="cardArtworkEnabledSignal()"
