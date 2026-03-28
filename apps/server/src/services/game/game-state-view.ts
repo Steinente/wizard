@@ -12,6 +12,8 @@ type RoundColorToken = Suit | 'none'
 
 const PREVIOUS_ROUND_MESSAGE_KEYS = new Set([
   'special.witch.noHandCard',
+  'special.cloud.wonTrickNineThreeQuarters',
+  'special.cloud.predictionAdjusted',
   'game.round.scored',
   'game.finished',
 ])
