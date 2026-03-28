@@ -19,6 +19,12 @@
   --card-yellow: #fbbf24;
   --card-green: #15803d;
   --card-blue: #1d4ed8;
+  --log-red-alt: #fb7185;
+  --log-yellow-alt: #fde68a;
+  --log-green-alt: #86efac;
+  --log-blue-alt: #93c5fd;
+  --log-gray: #475569;
+  --log-gray-alt: #cbd5e1;
   --app-font-family:
     'Segoe UI', 'Noto Sans', 'Helvetica Neue', Arial, 'Liberation Sans',
     sans-serif;

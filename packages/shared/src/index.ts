@@ -7,6 +7,7 @@ export * from './lib/socket-events.js'
 
 export * from './lib/game/deal.js'
 export * from './lib/game/deck.js'
+export * from './lib/game/log-colors.js'
 export * from './lib/game/phases.js'
 export * from './lib/game/log-keys.js'
 export * from './lib/game/prediction-rules.js'

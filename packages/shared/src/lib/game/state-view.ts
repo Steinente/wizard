@@ -2,6 +2,7 @@ import type { Card, Suit } from '../cards.js'
 import type { GameConfig } from '../game-config.js'
 import type { LobbyStatus } from '../lobby-state.js'
 import type { GamePhase } from './phases.js'
+import type { GameLogColorKey } from './log-colors.js'
 import type { PredictionViewItem } from './predictions.js'
 import type { PlayerScoreEntry } from './score.js'
 import type { GameLogMessageKey } from './log-keys.js'
@@ -46,6 +47,8 @@ export interface RoundViewState {
 export interface GameLogEntryView {
   id: string
   createdAt: string
+  colorKey: GameLogColorKey
+  borderColorKey: GameLogColorKey
   type:
     | 'system'
     | 'playerJoined'
