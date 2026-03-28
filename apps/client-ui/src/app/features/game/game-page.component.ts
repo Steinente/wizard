@@ -34,14 +34,10 @@ import {
   sortHandCards,
 } from './utils/hand-sort.util'
 import {
-  isPointInsideRect,
-  resolveTrickGridElement,
-  type PendingCardPlayAnimation,
-} from './utils/card-play-animation.util'
-import {
   canPlayerPredict,
   getOwnPendingDecision,
 } from './utils/game-state-selectors.util'
+import { TrickDragPlayService } from './trick-drag-play.service'
 
 @Component({
   standalone: true,
@@ -62,15 +58,12 @@ import {
   ],
   templateUrl: './game-page.component.html',
   styleUrl: './game-page.component.css',
-  providers: [CardPlayAnimationService],
+  providers: [CardPlayAnimationService, TrickDragPlayService],
 })
 export class GamePageComponent {
   protected readonly store = this.appStore
   private readonly manualHandOrder = signal<string[] | null>(null)
   private readonly interactionFieldLockedSignal = signal(false)
-  private readonly draggedPlayCardSignal =
-    signal<PendingCardPlayAnimation | null>(null)
-  private readonly trickDropPreviewActiveSignal = signal(false)
   private lastSeenRoundKey: string | null = null
   private lastFinishedGamePromptKey: string | null = null
   private pendingFinishedGamePromptKey: string | null = null
@@ -173,12 +166,10 @@ export class GamePageComponent {
     this.animation.playedCardAnimation(),
   )
   readonly trickDropPreviewCard = computed(() =>
-    this.trickDropPreviewActiveSignal()
-      ? (this.draggedPlayCardSignal()?.card ?? null)
-      : null,
+    this.trickDrag.trickDropPreviewCard(),
   )
-  readonly trickDragActiveSignal = computed(
-    () => this.draggedPlayCardSignal() !== null,
+  readonly trickDragActiveSignal = computed(() =>
+    this.trickDrag.trickDragActiveSignal(),
   )
   readonly selfPlayerNameSignal = computed(
     () => this.selfPlayer()?.name ?? null,
@@ -279,6 +270,7 @@ export class GamePageComponent {
     protected readonly session: SessionService,
     private readonly pwaInstall: PwaInstallService,
     readonly animation: CardPlayAnimationService,
+    readonly trickDrag: TrickDragPlayService,
   ) {
     effect(() => {
       const state = this.gameState()
@@ -288,8 +280,7 @@ export class GamePageComponent {
       if (!lobbyCode || roundNumber === null) {
         this.lastSeenRoundKey = null
         this.animation.resetRoundState()
-        this.draggedPlayCardSignal.set(null)
-        this.trickDropPreviewActiveSignal.set(false)
+        this.trickDrag.reset()
         return
       }
 
@@ -304,8 +295,7 @@ export class GamePageComponent {
         this.manualHandOrder.set(null)
         this.lastSeenRoundKey = currentRoundKey
         this.animation.resetRoundState()
-        this.draggedPlayCardSignal.set(null)
-        this.trickDropPreviewActiveSignal.set(false)
+        this.trickDrag.reset()
       }
     })
 
@@ -549,70 +539,27 @@ export class GamePageComponent {
   }
 
   startPlayDrag(payload: { card: Card; sourceRect: DOMRect }) {
-    if (!this.canPlayCard(payload.card)) {
-      this.draggedPlayCardSignal.set(null)
-      this.trickDropPreviewActiveSignal.set(false)
-      return
-    }
-
-    this.draggedPlayCardSignal.set(payload)
+    this.trickDrag.startPlayDrag(payload, (card) => this.canPlayCard(card))
   }
 
   endPlayDrag() {
-    this.draggedPlayCardSignal.set(null)
-    this.trickDropPreviewActiveSignal.set(false)
+    this.trickDrag.endPlayDrag()
   }
 
   onTrickDragOver(event: DragEvent) {
-    const draggedPlayCard = this.draggedPlayCardSignal()
+    this.trickDrag.onTrickDragOver(event, (card) => this.canPlayCard(card))
+  }
 
+  onTrickDragLeave() {
+    this.trickDrag.onTrickDragLeave()
+  }
+
+  onTrickDrop(event: DragEvent) {
+    const draggedPlayCard = this.trickDrag.consumeDrop(event)
     if (!draggedPlayCard) {
       return
     }
 
-    const trickGrid = resolveTrickGridElement()
-
-    if (!trickGrid) {
-      this.trickDropPreviewActiveSignal.set(false)
-      return
-    }
-
-    const clientX = event.clientX
-    const clientY = event.clientY
-    const isOverGrid = isPointInsideRect(
-      clientX,
-      clientY,
-      trickGrid.getBoundingClientRect(),
-    )
-
-    if (!isOverGrid || !this.canPlayCard(draggedPlayCard.card)) {
-      this.trickDropPreviewActiveSignal.set(false)
-      return
-    }
-
-    event.preventDefault()
-
-    if (event.dataTransfer) {
-      event.dataTransfer.dropEffect = 'move'
-    }
-
-    this.trickDropPreviewActiveSignal.set(true)
-  }
-
-  onTrickDragLeave() {
-    this.trickDropPreviewActiveSignal.set(false)
-  }
-
-  onTrickDrop(event: DragEvent) {
-    const draggedPlayCard = this.draggedPlayCardSignal()
-
-    if (!draggedPlayCard || !this.trickDropPreviewActiveSignal()) {
-      return
-    }
-
-    event.preventDefault()
-    this.trickDropPreviewActiveSignal.set(false)
-    this.draggedPlayCardSignal.set(null)
     this.playCardWithSource(draggedPlayCard)
   }
 
@@ -864,7 +811,6 @@ export class GamePageComponent {
       this.interactionGuardTimeoutId = null
     }
 
-    this.draggedPlayCardSignal.set(null)
-    this.trickDropPreviewActiveSignal.set(false)
+    this.trickDrag.reset()
   }
 }
