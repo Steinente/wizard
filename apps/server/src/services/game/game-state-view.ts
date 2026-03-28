@@ -18,6 +18,11 @@ const PREVIOUS_ROUND_MESSAGE_KEYS = new Set([
   'game.finished',
 ])
 
+const TRUMP_SELECTION_PENDING_KEYS_WITH_ROUND_BORDER = new Set([
+  'game.trump.selection.pending',
+  'game.trump.selection.pending.werewolfInHand',
+])
+
 const isSuitValue = (value: unknown): value is Suit =>
   value === 'red' || value === 'yellow' || value === 'green' || value === 'blue'
 
@@ -172,7 +177,11 @@ const buildLogColorKeyById = (
       currentBorderTokenByRound.set(roundIndex, token)
     }
 
-    const effectiveBorderToken = currentBorderTokenByRound.get(roundIndex)
+    const effectiveBorderToken =
+      currentBorderTokenByRound.get(roundIndex) ??
+      (TRUMP_SELECTION_PENDING_KEYS_WITH_ROUND_BORDER.has(entry.messageKey)
+        ? roundTokens.get(roundIndex)
+        : undefined)
 
     if (!effectiveBorderToken) {
       borderColorKeyById.set(entry.id, 'gray')
