@@ -20,6 +20,7 @@ import {
   CHAT_SOUND_ENABLED_KEY,
   CARD_ARTWORK_ENABLED_KEY,
   HAND_SORT_ENABLED_KEY,
+  CARD_PLAY_ANIMATION_ENABLED_KEY,
   APP_FONT_KEY,
 } from '../config/app.config-values'
 import {
@@ -82,6 +83,7 @@ export class SessionService {
   private readonly chatSoundEnabledSignal = signal(true)
   private readonly cardArtworkEnabledSignal = signal(false)
   private readonly handSortEnabledSignal = signal(false)
+  private readonly cardPlayAnimationEnabledSignal = signal(true)
   private readonly appFontSignal = signal<AppFontChoice>('simple')
 
   readonly sessionToken = computed(() => this.sessionTokenSignal())
@@ -114,6 +116,9 @@ export class SessionService {
   readonly chatSoundEnabled = computed(() => this.chatSoundEnabledSignal())
   readonly cardArtworkEnabled = computed(() => this.cardArtworkEnabledSignal())
   readonly handSortEnabled = computed(() => this.handSortEnabledSignal())
+  readonly cardPlayAnimationEnabled = computed(() =>
+    this.cardPlayAnimationEnabledSignal(),
+  )
   readonly appFont = computed(() => this.appFontSignal())
 
   constructor(private readonly storage: LocalStorageService) {
@@ -187,6 +192,13 @@ export class SessionService {
 
     const storedHandSortEnabled = this.storage.get(HAND_SORT_ENABLED_KEY)
     this.handSortEnabledSignal.set(storedHandSortEnabled === 'true')
+
+    const storedCardPlayAnimationEnabled = this.storage.get(
+      CARD_PLAY_ANIMATION_ENABLED_KEY,
+    )
+    this.cardPlayAnimationEnabledSignal.set(
+      storedCardPlayAnimationEnabled !== 'false',
+    )
 
     const storedAppFont = this.storage.get(APP_FONT_KEY)
     const appFont = normalizeAppFont(storedAppFont)
@@ -286,6 +298,11 @@ export class SessionService {
   setHandSortEnabled(enabled: boolean) {
     this.handSortEnabledSignal.set(enabled)
     this.storage.set(HAND_SORT_ENABLED_KEY, String(enabled))
+  }
+
+  setCardPlayAnimationEnabled(enabled: boolean) {
+    this.cardPlayAnimationEnabledSignal.set(enabled)
+    this.storage.set(CARD_PLAY_ANIMATION_ENABLED_KEY, String(enabled))
   }
 
   setAppFont(font: AppFontChoice) {

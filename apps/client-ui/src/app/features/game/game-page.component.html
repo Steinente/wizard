@@ -66,6 +66,7 @@
               [chatSoundEnabled]="chatSoundEnabledSignal()"
               [spectatorChatAllowed]="spectatorChatAllowedSignal()"
               [handSortEnabled]="handSortEnabledSignal()"
+              [cardPlayAnimationEnabled]="cardPlayAnimationEnabledSignal()"
               [isHost]="isHostSignal()"
               [showTimestamp]="logShowTimestampSignal()"
               [scoreboardA11yMode]="scoreboardA11yModeSignal()"
@@ -76,6 +77,7 @@
               [onChatSoundToggle]="setChatSoundEnabledFn"
               [onSpectatorChatToggle]="setSpectatorChatAllowedFn"
               [onHandSortToggle]="setHandSortEnabledFn"
+              [onCardPlayAnimationToggle]="setCardPlayAnimationEnabledFn"
               [onAudioVolumeChange]="setSpeechVolumeFn"
               [onAudioSpeedChange]="setSpeechSpeedFn"
               [onEndLobby]="endLobbyFn"
@@ -104,12 +106,20 @@
           </div>
         }
 
-        <div class="game-block game-trick-block">
+        <div
+          class="game-block game-trick-block"
+          (dragover)="onTrickDragOver($event)"
+          (dragleave)="onTrickDragLeave()"
+          (drop)="onTrickDrop($event)"
+        >
           <wiz-trick-area
             [trick]="state.currentRound?.currentTrick ?? null"
             [players]="state.players"
             [resolvedCardEffects]="state.resolvedCardEffects"
             [useArtwork]="cardArtworkEnabledSignal()"
+            [dragPreviewCard]="trickDropPreviewCard()"
+            [dragPreviewPlayerName]="selfPlayerNameSignal()"
+            [isDragActive]="trickDragActiveSignal()"
           />
         </div>
 
@@ -159,6 +169,9 @@
               [cards]="displayHand()"
               [canPlay]="canPlayCardFn"
               [play]="playCardFn"
+              [playWithSource]="playCardWithSourceFn"
+              [onPlayDragStart]="startPlayDragFn"
+              [onPlayDragEnd]="endPlayDragFn"
               [trumpSuit]="state.currentRound?.trumpSuit ?? null"
               [trumpCard]="state.currentRound?.trumpCard ?? null"
               [useArtwork]="cardArtworkEnabledSignal()"
@@ -200,5 +213,32 @@
         }
       </div>
     }
+  }
+
+  @if (playedCardAnimation(); as animation) {
+    <div
+      class="played-card-animation-layer"
+      [class.played-card-animation-running]="animation.running"
+      [style.left.px]="animation.startLeft"
+      [style.top.px]="animation.startTop"
+      [style.width.px]="animation.width"
+      [style.height.px]="animation.height"
+      [style.transform]="
+        animation.running
+          ? 'translate(' +
+            animation.translateX +
+            'px, ' +
+            animation.translateY +
+            'px) scale(0.9)'
+          : 'translate(0px, 0px) scale(1)'
+      "
+    >
+      <wiz-card
+        [card]="animation.card"
+        [disabled]="true"
+        [showSpecialInfo]="true"
+        [useArtwork]="cardArtworkEnabledSignal()"
+      />
+    </div>
   }
 </div>

@@ -190,6 +190,8 @@ export const de = {
   chatSoundDisabled: 'Chat-Benachrichtigung deaktiviert',
   handSortEnabled: 'Sortierung der Hand aktiv',
   handSortDisabled: 'Sortierung der Hand deaktiviert',
+  cardPlayAnimationEnabled: 'Karten-Ausspielanimation aktiv',
+  cardPlayAnimationDisabled: 'Karten-Ausspielanimation deaktiviert',
   a11yScoreboardModeOn: 'Barrierefreier Punktestand aktiv',
   a11yScoreboardModeOff: 'Barrierefreier Punktestand deaktiviert',
   scoreboardA11yRoundFilterLabel: 'Anzeige im barrierefreien Punktestand',

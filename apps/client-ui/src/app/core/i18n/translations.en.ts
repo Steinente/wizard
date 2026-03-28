@@ -190,6 +190,8 @@ export const en = {
   chatSoundDisabled: 'Chat notification sound disabled',
   handSortEnabled: 'Hand sorting enabled',
   handSortDisabled: 'Hand sorting disabled',
+  cardPlayAnimationEnabled: 'Card play animation enabled',
+  cardPlayAnimationDisabled: 'Card play animation disabled',
   a11yScoreboardModeOn: 'Accessibility score view enabled',
   a11yScoreboardModeOff: 'Accessibility score view disabled',
   scoreboardA11yRoundFilterLabel: 'Display in accessibility score view',

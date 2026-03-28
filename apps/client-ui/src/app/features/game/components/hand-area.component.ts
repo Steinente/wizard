@@ -1,4 +1,10 @@
-import { Component, Input } from '@angular/core'
+import {
+  Component,
+  ElementRef,
+  Input,
+  QueryList,
+  ViewChildren,
+} from '@angular/core'
 import type { Card, Suit } from '@wizard/shared'
 import { CardComponent } from '../../../shared/components/card.component'
 import { TPipe } from '../../../shared/pipes/t.pipe'
@@ -32,7 +38,9 @@ import { TrumpBadgeComponent } from './trump-badge.component'
       <div class="card-grid">
         @for (card of cards; track card.id) {
           <div
+            #handCardRoot
             class="hand-card"
+            [attr.data-card-id]="card.id"
             draggable="true"
             [class.hand-card-dragging]="draggedCardId === card.id"
             [class.hand-card-drop-target]="dropTargetCardId === card.id"
@@ -48,7 +56,7 @@ import { TrumpBadgeComponent } from './trump-badge.component'
               [disabled]="!canPlay(card)"
               [showSpecialInfo]="true"
               [useArtwork]="useArtwork"
-              [play]="play"
+              [play]="playCardFromHand"
             />
           </div>
         }
@@ -77,9 +85,21 @@ import { TrumpBadgeComponent } from './trump-badge.component'
   ],
 })
 export class HandAreaComponent {
+  @ViewChildren('handCardRoot')
+  private readonly handCardRoots?: QueryList<ElementRef<HTMLElement>>
+
   @Input({ required: true }) cards: Card[] = []
   @Input({ required: true }) canPlay!: (card: Card) => boolean
   @Input({ required: true }) play!: (card: Card) => void
+  @Input() playWithSource?: (payload: {
+    card: Card
+    sourceRect: DOMRect | null
+  }) => void
+  @Input() onPlayDragStart?: (payload: {
+    card: Card
+    sourceRect: DOMRect
+  }) => void
+  @Input() onPlayDragEnd?: () => void
   @Input({ required: true }) onSort!: () => void
   @Input() isSortActive = false
   @Input({ required: true }) onReorder!: (
@@ -92,14 +112,43 @@ export class HandAreaComponent {
 
   draggedCardId: string | null = null
   dropTargetCardId: string | null = null
+  readonly playCardFromHand = (card: Card) => this.handlePlay(card)
 
   sortCards() {
     this.onSort()
   }
 
+  private handlePlay(card: Card) {
+    const sourceRect = this.getCardSourceRect(card.id)
+
+    if (this.playWithSource) {
+      this.playWithSource({ card, sourceRect })
+      return
+    }
+
+    this.play(card)
+  }
+
+  private getCardSourceRect(cardId: string): DOMRect | null {
+    const element = this.handCardRoots
+      ?.toArray()
+      .find(
+        (entry) => entry.nativeElement.dataset['cardId'] === cardId,
+      )?.nativeElement
+
+    return element?.getBoundingClientRect() ?? null
+  }
+
   startDrag(cardId: string, event: DragEvent) {
     this.draggedCardId = cardId
     this.dropTargetCardId = null
+
+    const card = this.cards.find((entry) => entry.id === cardId)
+    const sourceRect = this.getCardSourceRect(cardId)
+
+    if (card && sourceRect && this.canPlay(card)) {
+      this.onPlayDragStart?.({ card, sourceRect })
+    }
 
     if (event.dataTransfer) {
       event.dataTransfer.effectAllowed = 'move'
@@ -110,6 +159,7 @@ export class HandAreaComponent {
   endDrag() {
     this.draggedCardId = null
     this.dropTargetCardId = null
+    this.onPlayDragEnd?.()
   }
 
   allowDrop(cardId: string, event: DragEvent) {

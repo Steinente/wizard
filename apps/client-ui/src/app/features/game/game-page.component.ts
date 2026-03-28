@@ -5,6 +5,7 @@ import {
   type Card,
   type Suit,
 } from '@wizard/shared'
+import { CardPlayAnimationService } from './card-play-animation.service'
 import { GameFacadeService } from '../../core/services/game-facade.service'
 import { PwaInstallService } from '../../core/services/pwa-install.service'
 import {
@@ -26,11 +27,17 @@ import {
   ScoreboardPanelComponent,
   TrickAreaComponent,
 } from './components'
+import { CardComponent } from '../../shared/components/card.component'
 import {
   applyManualHandOrder,
   reorderHandCards,
   sortHandCards,
 } from './utils/hand-sort.util'
+import {
+  isPointInsideRect,
+  resolveTrickGridElement,
+  type PendingCardPlayAnimation,
+} from './utils/card-play-animation.util'
 import {
   canPlayerPredict,
   getOwnPendingDecision,
@@ -40,6 +47,7 @@ import {
   standalone: true,
   imports: [
     TPipe,
+    CardComponent,
     GameHeaderComponent,
     GameFinishedPanelComponent,
     ChatPanelComponent,
@@ -54,11 +62,15 @@ import {
   ],
   templateUrl: './game-page.component.html',
   styleUrl: './game-page.component.css',
+  providers: [CardPlayAnimationService],
 })
 export class GamePageComponent {
   protected readonly store = this.appStore
   private readonly manualHandOrder = signal<string[] | null>(null)
   private readonly interactionFieldLockedSignal = signal(false)
+  private readonly draggedPlayCardSignal =
+    signal<PendingCardPlayAnimation | null>(null)
+  private readonly trickDropPreviewActiveSignal = signal(false)
   private lastSeenRoundKey: string | null = null
   private lastFinishedGamePromptKey: string | null = null
   private pendingFinishedGamePromptKey: string | null = null
@@ -154,6 +166,23 @@ export class GamePageComponent {
   readonly handSortEnabledSignal = computed(() =>
     this.session.handSortEnabled(),
   )
+  readonly cardPlayAnimationEnabledSignal = computed(() =>
+    this.animation.cardPlayAnimationEnabled(),
+  )
+  readonly playedCardAnimation = computed(() =>
+    this.animation.playedCardAnimation(),
+  )
+  readonly trickDropPreviewCard = computed(() =>
+    this.trickDropPreviewActiveSignal()
+      ? (this.draggedPlayCardSignal()?.card ?? null)
+      : null,
+  )
+  readonly trickDragActiveSignal = computed(
+    () => this.draggedPlayCardSignal() !== null,
+  )
+  readonly selfPlayerNameSignal = computed(
+    () => this.selfPlayer()?.name ?? null,
+  )
   readonly interactionFieldLocked = computed(() =>
     this.interactionFieldLockedSignal(),
   )
@@ -184,6 +213,13 @@ export class GamePageComponent {
   })
 
   readonly playCardFn = (card: Card) => this.playCard(card)
+  readonly playCardWithSourceFn = (payload: {
+    card: Card
+    sourceRect: DOMRect | null
+  }) => this.playCardWithSource(payload)
+  readonly startPlayDragFn = (payload: { card: Card; sourceRect: DOMRect }) =>
+    this.startPlayDrag(payload)
+  readonly endPlayDragFn = () => this.endPlayDrag()
   readonly canPlayCardFn = (card: Card) => this.canPlayCard(card)
   readonly predictFn = (value: number) => this.predict(value)
   readonly selectTrumpFn = (suit: Suit | null) => this.selectTrump(suit)
@@ -231,6 +267,8 @@ export class GamePageComponent {
   readonly setCardArtworkEnabledFn = (v: boolean) =>
     this.session.setCardArtworkEnabled(v)
   readonly setHandSortEnabledFn = (v: boolean) => this.setHandSortEnabled(v)
+  readonly setCardPlayAnimationEnabledFn = (v: boolean) =>
+    this.session.setCardPlayAnimationEnabled(v)
   readonly setSpectatorChatAllowedFn = (enabled: boolean) =>
     this.setSpectatorChatAllowed(enabled)
   readonly sendChatMessageFn = (text: string) => this.sendChatMessage(text)
@@ -240,6 +278,7 @@ export class GamePageComponent {
     private readonly facade: GameFacadeService,
     protected readonly session: SessionService,
     private readonly pwaInstall: PwaInstallService,
+    readonly animation: CardPlayAnimationService,
   ) {
     effect(() => {
       const state = this.gameState()
@@ -248,6 +287,9 @@ export class GamePageComponent {
 
       if (!lobbyCode || roundNumber === null) {
         this.lastSeenRoundKey = null
+        this.animation.resetRoundState()
+        this.draggedPlayCardSignal.set(null)
+        this.trickDropPreviewActiveSignal.set(false)
         return
       }
 
@@ -261,6 +303,9 @@ export class GamePageComponent {
       if (this.lastSeenRoundKey !== currentRoundKey) {
         this.manualHandOrder.set(null)
         this.lastSeenRoundKey = currentRoundKey
+        this.animation.resetRoundState()
+        this.draggedPlayCardSignal.set(null)
+        this.trickDropPreviewActiveSignal.set(false)
       }
     })
 
@@ -493,6 +538,82 @@ export class GamePageComponent {
     }
 
     this.facade.playCard(state.lobbyCode, card.id)
+  }
+
+  playCardWithSource(payload: { card: Card; sourceRect: DOMRect | null }) {
+    if (this.animation.cardPlayAnimationEnabled() && payload.sourceRect) {
+      this.animation.setPendingAnimation(payload.card, payload.sourceRect)
+    }
+
+    this.playCard(payload.card)
+  }
+
+  startPlayDrag(payload: { card: Card; sourceRect: DOMRect }) {
+    if (!this.canPlayCard(payload.card)) {
+      this.draggedPlayCardSignal.set(null)
+      this.trickDropPreviewActiveSignal.set(false)
+      return
+    }
+
+    this.draggedPlayCardSignal.set(payload)
+  }
+
+  endPlayDrag() {
+    this.draggedPlayCardSignal.set(null)
+    this.trickDropPreviewActiveSignal.set(false)
+  }
+
+  onTrickDragOver(event: DragEvent) {
+    const draggedPlayCard = this.draggedPlayCardSignal()
+
+    if (!draggedPlayCard) {
+      return
+    }
+
+    const trickGrid = resolveTrickGridElement()
+
+    if (!trickGrid) {
+      this.trickDropPreviewActiveSignal.set(false)
+      return
+    }
+
+    const clientX = event.clientX
+    const clientY = event.clientY
+    const isOverGrid = isPointInsideRect(
+      clientX,
+      clientY,
+      trickGrid.getBoundingClientRect(),
+    )
+
+    if (!isOverGrid || !this.canPlayCard(draggedPlayCard.card)) {
+      this.trickDropPreviewActiveSignal.set(false)
+      return
+    }
+
+    event.preventDefault()
+
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = 'move'
+    }
+
+    this.trickDropPreviewActiveSignal.set(true)
+  }
+
+  onTrickDragLeave() {
+    this.trickDropPreviewActiveSignal.set(false)
+  }
+
+  onTrickDrop(event: DragEvent) {
+    const draggedPlayCard = this.draggedPlayCardSignal()
+
+    if (!draggedPlayCard || !this.trickDropPreviewActiveSignal()) {
+      return
+    }
+
+    event.preventDefault()
+    this.trickDropPreviewActiveSignal.set(false)
+    this.draggedPlayCardSignal.set(null)
+    this.playCardWithSource(draggedPlayCard)
   }
 
   selectTrump(suit: Suit | null) {
@@ -735,5 +856,15 @@ export class GamePageComponent {
     }
 
     return window.matchMedia('(pointer: coarse)').matches
+  }
+
+  ngOnDestroy() {
+    if (this.interactionGuardTimeoutId) {
+      clearTimeout(this.interactionGuardTimeoutId)
+      this.interactionGuardTimeoutId = null
+    }
+
+    this.draggedPlayCardSignal.set(null)
+    this.trickDropPreviewActiveSignal.set(false)
   }
 }

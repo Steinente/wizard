@@ -58,6 +58,23 @@ import { TPipe } from '../../../shared/pipes/t.pipe'
         <label class="row">
           <input
             type="checkbox"
+            [ngModel]="cardPlayAnimationEnabled"
+            (ngModelChange)="toggleCardPlayAnimation($event)"
+          />
+          <span>
+            {{
+              cardPlayAnimationEnabled
+                ? ('cardPlayAnimationEnabled' | t)
+                : ('cardPlayAnimationDisabled' | t)
+            }}
+          </span>
+        </label>
+      </div>
+
+      <div class="row" style="margin-top: 8px;">
+        <label class="row">
+          <input
+            type="checkbox"
             [ngModel]="scoreboardA11yMode"
             (ngModelChange)="changeScoreboardA11yMode($event)"
           />
@@ -277,12 +294,16 @@ export class GameSettingsPanelComponent {
   @Input({ required: true }) chatSoundEnabled = true
   @Input({ required: true }) spectatorChatAllowed = true
   @Input({ required: true }) handSortEnabled = false
+  @Input({ required: true }) cardPlayAnimationEnabled = true
   @Input({ required: true }) isHost = false
   @Input({ required: true }) onToggleAudio!: (enabled: boolean) => void
   @Input({ required: true }) onBingToggle!: (enabled: boolean) => void
   @Input({ required: true }) onChatSoundToggle!: (enabled: boolean) => void
   @Input({ required: true }) onSpectatorChatToggle!: (enabled: boolean) => void
   @Input({ required: true }) onHandSortToggle!: (enabled: boolean) => void
+  @Input({ required: true }) onCardPlayAnimationToggle!: (
+    enabled: boolean,
+  ) => void
   @Input({ required: true }) onAudioVolumeChange!: (volume: number) => void
   @Input({ required: true }) onAudioSpeedChange!: (speed: number) => void
   @Input({ required: true }) onEndLobby!: () => void
@@ -322,6 +343,10 @@ export class GameSettingsPanelComponent {
 
   toggleHandSort(enabled: boolean) {
     this.onHandSortToggle(enabled)
+  }
+
+  toggleCardPlayAnimation(enabled: boolean) {
+    this.onCardPlayAnimationToggle(enabled)
   }
 
   changeAudioVolume(value: number | string) {
