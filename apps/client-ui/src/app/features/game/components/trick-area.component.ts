@@ -81,23 +81,23 @@ import { TPipe } from '../../../shared/pipes/t.pipe'
 
       @media (max-width: 700px) {
         .trick-cards-grid {
-          min-height: 130px;
+          min-height: 148px;
         }
 
         .trick-drag-placeholder-slot {
           width: 92px;
-          min-height: 130px;
+          min-height: 148px;
         }
       }
 
       @media (max-width: 460px) {
         .trick-cards-grid {
-          min-height: 114px;
+          min-height: 126px;
         }
 
         .trick-drag-placeholder-slot {
           width: 78px;
-          min-height: 114px;
+          min-height: 126px;
         }
       }
     `,

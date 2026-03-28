@@ -364,7 +364,7 @@ const SPECIAL_CARD_ARTWORK: Record<string, string> = {
       @media (max-width: 700px) {
         .wiz-card {
           width: 92px;
-          min-height: 126px;
+          min-height: 144px;
           padding: 8px;
           border-radius: 12px;
         }
@@ -398,7 +398,7 @@ const SPECIAL_CARD_ARTWORK: Record<string, string> = {
       @media (max-width: 460px) {
         .wiz-card {
           width: 78px;
-          min-height: 110px;
+          min-height: 122px;
           padding: 7px;
         }
 
