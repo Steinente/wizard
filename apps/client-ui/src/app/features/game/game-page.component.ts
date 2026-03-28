@@ -5,8 +5,7 @@ import {
   type Card,
   type Suit,
 } from '@wizard/shared'
-import { CardPlayAnimationService } from './card-play-animation.service'
-import { GameFacadeService } from '../../core/services/game-facade.service'
+import { CardPlayAnimationService } from './services/card-play-animation.service'
 import { PwaInstallService } from '../../core/services/pwa-install.service'
 import {
   SessionService,
@@ -37,7 +36,8 @@ import {
   canPlayerPredict,
   getOwnPendingDecision,
 } from './utils/game-state-selectors.util'
-import { TrickDragPlayService } from './trick-drag-play.service'
+import { TrickDragPlayService } from './services/trick-drag-play.service'
+import { GamePageActionsService } from './services/game-page-actions.service'
 
 @Component({
   standalone: true,
@@ -58,7 +58,11 @@ import { TrickDragPlayService } from './trick-drag-play.service'
   ],
   templateUrl: './game-page.component.html',
   styleUrl: './game-page.component.css',
-  providers: [CardPlayAnimationService, TrickDragPlayService],
+  providers: [
+    CardPlayAnimationService,
+    TrickDragPlayService,
+    GamePageActionsService,
+  ],
 })
 export class GamePageComponent {
   protected readonly store = this.appStore
@@ -212,23 +216,26 @@ export class GamePageComponent {
     this.startPlayDrag(payload)
   readonly endPlayDragFn = () => this.endPlayDrag()
   readonly canPlayCardFn = (card: Card) => this.canPlayCard(card)
-  readonly predictFn = (value: number) => this.predict(value)
-  readonly selectTrumpFn = (suit: Suit | null) => this.selectTrump(suit)
+  readonly predictFn = (value: number) => this.actions.predict(value)
+  readonly selectTrumpFn = (suit: Suit | null) => this.actions.selectTrump(suit)
   readonly resolveWerewolfTrumpSwapFn = (suit: Suit | null) =>
-    this.resolveWerewolfTrumpSwap(suit)
+    this.actions.resolveWerewolfTrumpSwap(suit)
   readonly resolveShapeShifterFn = (mode: 'wizard' | 'jester') =>
-    this.resolveShapeShifter(mode)
-  readonly resolveCloudSuitFn = (suit: Suit) => this.resolveCloudSuit(suit)
+    this.actions.resolveShapeShifter(mode)
+  readonly resolveCloudSuitFn = (suit: Suit) =>
+    this.actions.resolveCloudSuit(suit)
   readonly resolveCloudAdjustmentFn = (delta: 1 | -1) =>
-    this.resolveCloudAdjustment(delta)
-  readonly resolveJugglerSuitFn = (suit: Suit) => this.resolveJugglerSuit(suit)
+    this.actions.resolveCloudAdjustment(delta)
+  readonly resolveJugglerSuitFn = (suit: Suit) =>
+    this.actions.resolveJugglerSuit(suit)
   readonly resolveWitchFn = (payload: {
     handCardId: string
     trickCardId: string
-  }) => this.resolveWitch(payload)
+  }) => this.actions.resolveWitch(payload)
   readonly resolveDarkEyeChoiceFn = (selectedCardId: string) =>
-    this.resolveDarkEyeChoice(selectedCardId)
-  readonly toggleReadLogFn = (enabled: boolean) => this.toggleAudio(enabled)
+    this.actions.resolveDarkEyeChoice(selectedCardId)
+  readonly toggleReadLogFn = (enabled: boolean) =>
+    this.actions.toggleAudio(enabled)
   readonly toggleBingFn = (enabled: boolean) =>
     this.session.setBingEnabled(enabled)
   readonly setChatSoundEnabledFn = (enabled: boolean) =>
@@ -236,9 +243,11 @@ export class GamePageComponent {
   readonly sortHandFn = () => this.sortHand()
   readonly reorderHandFn = (draggedCardId: string, targetCardId: string) =>
     this.reorderHand(draggedCardId, targetCardId)
-  readonly setSpeechVolumeFn = (volume: number) => this.setAudioVolume(volume)
-  readonly setSpeechSpeedFn = (speed: number) => this.setAudioSpeed(speed)
-  readonly endLobbyFn = () => this.endLobby()
+  readonly setSpeechVolumeFn = (volume: number) =>
+    this.actions.setAudioVolume(volume)
+  readonly setSpeechSpeedFn = (speed: number) =>
+    this.actions.setAudioSpeed(speed)
+  readonly endLobbyFn = () => this.actions.endLobby()
   readonly setPanelSettingsVisibleFn = (v: boolean) =>
     this.session.setPanelSettingsVisible(v)
   readonly setPanelPlayersVisibleFn = (v: boolean) =>
@@ -261,16 +270,21 @@ export class GamePageComponent {
   readonly setCardPlayAnimationEnabledFn = (v: boolean) =>
     this.session.setCardPlayAnimationEnabled(v)
   readonly setSpectatorChatAllowedFn = (enabled: boolean) =>
-    this.setSpectatorChatAllowed(enabled)
-  readonly sendChatMessageFn = (text: string) => this.sendChatMessage(text)
+    this.actions.setSpectatorChatAllowed(enabled, this.isHostSignal())
+  readonly sendChatMessageFn = (text: string) =>
+    this.actions.sendChatMessage(
+      text,
+      this.selfRoleSignal(),
+      this.spectatorChatAllowedSignal(),
+    )
 
   constructor(
     private readonly appStore: AppStore,
-    private readonly facade: GameFacadeService,
     protected readonly session: SessionService,
     private readonly pwaInstall: PwaInstallService,
     readonly animation: CardPlayAnimationService,
     readonly trickDrag: TrickDragPlayService,
+    readonly actions: GamePageActionsService,
   ) {
     effect(() => {
       const state = this.gameState()
@@ -362,14 +376,6 @@ export class GamePageComponent {
 
     this.pendingFinishedGamePromptKey = null
     void this.pwaInstall.promptIfEligible()
-  }
-
-  setAudioVolume(volume: number) {
-    this.facade.setSpeechVolume(volume)
-  }
-
-  setAudioSpeed(speed: number) {
-    this.facade.setSpeechRate(speed)
   }
 
   myHand() {
@@ -466,16 +472,6 @@ export class GamePageComponent {
     })
   }
 
-  predict(value: number) {
-    const code = this.gameState()?.lobbyCode
-
-    if (!code) {
-      return
-    }
-
-    this.facade.makePrediction(code, value)
-  }
-
   canPlayCard(card: Card) {
     const state = this.gameState()
 
@@ -519,7 +515,7 @@ export class GamePageComponent {
       state.pendingDecision?.type === 'jugglerPassCard' &&
       state.pendingDecision.remainingPlayerIds.includes(state.selfPlayerId)
     ) {
-      this.facade.selectJugglerPassCard(state.lobbyCode, card.id)
+      this.actions.selectJugglerPassCard(state.lobbyCode, card.id)
       return
     }
 
@@ -527,7 +523,7 @@ export class GamePageComponent {
       return
     }
 
-    this.facade.playCard(state.lobbyCode, card.id)
+    this.actions.playCard(state.lobbyCode, card.id)
   }
 
   playCardWithSource(payload: { card: Card; sourceRect: DOMRect | null }) {
@@ -563,76 +559,6 @@ export class GamePageComponent {
     this.playCardWithSource(draggedPlayCard)
   }
 
-  selectTrump(suit: Suit | null) {
-    const code = this.gameState()?.lobbyCode
-
-    if (!code) {
-      return
-    }
-
-    this.facade.selectTrumpSuit(code, suit)
-  }
-
-  resolveWerewolfTrumpSwap(suit: Suit | null) {
-    const state = this.gameState()
-
-    if (
-      !state?.pendingDecision ||
-      state.pendingDecision.type !== 'werewolfTrumpSwap'
-    ) {
-      return
-    }
-
-    this.facade.resolveWerewolfTrumpSwap(state.lobbyCode, suit)
-  }
-
-  resolveShapeShifter(mode: 'wizard' | 'jester') {
-    const state = this.gameState()
-
-    if (
-      !state?.pendingDecision ||
-      state.pendingDecision.type !== 'shapeShifterChoice'
-    ) {
-      return
-    }
-
-    this.facade.resolveShapeShifter(
-      state.lobbyCode,
-      state.pendingDecision.cardId ?? '',
-      mode,
-    )
-  }
-
-  resolveCloudSuit(suit: Suit) {
-    const state = this.gameState()
-
-    if (
-      !state?.pendingDecision ||
-      state.pendingDecision.type !== 'cloudSuitChoice'
-    ) {
-      return
-    }
-
-    this.facade.resolveCloud(
-      state.lobbyCode,
-      state.pendingDecision.cardId ?? '',
-      suit,
-    )
-  }
-
-  resolveCloudAdjustment(delta: 1 | -1) {
-    const state = this.gameState()
-
-    if (
-      !state?.pendingDecision ||
-      state.pendingDecision.type !== 'cloudPredictionAdjustment'
-    ) {
-      return
-    }
-
-    this.facade.resolveCloudAdjustment(state.lobbyCode, delta)
-  }
-
   shouldShowCloudAdjustmentScorePreview(): boolean {
     const state = this.gameState()
 
@@ -661,107 +587,6 @@ export class GamePageComponent {
 
   cloudAdjustmentRoundNumber(): number {
     return this.gameState()?.currentRound?.roundNumber ?? 0
-  }
-
-  resolveJugglerSuit(suit: Suit) {
-    const state = this.gameState()
-
-    if (
-      !state?.pendingDecision ||
-      state.pendingDecision.type !== 'jugglerSuitChoice'
-    ) {
-      return
-    }
-
-    this.facade.resolveJuggler(
-      state.lobbyCode,
-      state.pendingDecision.cardId ?? '',
-      suit,
-    )
-  }
-
-  resolveWitch(payload: { handCardId: string; trickCardId: string }) {
-    const state = this.gameState()
-
-    if (
-      !state?.pendingDecision ||
-      state.pendingDecision.type !== 'witchExchange'
-    ) {
-      return
-    }
-
-    this.facade.resolveWitch(state.lobbyCode, payload)
-  }
-
-  resolveDarkEyeChoice(selectedCardId: string) {
-    const state = this.gameState()
-
-    if (
-      !state?.pendingDecision ||
-      (state.pendingDecision.type !== 'darkEyeTrumpChoice' &&
-        state.pendingDecision.type !== 'darkEyePlayChoice')
-    ) {
-      return
-    }
-
-    this.facade.resolveDarkEyeChoice(state.lobbyCode, selectedCardId)
-  }
-
-  toggleAudio(enabled: boolean) {
-    const state = this.gameState()
-
-    if (!state) {
-      return
-    }
-
-    this.facade.setReadLogEnabled(state.lobbyCode, enabled)
-  }
-
-  endLobby() {
-    const state = this.gameState()
-
-    if (!state) {
-      return
-    }
-
-    this.facade.endLobby(state.lobbyCode)
-  }
-
-  setSpectatorChatAllowed(enabled: boolean) {
-    if (!this.isHostSignal()) {
-      return
-    }
-
-    const code = this.gameState()?.lobbyCode ?? this.store.lobby()?.code
-
-    if (!code) {
-      return
-    }
-
-    this.facade.updateConfig(code, { allowSpectatorChat: enabled })
-  }
-
-  sendChatMessage(text: string) {
-    const state = this.gameState()
-
-    if (!state) {
-      return
-    }
-
-    if (
-      this.selfRoleSignal() === 'spectator' &&
-      !this.spectatorChatAllowedSignal()
-    ) {
-      return
-    }
-
-    const code = state.lobbyCode
-
-    if (!code) {
-      return
-    }
-
-    this.facade.sendChatMessage(code, text)
   }
 
   sortHand() {

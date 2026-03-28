@@ -1,7 +1,7 @@
 import { Injectable, OnDestroy, computed, effect, signal } from '@angular/core'
 import type { Card } from '@wizard/shared'
-import { SessionService } from '../../core/services/session.service'
-import { AppStore } from '../../core/state/app.store'
+import { SessionService } from '../../../core/services/session.service'
+import { AppStore } from '../../../core/state/app.store'
 import {
   createPlayedCardAnimationState,
   getTrickPlaySignature,
@@ -9,7 +9,7 @@ import {
   resolveTrickGridElement,
   type PendingCardPlayAnimation,
   type PlayedCardAnimationState,
-} from './utils/card-play-animation.util'
+} from '../utils/card-play-animation.util'
 
 @Injectable()
 export class CardPlayAnimationService implements OnDestroy {

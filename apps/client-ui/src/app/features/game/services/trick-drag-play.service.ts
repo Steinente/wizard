@@ -4,7 +4,7 @@ import {
   isPointInsideRect,
   resolveTrickGridElement,
   type PendingCardPlayAnimation,
-} from './utils/card-play-animation.util'
+} from '../utils/card-play-animation.util'
 
 @Injectable()
 export class TrickDragPlayService {
