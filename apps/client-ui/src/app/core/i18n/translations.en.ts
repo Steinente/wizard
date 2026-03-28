@@ -259,6 +259,7 @@ export const en = {
   officialRules: 'Official rules',
   unofficialRules: 'Unofficial rules',
   unofficialCombinationHintsTitle: 'Notes for active combinations',
+  closePopup: 'Close popup',
   twoPlayerModeLabel: '2-player rule',
   twoPlayerModeEnabled: 'Allow game start with 2 players',
   twoPlayerModeInfo:

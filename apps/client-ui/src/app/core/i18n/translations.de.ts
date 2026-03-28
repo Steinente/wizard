@@ -261,6 +261,7 @@ export const de = {
   officialRules: 'Offizielle Regeln',
   unofficialRules: 'Inoffizielle Regeln',
   unofficialCombinationHintsTitle: 'Hinweise zu aktiven Kombinationen',
+  closePopup: 'Popup schließen',
   twoPlayerModeLabel: '2-Spieler-Regel',
   twoPlayerModeEnabled: 'Spielstart bereits ab 2 Spielern erlauben',
   twoPlayerModeInfo:

@@ -309,50 +309,12 @@
               <span class="muted">{{ 'twoPlayerModeEnabled' | t }}</span>
             </label>
 
-            @if (activeCombinationRuleBlockKeys().length > 0) {
-              <div
-                class="unofficial-combo-hints"
-                role="status"
-                aria-live="polite"
-              >
-                <button
-                  type="button"
-                  class="unofficial-combo-hints-toggle"
-                  [attr.aria-expanded]="combinationRuleHintsExpanded()"
-                  (click)="toggleCombinationRuleHints()"
-                >
-                  <span class="unofficial-combo-hints-title">
-                    {{ 'unofficialCombinationHintsTitle' | t }}
-                  </span>
-                  <span class="unofficial-combo-hints-arrow" aria-hidden="true">
-                    {{ combinationRuleHintsExpanded() ? '▲' : '▼' }}
-                  </span>
-                </button>
-
-                @if (combinationRuleHintsExpanded()) {
-                  @if (
-                    combinationRuleHintsLoading() &&
-                    activeCombinationRuleHintBlocks().length === 0
-                  ) {
-                    <p class="unofficial-combo-hints-loading">
-                      {{ 'loading' | t }}...
-                    </p>
-                  } @else {
-                    <div class="unofficial-combo-hints-list">
-                      @for (
-                        hintBlock of activeCombinationRuleHintBlocks();
-                        track hintBlock.key
-                      ) {
-                        <article
-                          class="unofficial-combo-hint-block"
-                          [innerHTML]="hintBlock.html"
-                        ></article>
-                      }
-                    </div>
-                  }
-                }
-              </div>
-            }
+            <wiz-combination-hints-popup
+              [hasActiveHints]="activeCombinationRuleBlockKeys().length > 0"
+              [hintBlocks]="activeCombinationRuleHintBlocks()"
+              [hintCount]="activeCombinationRuleBlockKeys().length"
+              [loading]="combinationRuleHintsLoading()"
+            ></wiz-combination-hints-popup>
           </div>
         </div>
       </div>

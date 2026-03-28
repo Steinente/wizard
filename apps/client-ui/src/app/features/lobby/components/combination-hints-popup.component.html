@@ -1,0 +1,59 @@
+@if (hasActiveHints) {
+  <div class="unofficial-combo-hints" role="status" aria-live="polite">
+    <button
+      type="button"
+      class="unofficial-combo-hints-trigger"
+      [attr.aria-expanded]="popupOpen()"
+      aria-haspopup="dialog"
+      (click)="togglePopup()"
+    >
+      <span class="unofficial-combo-hints-title">
+        {{ 'unofficialCombinationHintsTitle' | t }} ({{ hintCount }})
+      </span>
+    </button>
+  </div>
+
+  @if (popupOpen()) {
+    <div
+      class="unofficial-combo-hints-modal-backdrop"
+      role="presentation"
+      (click)="closePopup()"
+    >
+      <section
+        class="unofficial-combo-hints-modal"
+        role="dialog"
+        aria-modal="true"
+        [attr.aria-label]="'unofficialCombinationHintsTitle' | t"
+        (click)="$event.stopPropagation()"
+      >
+        <button
+          type="button"
+          class="unofficial-combo-hints-close"
+          [attr.aria-label]="'closePopup' | t"
+          (click)="closePopup()"
+        >
+          <span class="unofficial-combo-hints-close-icon" aria-hidden="true">
+            ×
+          </span>
+        </button>
+
+        <h4 class="unofficial-combo-hints-modal-title">
+          {{ 'unofficialCombinationHintsTitle' | t }}
+        </h4>
+
+        @if (loading && hintBlocks.length === 0) {
+          <p class="unofficial-combo-hints-loading">{{ 'loading' | t }}...</p>
+        } @else {
+          <div class="unofficial-combo-hints-list">
+            @for (hintBlock of hintBlocks; track hintBlock.key) {
+              <article
+                class="unofficial-combo-hint-block"
+                [innerHTML]="hintBlock.html"
+              ></article>
+            }
+          </div>
+        }
+      </section>
+    </div>
+  }
+}

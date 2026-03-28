@@ -32,6 +32,7 @@ import {
   SPECIAL_CARD_FILTER_PRESETS,
   SpecialCardFilterId,
 } from './utils/lobby-special-card-filters'
+import { CombinationHintsPopupComponent } from './components/combination-hints-popup.component'
 
 type RuleInfoKey =
   | 'predictionVisibility'
@@ -48,7 +49,14 @@ type CombinationRuleBlockKey =
 
 @Component({
   standalone: true,
-  imports: [FormsModule, TPipe, RouterLink, CardComponent, ChatPanelComponent],
+  imports: [
+    FormsModule,
+    TPipe,
+    RouterLink,
+    CardComponent,
+    ChatPanelComponent,
+    CombinationHintsPopupComponent,
+  ],
   templateUrl: './lobby-page.component.html',
   styleUrl: './lobby-page.component.css',
 })
@@ -68,7 +76,6 @@ export class LobbyPageComponent {
   private readonly combinationRuleBlocksState = signal<
     Partial<Record<CombinationRuleBlockKey, string>>
   >({})
-  readonly combinationRuleHintsExpanded = signal(false)
   readonly combinationRuleHintsLoading = signal(false)
   readonly copied = signal(false)
   readonly chatSoundEnabledSignal = signal(this.session.chatSoundEnabled())
@@ -95,12 +102,6 @@ export class LobbyPageComponent {
     effect(() => {
       const language = this.i18n.language()
       void this.loadCombinationRuleBlocks(language)
-    })
-
-    effect(() => {
-      if (this.activeCombinationRuleBlockKeys().length === 0) {
-        this.combinationRuleHintsExpanded.set(false)
-      }
     })
   }
 
@@ -400,10 +401,6 @@ export class LobbyPageComponent {
   setChatSoundEnabledFn(enabled: boolean) {
     this.chatSoundEnabledSignal.set(enabled)
     this.session.setChatSoundEnabled(enabled)
-  }
-
-  toggleCombinationRuleHints() {
-    this.combinationRuleHintsExpanded.update((isExpanded) => !isExpanded)
   }
 
   private async loadCombinationRuleBlocks(language: TranslationLanguage) {
