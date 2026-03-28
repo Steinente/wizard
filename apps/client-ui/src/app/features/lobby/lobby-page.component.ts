@@ -31,7 +31,7 @@ import {
   SPECIAL_CARD_FILTER_ID,
   SPECIAL_CARD_FILTER_PRESETS,
   SpecialCardFilterId,
-} from './lobby-special-card-filters'
+} from './utils/lobby-special-card-filters'
 
 type RuleInfoKey =
   | 'predictionVisibility'

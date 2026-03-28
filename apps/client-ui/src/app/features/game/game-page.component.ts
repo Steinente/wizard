@@ -5,7 +5,6 @@ import {
   type Card,
   type Suit,
 } from '@wizard/shared'
-import { CardPlayAnimationService } from './services/card-play-animation.service'
 import { PwaInstallService } from '../../core/services/pwa-install.service'
 import {
   SessionService,
@@ -36,8 +35,11 @@ import {
   canPlayerPredict,
   getOwnPendingDecision,
 } from './utils/game-state-selectors.util'
-import { TrickDragPlayService } from './services/trick-drag-play.service'
-import { GamePageActionsService } from './services/game-page-actions.service'
+import {
+  CardPlayAnimationService,
+  GamePageActionsService,
+  TrickDragPlayService,
+} from './services'
 
 @Component({
   standalone: true,

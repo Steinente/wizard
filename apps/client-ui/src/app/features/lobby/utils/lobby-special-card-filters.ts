@@ -1,6 +1,6 @@
 import type { CloudRuleTiming, SpecialCardKey } from '@wizard/shared'
 import { SPECIAL_CARD_KEY, SPECIAL_CARD_KEYS } from '@wizard/shared'
-import type { TranslationKey } from '../../core/i18n/translations'
+import type { TranslationKey } from '../../../core/i18n/translations'
 
 export const SPECIAL_CARD_FILTER_ID = {
   custom: 'custom',
