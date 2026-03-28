@@ -260,15 +260,19 @@ export const getReadableCardLabel = (card: Card): string => {
   return card.special
 }
 
-export const NO_TRUMP_SELECTABLE_SPECIALS = new Set([
-  'wizard',
-  SPECIAL_CARD_KEY.shapeShifter,
-  SPECIAL_CARD_KEY.juggler,
-  SPECIAL_CARD_KEY.cloud,
-  SPECIAL_CARD_KEY.dragon,
-  SPECIAL_CARD_KEY.werewolf,
-  SPECIAL_CARD_KEY.witch,
-])
+export const isNoTrumpSelectableTrigger = (
+  triggeringSpecial: string | undefined,
+): boolean => {
+  if (!triggeringSpecial) {
+    return false
+  }
+
+  if (triggeringSpecial === 'wizard') {
+    return true
+  }
+
+  return SPECIAL_CARD_KEYS.includes(triggeringSpecial as SpecialCardKey)
+}
 
 export const getResolvedEffectForCard = (
   state: WizardGameState,

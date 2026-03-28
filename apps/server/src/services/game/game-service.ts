@@ -27,12 +27,12 @@ import {
 import { loadStateOrThrow, persistState } from './game-persistence.js'
 import { recordPlayerInteractionCompletion } from './player-interaction-timing.js'
 import {
-  NO_TRUMP_SELECTABLE_SPECIALS,
   fromJson,
   getNextPlayerId,
   getPlayerBySessionToken,
   getReadableCardLabel,
   getSeatOrderedPlayerIds,
+  isNoTrumpSelectableTrigger,
   isFollowSuitDisabledInTrick,
   loadLobbyByCode,
   nowIso,
@@ -461,11 +461,7 @@ export class GameService {
 
     const triggeringSpecial = state.pendingDecision.special
 
-    if (
-      input.suit === null &&
-      (!triggeringSpecial ||
-        !NO_TRUMP_SELECTABLE_SPECIALS.has(triggeringSpecial))
-    ) {
+    if (input.suit === null && !isNoTrumpSelectableTrigger(triggeringSpecial)) {
       throw new Error('error.trumpNotSelectable')
     }
 
